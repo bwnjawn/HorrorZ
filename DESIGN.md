@@ -78,6 +78,3 @@ Se elige Phaser por ser el más conocido en la creación de juegos HTML. Su ampl
 -   **Gameplay**: Fase activa de infección y supervivencia en el mapa urbano.
     
 -   **Game Over**: Pantalla de estadísticas finales basada en el tiempo sobrevivido y tamaño de la horda.
-    
-
-¿Deseas que revisemos también la redacción del archivo `PLANNING.md` para asegurar que las fechas y objetivos coincidan con esta estructura?
