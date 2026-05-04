@@ -7,37 +7,33 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Directorios de dependencias (pnpm)
 node_modules
+.DS_Store
 dist
 dist-ssr
+coverage
 *.local
 
-# Editor y herramientas
+# Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Testing y Cobertura
-coverage
-__snapshots__
+*.tsbuildinfo
 
-# Variables de entorno (Sensible)
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.eslintcache
 
-# Archivos de sistema
-Thumbs.db
-db.crypt
+# Cypress
+/cypress/videos/
+/cypress/screenshots/
 
-# Docker
-.docker
+# Vitest
+__screenshots__/
+
+# Vite
+*.timestamp-*-*.mjs
