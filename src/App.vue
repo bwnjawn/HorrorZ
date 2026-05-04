@@ -30,19 +30,83 @@ const config = {
 function preload() {
   // Aquí cargarás tus sprites y mapas más adelante
   console.log('Phaser: Preload');
-  this.load.image('leader', 'src/assets/sprites/');
-  this.load.image('tiles', 'src/assets/tiles/');
+  this.load.spritesheet('zombie-walk', 'src/assets/sprites/zombie-walking.png', { 
+          frameWidth: 313,  // El ancho de UN solo cuadro
+          frameHeight: 374  // El alto de UN solo cuadro
+      });
 
+  this.load.spritesheet('zombie-attack', 'src/assets/sprites/zombie-attacking.png', { 
+          frameWidth: 313,  // El ancho de UN solo cuadro
+          frameHeight: 374  // El alto de UN solo cuadro
+      });
 }
 
 function create() {
-  // Aquí inicializarás al "Zombi Líder" y los civiles
-  console.log('Phaser: Create');
-  this.add.text(100, 100, 'HorrorZ: Motor Iniciado', { fill: '#0f0' });
+  // 1, Aninmacion de caminar zombie
+  this.anims.create({
+    key: "zombie-walk-anim",
+    frames: this.anims.generateFrameNumbers("zombie-walk",{
+      start: 0,
+      end: 10
+    }),
+    frameRate:12,
+    repeat: -1 //-1 lo hace infinito
+  });
+  // 2. Animacion de ataque zombie
+  this.anims.create({
+    key: "zombie-attack-anim",
+    frames: this.anims.generateFrameNumbers("zombie-attack",{
+      start: 0,
+      end: 16
+    }),
+    frameRate:12,
+    repeat: 0 //0 es para cuando se llama solamente
+  });
+
+  // 3. Crear el sprite físicamente en el mapa
+  // Ubicado en el centro (400, 300) usando la textura inicial
+  this.player = this.physics.add.sprite(400, 300, 'zombie-walk');
+  this.player.setScale(0.3);
+
+  // 4. Iniciar la animación de caminata por defecto
+  this.player.play('zombie-walk-anim');
+  
+  // 5. Configurar el evento de fin de ataque UNA SOLA VEZ aquí, no en update
+  this.player.on('animationcomplete-zombie-attack-anim', () => {
+      this.player.play('zombie-walk-anim', true);
+  });
+
+  this.cursors = this.input.keyboard.createCursorKeys();
+  this.speed = 400;
+  this.player.setVelocityX(this.speed); //hace que apenas comience se esté moviendo a la derecha (es para el movimiento perpetuo pero si cambiamos la idea esto se va)
+  this.player.setCollideWorldBounds(true);
 }
 
+
+
 function update() {
-  // Aquí irá la lógica de movimiento perpetuo
+// 1. Control de dirección (cambia la velocidad pero no la detiene)
+  if (this.cursors.left.isDown) {
+    this.player.setVelocityX(-this.speed);
+    this.player.setVelocityY(0);
+    this.player.flipX = true; // Voltea el sprite a la izquierda
+  } else if (this.cursors.right.isDown) {
+    this.player.setVelocityX(this.speed);
+    this.player.setVelocityY(0);
+    this.player.flipX = false; // Voltea el sprite a la derecha
+  } else if (this.cursors.up.isDown) {
+    this.player.setVelocityX(0);
+    this.player.setVelocityY(-this.speed);
+  } else if (this.cursors.down.isDown) {
+    this.player.setVelocityX(0);
+    this.player.setVelocityY(this.speed);
+    
+  }
+  // 2. Asegurar que siempre esté reproduciendo la animación de caminar
+  // si no está en medio de un ataque
+  if (this.player.anims.currentAnim.key !== 'zombie-attack-anim') {
+    this.player.play('zombie-walk-anim', true);
+  }
 }
 
 // 4. Integración con el ciclo de vida de Vue
