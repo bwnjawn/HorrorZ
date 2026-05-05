@@ -137,20 +137,23 @@ function update() {
       this.lastVelocity = { x: -this.speed, y: 0 }
       this.player.setVelocityX(this.lastVelocity.x);
       this.player.setVelocityY(0);
-      this.player.flipX = true; // Voltea el sprite a la izquierda
+      this.player.setRotation(Phaser.Math.DegToRad(270));
+      
     } else if (this.cursors.right.isDown) {
       this.lastVelocity = { x: this.speed, y: 0 }
       this.player.setVelocityX(this.lastVelocity.x);
       this.player.setVelocityY(0);
-      this.player.flipX = false; // Voltea el sprite a la derecha
+      this.player.setRotation(Phaser.Math.DegToRad(90));
     } else if (this.cursors.up.isDown) {
       this.lastVelocity = { x: 0, y: -this.speed }
       this.player.setVelocityX(0);
       this.player.setVelocityY(this.lastVelocity.y);
+      this.player.setRotation(Phaser.Math.DegToRad(0));
     } else if (this.cursors.down.isDown) {
       this.lastVelocity = { x: 0, y: this.speed }
       this.player.setVelocityX(0);
       this.player.setVelocityY(this.lastVelocity.y);
+      this.player.setRotation(Phaser.Math.DegToRad(180));
     }
   }
   // 2. Asegurar que siempre esté reproduciendo la animación de caminar
