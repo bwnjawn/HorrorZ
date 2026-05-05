@@ -40,6 +40,7 @@ function preload() {
           frameHeight: 374  // El alto de UN solo cuadro
       });
   this.load.image('fondo-ciudad', 'src/assets/tilesets/FondoTemporal.jpg');
+
 }
 
 function create() {
@@ -77,35 +78,80 @@ function create() {
       this.player.play('zombie-walk-anim', true);
   });
 
+  //6. Se settea el movimiento inicial, las keys para moverse, la velocidad y se limita el margen del mapa
   this.cursors = this.input.keyboard.createCursorKeys();
   this.speed = 400;
   this.player.setVelocityX(this.speed); //hace que apenas comience se esté moviendo a la derecha (es para el movimiento perpetuo pero si cambiamos la idea esto se va)
   this.player.setCollideWorldBounds(true);
+
+  // Asegúrate de inicializar la variable de control
+  this.isAttacking = false;
+
+
+ 
+  // La creas como una propiedad de 'this' para que sea accesible en toda la escena
+  this.ejecutarAtaque = () => {
+    if (!this.isAttacking) {
+      this.isAttacking = true;
+      this.player.setVelocity(0,0);
+      this.player.play('zombie-attack-anim', true);
+      console.log("¡Ataque ejecutado!");
+    }
+  };
+
+  // 2. CONFIGURAR EL GATILLO (Click)
+  this.input.on('pointerdown', (pointer) => {
+    if (pointer.leftButtonDown()) {
+      this.ejecutarAtaque(); // Aquí la llamas
+    }
+  });
+
+  //recordar la direccion en la que se iba antes del ataque
+  this.lastVelocity = { x: this.speed, y: 0 };
   
+  // 3. CONFIGURAR EL FIN DE LA ANIMACIÓN
+  this.player.on('animationcomplete-zombie-attack-anim', () => {
+    this.isAttacking = false;
+    this.player.setVelocity(this.lastVelocity.x, this.lastVelocity.y);
+    this.player.play('zombie-walk-anim', true);
+  });
+
+  //Imagen de fondo temporal 
   let bg = this.add.image(400, 300, 'fondo-ciudad');
   bg.setDisplaySize(800, 600);
   bg.setDepth(-1);
+
+  
+
+
+
+
 }
 
 
 
 function update() {
 // 1. Control de dirección (cambia la velocidad pero no la detiene)
-  if (this.cursors.left.isDown) {
-    this.player.setVelocityX(-this.speed);
-    this.player.setVelocityY(0);
-    this.player.flipX = true; // Voltea el sprite a la izquierda
-  } else if (this.cursors.right.isDown) {
-    this.player.setVelocityX(this.speed);
-    this.player.setVelocityY(0);
-    this.player.flipX = false; // Voltea el sprite a la derecha
-  } else if (this.cursors.up.isDown) {
-    this.player.setVelocityX(0);
-    this.player.setVelocityY(-this.speed);
-  } else if (this.cursors.down.isDown) {
-    this.player.setVelocityX(0);
-    this.player.setVelocityY(this.speed);
-    
+  if (!this.isAttacking){
+    if (this.cursors.left.isDown) {
+      this.lastVelocity = { x: -this.speed, y: 0 }
+      this.player.setVelocityX(this.lastVelocity.x);
+      this.player.setVelocityY(0);
+      this.player.flipX = true; // Voltea el sprite a la izquierda
+    } else if (this.cursors.right.isDown) {
+      this.lastVelocity = { x: this.speed, y: 0 }
+      this.player.setVelocityX(this.lastVelocity.x);
+      this.player.setVelocityY(0);
+      this.player.flipX = false; // Voltea el sprite a la derecha
+    } else if (this.cursors.up.isDown) {
+      this.lastVelocity = { x: 0, y: -this.speed }
+      this.player.setVelocityX(0);
+      this.player.setVelocityY(this.lastVelocity.y);
+    } else if (this.cursors.down.isDown) {
+      this.lastVelocity = { x: 0, y: this.speed }
+      this.player.setVelocityX(0);
+      this.player.setVelocityY(this.lastVelocity.y);
+    }
   }
   // 2. Asegurar que siempre esté reproduciendo la animación de caminar
   // si no está en medio de un ataque
