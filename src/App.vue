@@ -39,6 +39,7 @@ function preload() {
           frameWidth: 313,  // El ancho de UN solo cuadro
           frameHeight: 374  // El alto de UN solo cuadro
       });
+  this.load.image('fondo-ciudad', 'src/assets/tilesets/FondoTemporal.jpg');
 }
 
 function create() {
@@ -80,6 +81,10 @@ function create() {
   this.speed = 400;
   this.player.setVelocityX(this.speed); //hace que apenas comience se esté moviendo a la derecha (es para el movimiento perpetuo pero si cambiamos la idea esto se va)
   this.player.setCollideWorldBounds(true);
+  
+  let bg = this.add.image(400, 300, 'fondo-ciudad');
+  bg.setDisplaySize(800, 600);
+  bg.setDepth(-1);
 }
 
 
