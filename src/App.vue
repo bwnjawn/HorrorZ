@@ -51,105 +51,48 @@ function preload() {
 }
 
 function create() {
-  // 1, Aninmacion de caminar zombie
+  // 1. ANIMACIONES (Deben definirse antes de usarse en cualquier sprite)
+  // Animación de caminata del Zombie Líder
   this.anims.create({
     key: "zombie-walk-anim",
-    frames: this.anims.generateFrameNumbers("zombie-walk",{
-      start: 0,
-      end: 10
-    }),
-    frameRate:12,
-    repeat: -1 //-1 lo hace infinito
+    frames: this.anims.generateFrameNumbers("zombie-walk", { start: 0, end: 10 }),
+    frameRate: 12,
+    repeat: -1
   });
-  // 2. Animacion de ataque zombie
+
+  // Animación de ataque del Zombie Líder
   this.anims.create({
     key: "zombie-attack-anim",
-    frames: this.anims.generateFrameNumbers("zombie-attack",{
-      start: 0,
-      end: 16
-    }),
-    frameRate:12,
-    repeat: 0 //0 es para cuando se llama solamente
+    frames: this.anims.generateFrameNumbers("zombie-attack", { start: 0, end: 16 }),
+    frameRate: 12,
+    repeat: 0
   });
 
+  // Animación de caminata de los Civiles
   this.anims.create({
     key: "civil-walk-anim",
-    frames: this.anims.generateFrameNumbers("civil-walking",{
-      start: 0,
-      end: 10
-    }),
-    frameRate:12,
-    repeat: -1 //-1 lo hace infinito
+    frames: this.anims.generateFrameNumbers("civil-walking", { start: 0, end: 10 }),
+    frameRate: 12,
+    repeat: -1
   });
 
-  //  Crear el grupo de la horda
-  this.horde = this.physics.add.group();
-
-  // Configurar la detección de infección
-  this.physics.add.overlap(
-    this.player, 
-    this.civilians, 
-    this.infectar, 
-    null, 
-    this
-  );
-  // 3. Crear el sprite físicamente en el mapa
-  // Ubicado en el centro (400, 300) usando la textura inicial
-  this.player = this.physics.add.sprite(400, 300, 'zombie-walk');
-  this.player.setScale(0.3);
-  
-  // 4. Iniciar la animación de caminata por defecto
-  this.player.play('zombie-walk-anim');
-  
-  // 5. Configurar el evento de fin de ataque UNA SOLA VEZ aquí, no en update
-  this.player.on('animationcomplete-zombie-attack-anim', () => {
-      this.player.play('zombie-walk-anim', true);
-  });
-
-  //6. Se settea el movimiento inicial, las keys para moverse, la velocidad y se limita el margen del mapa
-  this.cursors = this.input.keyboard.createCursorKeys();
-  this.speed = 400;
-  this.player.setVelocityX(this.speed); //hace que apenas comience se esté moviendo a la derecha (es para el movimiento perpetuo pero si cambiamos la idea esto se va)
-  this.player.setCollideWorldBounds(true);
-
-  // Asegúrate de inicializar la variable de control
-  this.isAttacking = false;
-
-
- 
-  // La creas como una propiedad de 'this' para que sea accesible en toda la escena
-  this.ejecutarAtaque = () => {
-    if (!this.isAttacking) {
-      this.isAttacking = true;
-      this.player.setVelocity(0,0);
-      this.player.play('zombie-attack-anim', true);
-      console.log("¡Ataque ejecutado!");
-    }
-  };
-
-  // 2. CONFIGURAR EL GATILLO (Click)
-  this.input.on('pointerdown', (pointer) => {
-    if (pointer.leftButtonDown()) {
-      this.ejecutarAtaque(); // Aquí la llamas
-    }
-  });
-
-  //recordar la direccion en la que se iba antes del ataque
-  this.lastVelocity = { x: this.speed, y: 0 };
-  
-  // 3. CONFIGURAR EL FIN DE LA ANIMACIÓN
-  this.player.on('animationcomplete-zombie-attack-anim', () => {
-    this.isAttacking = false;
-    this.player.setVelocity(this.lastVelocity.x, this.lastVelocity.y);
-    this.player.play('zombie-walk-anim', true);
-  });
-
-  //Imagen de fondo temporal 
+  // 2. FONDO Y CAPAS
   let bg = this.add.image(400, 300, 'fondo-ciudad');
   bg.setDisplaySize(800, 600);
-  bg.setDepth(-1);
-  //Logica de generacion de los civiles
+  bg.setDepth(-1); // Asegura que el fondo esté detrás de todo
+
+  // 3. CREACIÓN DE ENTIDADES Y GRUPOS (Instanciar antes de usar en física)
+  // Crear al Zombie Líder
+  this.player = this.physics.add.sprite(400, 300, 'zombie-walk');
+  this.player.setScale(0.3);
+  this.player.setCollideWorldBounds(true);
+  this.player.play('zombie-walk-anim');
+
+  // Crear los grupos físicos para civiles y la horda
   this.civilians = this.physics.add.group();
+  this.horde = this.physics.add.group();
+
+  // 4. POBLAR EL MAPA CON CIVILES
   for (let i = 0; i < 5; i++) {
     let x = Phaser.Math.Between(50, 750);
     let y = Phaser.Math.Between(50, 550);
@@ -157,28 +100,69 @@ function create() {
     let civil = this.civilians.create(x, y, 'civil-walking');
     civil.setScale(0.25);
     civil.setCollideWorldBounds(true);
-    civil.setBounce(1, 1);
+    civil.setBounce(1, 1); // Permite que reboten ligeramente en los bordes
     civil.play('civil-walk-anim');
   }
 
+  // 5. LÓGICA DE INFECCIÓN (Definir la función antes de configurarla en el overlap)
   this.infectar = (player, civil) => {
-    
+    // Solo infectar si el jugador está atacando (según el diseño de mecánicas)
     if (!this.isAttacking) return; 
 
-    // 1. Evitar infectar al mismo civil varias veces
+    // Evitar infectar zombies que ya están en la horda
     if (this.horde.contains(civil)) return;
 
     console.log("¡Civil convertido!");
+    civil.setTint(0x00ff00); // Cambio visual temporal a verde zombie
 
-    // 2. Placeholder visual: Teñir de verde (estilo zombie)
-    civil.setTint(0x00ff00); 
-
-    // 3. Cambiar de grupo
+    // Mover de grupo: sale de civiles y entra a la horda
     this.civilians.remove(civil);
     this.horde.add(civil);
-  }
-}
+  };
 
+  // 6. CONFIGURAR INTERACCIONES FÍSICAS (Overlap)
+  // Ahora que player y civilians existen, podemos conectarlos
+  this.physics.add.overlap(
+    this.player, 
+    this.civilians, 
+    this.infectar, 
+    null, 
+    this
+  );
+
+  // 7. CONTROLES Y VARIABLES DE ESTADO
+  this.cursors = this.input.keyboard.createCursorKeys();
+  this.speed = 400;
+  this.isAttacking = false;
+  this.lastVelocity = { x: this.speed, y: 0 }; // Para recordar dirección tras atacar
+
+  // Movimiento inicial perpetuo
+  this.player.setVelocityX(this.speed);
+
+  // 8. CONFIGURAR EL GATILLO DE ATAQUE
+  this.ejecutarAtaque = () => {
+    if (!this.isAttacking) {
+      this.isAttacking = true;
+      this.player.setVelocity(0, 0); // Se detiene para atacar
+      this.player.play('zombie-attack-anim', true);
+    }
+  };
+
+  // Escuchar clic izquierdo
+  this.input.on('pointerdown', (pointer) => {
+    if (pointer.leftButtonDown()) {
+      this.ejecutarAtaque();
+    }
+  });
+
+  // Retornar a caminar cuando el ataque termine
+  this.player.on('animationcomplete-zombie-attack-anim', () => {
+    this.isAttacking = false;
+    // Recupera la velocidad que tenía antes del ataque
+    this.player.setVelocity(this.lastVelocity.x, this.lastVelocity.y);
+    this.player.play('zombie-walk-anim', true);
+  });
+}
 
 
 
