@@ -19,6 +19,9 @@ const config = {
       debug: false
     }
   },
+  audio:{
+    noAudio:true
+  },
   scene: {
     preload: preload,
     create: create,
@@ -36,6 +39,10 @@ function preload() {
       });
 
   this.load.spritesheet('zombie-attack', 'src/assets/sprites/zombie-attacking.png', { 
+          frameWidth: 313,  // El ancho de UN solo cuadro
+          frameHeight: 374  // El alto de UN solo cuadro
+      });
+  this.load.spritesheet('civil-walking', 'src/assets/sprites/civil-walking.png', { 
           frameWidth: 313,  // El ancho de UN solo cuadro
           frameHeight: 374  // El alto de UN solo cuadro
       });
@@ -65,11 +72,32 @@ function create() {
     repeat: 0 //0 es para cuando se llama solamente
   });
 
+  this.anims.create({
+    key: "civil-walk-anim",
+    frames: this.anims.generateFrameNumbers("civil-walking",{
+      start: 0,
+      end: 10
+    }),
+    frameRate:12,
+    repeat: -1 //-1 lo hace infinito
+  });
+
+  //  Crear el grupo de la horda
+  this.horde = this.physics.add.group();
+
+  // Configurar la detección de infección
+  this.physics.add.overlap(
+    this.player, 
+    this.civilians, 
+    this.infectar, 
+    null, 
+    this
+  );
   // 3. Crear el sprite físicamente en el mapa
   // Ubicado en el centro (400, 300) usando la textura inicial
   this.player = this.physics.add.sprite(400, 300, 'zombie-walk');
   this.player.setScale(0.3);
-
+  
   // 4. Iniciar la animación de caminata por defecto
   this.player.play('zombie-walk-anim');
   
@@ -120,17 +148,42 @@ function create() {
   let bg = this.add.image(400, 300, 'fondo-ciudad');
   bg.setDisplaySize(800, 600);
   bg.setDepth(-1);
+  //Logica de generacion de los civiles
+  this.civilians = this.physics.add.group();
+  for (let i = 0; i < 5; i++) {
+    let x = Phaser.Math.Between(50, 750);
+    let y = Phaser.Math.Between(50, 550);
+    
+    let civil = this.civilians.create(x, y, 'civil-walking');
+    civil.setScale(0.25);
+    civil.setCollideWorldBounds(true);
+    civil.setBounce(1, 1);
+    civil.play('civil-walk-anim');
+  }
 
-  
+  this.infectar = (player, civil) => {
+    
+    if (!this.isAttacking) return; 
 
+    // 1. Evitar infectar al mismo civil varias veces
+    if (this.horde.contains(civil)) return;
 
+    console.log("¡Civil convertido!");
 
+    // 2. Placeholder visual: Teñir de verde (estilo zombie)
+    civil.setTint(0x00ff00); 
 
+    // 3. Cambiar de grupo
+    this.civilians.remove(civil);
+    this.horde.add(civil);
+  }
 }
 
 
 
+
 function update() {
+
 // 1. Control de dirección (cambia la velocidad pero no la detiene)
   if (!this.isAttacking){
     if (this.cursors.left.isDown) {
@@ -161,6 +214,50 @@ function update() {
   if (this.player.anims.currentAnim.key !== 'zombie-attack-anim') {
     this.player.play('zombie-walk-anim', true);
   }
+  //Logica de escape de los civilesS
+  const panicDistance=250;
+  const escapeSpeed=350;
+  const wanderSpeed = 100;
+  this.civilians.getChildren().forEach(civil => {
+    const distance = Phaser.Math.Distance.Between(this.player.x,this.player.y,civil.x,civil.y);
+    const isBlocked = !civil.body.blocked.none;
+    if (distance < panicDistance){
+      let angle = Phaser.Math.Angle.Between(this.player.x,this.player.y,civil.x,civil.y);
+      if (isBlocked) {
+      // Añadimos un margen aleatorio (45 grados aprox) para que intente "deslizarse" por el muro
+      angle += Phaser.Math.FloatBetween(-Math.PI / 4, Math.PI / 4);
+      }
+      this.physics.velocityFromRotation(angle,escapeSpeed,civil.body.velocity);
+      civil.setRotation(angle + Math.PI / 2);
+      civil.play('civil-walk-anim', true);
+    }else{
+      if (civil.body.velocity.length() === 0) {
+        const startAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        this.physics.velocityFromRotation(startAngle, wanderSpeed, civil.body.velocity);
+        civil.setRotation(startAngle + Math.PI / 2); // Agregamos rotación inicial
+        civil.play("civil-walk-anim", true);
+      }
+      if (isBlocked || Math.random() < 0.01) {
+        const randomAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        this.physics.velocityFromRotation(randomAngle, wanderSpeed, civil.body.velocity);
+        civil.setRotation(randomAngle + Math.PI / 2);
+      }
+      
+    }
+  });
+
+  this.horde.getChildren().forEach(zombie => {
+    // Calcular ángulo hacia el jugador
+    const angle = Phaser.Math.Angle.Between(zombie.x, zombie.y, this.player.x, this.player.y);
+    
+    // Mover al zombie hacia el líder con una velocidad ligeramente menor para que parezca que lo siguen
+    this.physics.velocityFromRotation(angle, 150, zombie.body.velocity);
+    zombie.setRotation(angle + Math.PI / 2);
+    
+    // Asegurar que la animación de caminar se mantenga
+    zombie.play('civil-walk-anim', true);
+  });
+
 }
 
 // 4. Integración con el ciclo de vida de Vue
@@ -173,6 +270,7 @@ onUnmounted(() => {
   // Limpia la instancia del juego si el componente se destruye
   if (gameInstance) {
     gameInstance.destroy(true);
+    gameInstance = null;
   }
 });
 </script>
