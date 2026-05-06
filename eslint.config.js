@@ -4,6 +4,7 @@ import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
 import pluginVitest from '@vitest/eslint-plugin'
 import pluginOxlint from 'eslint-plugin-oxlint'
+import skipPrettier from 'eslint-config-prettier';
 
 export default defineConfig([
   {
@@ -30,4 +31,5 @@ export default defineConfig([
   },
 
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
+  skipPrettier,
 ])
