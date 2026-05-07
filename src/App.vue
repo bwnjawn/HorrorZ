@@ -270,4 +270,4 @@ onUnmounted(() => {
   background-color: #1a1a1a;
   padding: 10px;
 }
-</style>
+</style>  
