@@ -1,35 +1,45 @@
-import { defineConfig, globalIgnores } from 'eslint/config';
-import globals from 'globals';
 import js from '@eslint/js';
 import pluginVue from 'eslint-plugin-vue';
-import pluginVitest from '@vitest/eslint-plugin';
-import pluginOxlint from 'eslint-plugin-oxlint';
-import skipPrettier from 'eslint-config-prettier';
+import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
+import globals from 'globals'; // Importación necesaria para definir los entornos
 
-export default defineConfig([
+export default [
   {
+    // Configuración global para los archivos del proyecto
     name: 'app/files-to-lint',
-    files: ['**/*.{vue,js,mjs,jsx}'],
-  },
-
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
-
-  {
+    files: ['**/*.{js,mjs,cjs,vue}'],
     languageOptions: {
       globals: {
-        ...globals.browser,
+        ...globals.browser, // Reconoce variables como 'console' y 'window'
+        ...globals.node, // Reconoce variables como 'process' y 'URL'
+        Phaser: 'readonly', // Tu global personalizada para el motor de juego
       },
     },
   },
 
-  js.configs.recommended,
-  ...pluginVue.configs['flat/essential'],
-
   {
-    ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*'],
+    name: 'app/files-to-ignore',
+    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'], //
   },
 
-  ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
-  skipPrettier,
-]);
+  js.configs.recommended, //
+  ...pluginVue.configs['flat/essential'], //
+  skipFormatting, //
+
+  {
+    rules: {
+      // REGLAS DE JAVASCRIPT
+      'no-unused-vars': 'warn', //
+      // 'no-console': 'warn',    // Comentado para etapa de debug
+      eqeqeq: 'error', //
+      curly: ['error', 'multi-line'], //
+      // 'no-debugger': 'error',  // Comentado para etapa de debug
+
+      // REGLAS DE VUE
+      'vue/multi-word-component-names': 'off', //
+      'vue/require-default-prop': 'error', //
+      'vue/no-unused-vars': 'error', //
+      'vue/component-api-style': ['error', ['script-setup']], //
+    },
+  },
+];

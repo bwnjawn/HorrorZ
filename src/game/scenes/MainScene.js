@@ -60,7 +60,7 @@ export class MainScene extends Phaser.Scene {
     // 5. Configurar interacción de Infección
     this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
       // Solo infecta si el jugador ataca y el civil no está infectado
-      if (this.player.isAttacking && !civilObj.isInfected) {
+      if (this.player.isAttacking && !civilObj.isIpnfected) {
         civilObj.infectar();
         this.civiliansGroup.remove(civilObj);
         this.hordeGroup.add(civilObj);

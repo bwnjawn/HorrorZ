@@ -61,9 +61,7 @@
 
 ### **Lo que no se logró y motivo**
 
--
-
----
+- ***
 
 # **Semana 3: Sistemas de combate y progresión**
 
@@ -87,9 +85,7 @@
 
 ### **Lo que no se logró y motivo**
 
--
-
----
+- ***
 
 # **Semana 4: Pulido, DevOps y Entrega Final **
 
