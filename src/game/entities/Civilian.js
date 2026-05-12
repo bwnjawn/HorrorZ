@@ -7,7 +7,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.setScale(0.25);
+    this.setScale(0.1);
     this.setCollideWorldBounds(true);
     this.setBounce(1, 1);
     this.play('civil-walk-anim');

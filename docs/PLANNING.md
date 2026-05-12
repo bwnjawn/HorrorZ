@@ -87,7 +87,7 @@
 
 - ***
 
-# **Semana 4: Pulido, DevOps y Entrega Final **
+# **Semana 4: Pulido, DevOps y Entrega Final**
 
 **Objetivo:** Asegurar la calidad técnica, automatización y presentación final del proyecto.
 

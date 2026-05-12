@@ -12,7 +12,17 @@ export class MainScene extends Phaser.Scene {
     this.load.spritesheet('zombie-attack', 'src/assets/sprites/zombie-attacking.png', { frameWidth: 313, frameHeight: 374 });
     this.load.spritesheet('civil-walking', 'src/assets/sprites/civil-walking.png', { frameWidth: 313, frameHeight: 374 });
     this.load.image('fondo-ciudad', 'src/assets/tilesets/FondoTemporal.jpg');
-  }
+
+
+    this.load.tilemapTiledJSON("Map_HorrorZ", "src/assets/maps/Map_HorrorZ.json");
+    this.load.image('Tileset_Fondo', 'src/assets/tilesets/Background_Dark-Green_TileSet.png');
+    this.load.image('Tileset_Casa_Negra', 'src/assets/tilesets/Buildings_dark_TileSet.png');
+    this.load.image('Tileset_Casa_Gris', 'src/assets/tilesets/Buildings_gray_TileSet.png');
+    this.load.image('Tileset_Fondo_Casa_Blanca', 'src/assets/tilesets/Buildings_white_TileSet.png');
+}
+
+
+  
 
   create() {
     // 1. Crear animaciones
@@ -36,9 +46,25 @@ export class MainScene extends Phaser.Scene {
     });
 
     // 2. Fondo
-    let bg = this.add.image(400, 300, 'fondo-ciudad');
-    bg.setDisplaySize(800, 600);
-    bg.setDepth(-1);
+    const map = this.make.tilemap({ key: "Map_HorrorZ" });
+
+    const tsFondo = map.addTilesetImage("Background_Dark-Green_TileSet", "Tileset_Fondo");
+    const tsBlanco = map.addTilesetImage("Buildings_white_TileSet", "Tileset_Fondo_Casa_Blanca");
+    const tsOscuro = map.addTilesetImage("Buildings_dark_TileSet", "Tileset_Casa_Negra");
+    const tsGris = map.addTilesetImage("Buildings_gray_TileSet", "Tileset_Casa_Gris");
+ 
+    // Agrupamos todos en un array para no complicarnos con qué capa usa qué tileset
+    const todosLosTilesets = [tsFondo, tsBlanco, tsOscuro, tsGris];
+
+    // 3. Crear las capas usando los nombres exactos que pusiste en Tiled
+    const capaSuelo = map.createLayer("Capa de patrones 1", todosLosTilesets, 0, 0);
+    const _capaDetalles = map.createLayer("Capa de patrones 4", todosLosTilesets, 0, 0);
+    const _capaCasas = map.createLayer("Casas", todosLosTilesets, 0, 0);
+    
+    
+
+    // Centrar mapa
+    capaSuelo.setPosition(0, 0);
 
     // 3. Crear Jugador
     this.player = new Player(this, 400, 300);
@@ -66,7 +92,38 @@ export class MainScene extends Phaser.Scene {
         this.hordeGroup.add(civilObj);
       }
     });
-  }
+
+    // 6. Crear grupo estático para obstáculos
+    this.obstaculos = this.physics.add.staticGroup();
+
+    const capaObjetos = map.getObjectLayer("Capa de Objetos 1");
+
+    if (capaObjetos) {
+      capaObjetos.objects.forEach((obj) => {
+        // Centro del rectángulo de Tiled
+        const x = obj.x + obj.width / 2;
+        const y = obj.y + obj.height / 2;
+
+        // Crear zona con el tamaño exacto
+        const zona = this.add.zone(x, y, obj.width, obj.height);
+
+        // Agregar física estática
+        this.physics.add.existing(zona, true);
+
+        // Agregar al grupo de obstáculos
+        this.obstaculos.add(zona);
+      });
+
+    }
+
+    // 7.   Colisiones generales
+    this.physics.add.collider(this.player, this.obstaculos);
+    this.physics.add.collider(this.civiliansGroup, this.obstaculos);
+    this.physics.add.collider(this.hordeGroup, this.obstaculos);
+    this.physics.add.collider(this.civiliansGroup, this.civiliansGroup);
+    this.physics.add.collider(this.hordeGroup, this.hordeGroup);
+    this.physics.add.collider(this.hordeGroup, this.civiliansGroup);
+    }
 
   update() {
     // Delegar la actualización a cada entidad
