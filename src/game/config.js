@@ -3,8 +3,12 @@ import { MainScene } from './scenes/MainScene';
 
 export const gameConfig = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  scale: {
+    mode: Phaser.Scale.RESIZE,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: '100%',
+    height: '100%',
+  },
   parent: 'game-container',
   physics: {
     default: 'arcade',
@@ -12,9 +16,10 @@ export const gameConfig = {
       gravity: { y: 0 },
       debug: false,
     },
-    audio: {
-      noAudio: true,
-    },
   },
+  audio: {
+    noAudio: true,
+  },
+
   scene: [MainScene], // Aquí registramos la escena principal
 };

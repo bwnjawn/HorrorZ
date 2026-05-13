@@ -20,10 +20,10 @@
 - [x] Configurar Vue.js junto a Phaser.
 - [x] Diseñar las texturas base del entorno urbano.
 - [x] Diseñar el sprite del zombi líder.
-- [ ] Crear el mapa inicial con colisiones y obstáculos.
+- [x] Crear el mapa inicial con colisiones y obstáculos.
 - [x] Crear el movimiento y controles del zombi líder.
 - [x] Crear la lógica de infección de civiles.
-- [ ] Verificar el funcionamiento de texturas y colisiones.
+- [x] Verificar el funcionamiento de texturas y colisiones.
 
 ## **Seguimiento de la Semana**
 
@@ -44,10 +44,10 @@
 
 **Tareas Planificadas:**
 
-- [ ] Configurar GitHub Actions para automatización.
+- [x] Configurar GitHub Actions para automatización.
 - [ ] Diseñar sprites de civiles, policías y militares.
 - [ ] Diseñar efectos visuales de combate y peligro.
-- [ ] Crear el seguimiento y crecimiento de la horda.
+- [x] Crear el seguimiento y crecimiento de la horda.
 - [ ] Crear comportamientos básicos de civiles.
 - [ ] Crear comportamientos básicos de enemigos.
 - [ ] Crear la interfaz HUD del jugador.

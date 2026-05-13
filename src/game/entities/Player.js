@@ -12,7 +12,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
 
     // Variables de estado copiadas de tu código
-    this.speed = 400;
+    this.speed = 300;
     this.isAttacking = false;
     this.lastVelocity = { x: this.speed, y: 0 };
     this.cursors = scene.input.keyboard.createCursorKeys();
