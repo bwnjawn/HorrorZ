@@ -45,7 +45,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
   recibirDaño(cantidad) {
     if (this.isDead || !this.isInfected) return;
     this.health -= cantidad;
-    
+
     // Feedback de impacto (Rojo)
     this.setTint(0xff0000);
     this.scene.time.delayedCall(150, () => {
@@ -59,7 +59,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
   morirDefinitivamente() {
     this.isDead = true;
     this.setVelocity(0, 0);
-    this.destroy(); 
+    this.destroy();
   }
 
   infectar() {
@@ -75,7 +75,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.isAttacking = true;
     this.setTint(0x550000);
     this.setTexture('zombie-attack');
-    this.play('zombie-attack-anim', true); 
+    this.play('zombie-attack-anim', true);
 
     // Cuando la animación termine, vuelve a caminar
     this.once('animationcomplete-zombie-attack-anim', () => {
@@ -88,7 +88,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
   getClosestCivilian(civiles) {
     let closest = null;
-    let minDistance = 250; 
+    let minDistance = 250;
     civiles.forEach((civil) => {
       if (!civil.isInfected && civil.active && !civil.isDead) {
         // Solo detectar a los sanos
@@ -130,7 +130,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     let count = 0;
 
     horda.forEach((neighbor) => {
-      if (!neighbor.active || neighbor.isDead || neighbor === this) return; 
+      if (!neighbor.active || neighbor.isDead || neighbor === this) return;
       const d = Phaser.Math.Distance.Between(this.x, this.y, neighbor.x, neighbor.y);
       if (d > 0 && d < radius) {
         const diff = new Phaser.Math.Vector2(this.x, this.y).subtract(new Phaser.Math.Vector2(neighbor.x, neighbor.y)).normalize().divide({ x: d, y: d }); // Mientras más cerca, más fuerte el empujón
@@ -174,15 +174,15 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
         if (civiles && civiles.length > 0) {
           const presaCercana = this.getClosestCivilian(civiles);
           if (presaCercana) {
-            target = presaCercana; 
+            target = presaCercana;
             pesoAtraccion = 1.8;
             pesoSeparacion = 1.0;
           }
         }
       }
       // Sumar fuerzas
-      const forceSeek = this.applySeek(target).scale(pesoAtraccion); 
-      const forceSeparate = this.applySeparate(horda).scale(pesoSeparacion); 
+      const forceSeek = this.applySeek(target).scale(pesoAtraccion);
+      const forceSeparate = this.applySeparate(horda).scale(pesoSeparacion);
 
       this.acceleration.add(forceSeek);
       this.acceleration.add(forceSeparate);
@@ -212,7 +212,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
           const dist = Phaser.Math.Distance.Between(this.x, this.y, zombie.x, zombie.y);
           if (dist < distAmenaza) {
             distAmenaza = dist;
-            amenazaCercana = zombie; 
+            amenazaCercana = zombie;
           }
         });
       }

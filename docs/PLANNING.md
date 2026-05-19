@@ -50,7 +50,7 @@
 - [x] Crear el seguimiento y crecimiento de la horda.
 - [x] Crear comportamientos básicos de civiles.
 - [x] Crear comportamientos básicos de enemigos.
-- [ ] Crear la interfaz HUD del jugador.
+- [x] Crear la interfaz HUD del jugador.
 - [ ] Verificar interacción entre entidades y colisiones.
 
 ## **Seguimiento de la Semana**

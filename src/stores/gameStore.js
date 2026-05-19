@@ -1,36 +1,37 @@
-import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-export const useGameStore = defineStore('game', () => {
-  // --- ESTADO (Variables reactivas) ---
-  const health = ref(100);
-  const hordeCount = ref(0);
-  const civilianCount = ref(50); // Mismo número que tienes en MainScene.js
-  const isRegrouping = ref(false);
-
-  // --- ACCIONES (Funciones para modificar el estado fácilmente) ---
-  
-  // Llama a esto cuando un zombie muerde a un civil
-  function infectCivilian() {
-    if (civilianCount.value > 0) {
-      civilianCount.value--;
-      hordeCount.value++;
-    }
-  }
-
-  // Llama a esto si el jugador principal recibe daño
-  function takeDamage(amount) {
-    health.value -= amount;
-    if (health.value < 0) health.value = 0;
-  }
-
-  return {
-    // Exportamos todo para que Vue y Phaser puedan usarlo
-    health,
-    hordeCount,
-    civilianCount,
-    isRegrouping,
-    infectCivilian,
-    takeDamage
-  };
+export const useGameStore = defineStore('game', {
+  state: () => ({
+    playerHealth: 200,
+    playerMaxHealth: 200,
+    zombieCount: 1,
+    civilianCount: 35,
+    timeAlive: 0,
+    isRegrouping: false,
+    regroupCooldown: 0,
+    isGameOver: false,
+  }),
+  actions: {
+    takeDamage(amount) {
+      this.playerHealth = Math.max(0, this.playerHealth - amount);
+    },
+    healPlayer(amount) {
+      this.playerHealth = Math.min(this.playerMaxHealth, this.playerHealth + amount);
+    },
+    infectCivilian() {
+      if (this.civilianCount > 0) {
+        this.civilianCount--;
+        this.zombieCount++;
+      }
+    },
+    incrementTime() {
+      this.timeAlive++;
+    },
+    setGameOver() {
+      this.isGameOver = true;
+    },
+    resetGame() {
+      window.location.reload();
+    },
+  },
 });

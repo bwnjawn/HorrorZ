@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { Civilian } from '../entities/Civilian';
 import { Soldier } from '../entities/Soldier';
+import { useGameStore } from '../../stores/gameStore';
 
 export class MainScene extends Phaser.Scene {
   constructor() {
@@ -23,6 +24,17 @@ export class MainScene extends Phaser.Scene {
   }
 
   create() {
+    // Instanciamos gameStore para HUD
+    this.store = useGameStore();
+    this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        // Envia la orden a Pinia de sumar 1 segundo
+        this.store.incrementTime();
+      },
+      loop: true,
+    });
+
     // 1. Crear animaciones
     this.anims.create({
       key: 'zombie-walk-anim',
@@ -95,7 +107,6 @@ export class MainScene extends Phaser.Scene {
     this.bulletsGroup = this.physics.add.group();
     this.allCivilians = []; // Arreglo para poder iterarlos en el update
 
-
     for (let i = 0; i < 50; i++) {
       let x = Phaser.Math.Between(100, anchoMapa - 100);
       let y = Phaser.Math.Between(100, altoMapa - 100);
@@ -106,7 +117,7 @@ export class MainScene extends Phaser.Scene {
     }
     // Spawn de prueba de soldados
     for (let i = 0; i < 10; i++) {
-      let soldado = new Soldier(this, 300 + (i * 200), 300);
+      let soldado = new Soldier(this, 300 + i * 200, 300);
       this.enemiesGroup.add(soldado);
     }
 
@@ -154,19 +165,17 @@ export class MainScene extends Phaser.Scene {
       const dist = Phaser.Math.Distance.Between(zombieObj.x, zombieObj.y, civilObj.x, civilObj.y);
 
       if (dist < 50 && !civilObj.isInfected && !civilObj.isDying && !zombieObj.isAttacking) {
-        // 1. El zombie ejecuta su animación de ataque
         zombieObj.ejecutarAtaque();
-
-        // 2. Marcamos al civil para que otros zombies no lo intenten morder también
         civilObj.isDying = true;
-        civilObj.setVelocity(0, 0); // El civil se paraliza de terror/dolor
+        civilObj.setVelocity(0, 0);
 
-        // 3. Esperamos 600ms (lo que tarda la animación) antes de convertirlo
         this.time.delayedCall(600, () => {
           civilObj.infectar();
           this.civiliansGroup.remove(civilObj);
           this.hordeGroup.add(civilObj);
+          this.store.infectCivilian();
           if (this.player.curar) this.player.curar(15);
+          this.store.healPlayer(15);
         });
       }
     });
@@ -176,34 +185,38 @@ export class MainScene extends Phaser.Scene {
         civilObj.infectar();
         this.civiliansGroup.remove(civilObj);
         this.hordeGroup.add(civilObj);
+        this.store.infectCivilian();
 
         if (playerObj.curar) playerObj.curar(15);
+        this.store.healPlayer(15);
       }
     });
-    this.physics.add.collider(this.bulletsGroup, this.obstaculos, (bala, obstaculo) => {
+    this.physics.add.collider(this.bulletsGroup, this.obstaculos, (bala, _obstaculo) => {
       bala.destroy();
     });
 
     this.physics.add.overlap(this.bulletsGroup, this.hordeGroup, (bala, zombie) => {
       bala.destroy();
-      if (zombie.recibirDaño) zombie.recibirDaño(15); 
+      if (zombie.recibirDaño) zombie.recibirDaño(15);
     });
 
     this.physics.add.overlap(this.player, this.bulletsGroup, (jugador, bala) => {
-      bala.destroy(); 
+      bala.destroy();
       if (jugador.recibirDaño) jugador.recibirDaño(10);
+      this.store.takeDamage(10);
     });
     this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
       if (jugador.isAttacking && !enemigo.isDead) {
-        enemigo.recibirDaño(100); 
-        
-        if (jugador.curar) jugador.curar(25); 
+        enemigo.recibirDaño(100);
+
+        if (jugador.curar) jugador.curar(25);
+        this.store.healPlayer(15);
       }
     });
     this.physics.add.overlap(this.hordeGroup, this.enemiesGroup, (zombie, enemigo) => {
       if (!zombie.isDead && !enemigo.isDead && !zombie.isAttacking) {
         zombie.ejecutarAtaque();
-        enemigo.recibirDaño(20); 
+        enemigo.recibirDaño(20);
       }
     });
 
@@ -229,7 +242,7 @@ export class MainScene extends Phaser.Scene {
     });
   }
 
-  update(time,delta) {
+  update(time, delta) {
     // Delegar la actualización a cada entidad
     this.player.update();
     const hordaActual = this.hordeGroup.getChildren();
