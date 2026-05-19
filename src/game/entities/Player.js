@@ -9,7 +9,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.physics.add.existing(this);
 
     this.setScale(0.1);
-    this.setCollideWorldBounds(true);
+    this.setCollideWorldBounds(true); //Hay q desactivar esto cuando agrandemos el mapa
 
     // Variables de estado copiadas de tu código
     this.speed = 300;
@@ -17,27 +17,73 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.lastVelocity = { x: this.speed, y: 0 };
     this.cursors = scene.input.keyboard.createCursorKeys();
 
+    // Sistema de vida
+    this.maxHealth = 200;       
+    this.health = this.maxHealth;
+    this.isDead = false;
+
     // Inicialización
     this.play('zombie-walk-anim');
     this.setVelocityX(this.speed);
 
+
+
     // Escuchar clic izquierdo para atacar
     scene.input.on('pointerdown', (pointer) => {
-      if (pointer.leftButtonDown()) {
+      if (pointer.leftButtonDown() && !this.isDead) {
         this.ejecutarAtaque();
       }
     });
 
     // Retornar a caminar cuando el ataque termine
     this.on('animationcomplete-zombie-attack-anim', () => {
+      if (this.isDead) return;
       this.isAttacking = false;
       this.setVelocity(this.lastVelocity.x, this.lastVelocity.y);
       this.play('zombie-walk-anim', true);
     });
   }
+  recibirDaño(cantidad){
+    if (this.isDead) return;
+    this.health -= cantidad;
+    this.setTint(0xff0000);
+    this.scene.time.delayedCall(150, () => {
+       if (!this.isDead) this.clearTint();
+    });
+
+    if (this.health <= 0) {
+      this.morir();
+    }
+  }
+
+  curar(cantidad) {
+    if (this.isDead) return;
+
+    
+    this.health += cantidad;
+    if (this.health > this.maxHealth) {
+      this.health = this.maxHealth; //Esto quiza sacar despues para ir agrandando la barra de vida----------------------------------------------
+    }
+
+    this.setTint(0x00ff00);
+    this.scene.time.delayedCall(200, () => {
+       if (!this.isDead) this.clearTint();
+    });
+  }
+  morir() {
+    this.isDead = true;
+    this.health = 0;
+    
+    // Efectos de muerte
+    this.setVelocity(0, 0);
+    this.setTint(0x333333); 
+    this.anims.stop();   
+    
+    this.scene.events.emit('game-over'); //aun no se crea-.----------------------
+  }
 
   ejecutarAtaque() {
-    if (!this.isAttacking) {
+    if (!this.isAttacking && !this.isDead) {
       this.isAttacking = true;
       this.setVelocity(0, 0); // Se detiene para atacar
       this.play('zombie-attack-anim', true);
@@ -45,6 +91,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   update() {
+    if (this.isDead) return;
+
     // Control de dirección
     if (!this.isAttacking) {
       if (this.cursors.left.isDown) {

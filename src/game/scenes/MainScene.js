@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { Civilian } from '../entities/Civilian';
+import { Soldier } from '../entities/Soldier';
 
 export class MainScene extends Phaser.Scene {
   constructor() {
@@ -11,7 +12,8 @@ export class MainScene extends Phaser.Scene {
     this.load.spritesheet('zombie-walk', 'src/assets/sprites/zombie-walking.png', { frameWidth: 313, frameHeight: 374 });
     this.load.spritesheet('zombie-attack', 'src/assets/sprites/zombie-attacking.png', { frameWidth: 313, frameHeight: 374 });
     this.load.spritesheet('civil-walking', 'src/assets/sprites/civil-walking.png', { frameWidth: 313, frameHeight: 374 });
-    this.load.image('fondo-ciudad', 'src/assets/tilesets/FondoTemporal.jpg');
+    this.load.spritesheet('soldier-walking', 'src/assets/sprites/soldier-walking.png', { frameWidth: 313, frameHeight: 374 });
+    this.load.spritesheet('soldier-shooting', 'src/assets/sprites/soldier-shooting.png', { frameWidth: 313, frameHeight: 374 });
 
     this.load.tilemapTiledJSON('Map_HorrorZ', 'src/assets/maps/Map_HorrorZ.json');
     this.load.image('Tileset_Fondo', 'src/assets/tilesets/Background_Dark-Green_TileSet.png');
@@ -39,6 +41,18 @@ export class MainScene extends Phaser.Scene {
       frames: this.anims.generateFrameNumbers('civil-walking', { start: 0, end: 10 }),
       frameRate: 12,
       repeat: -1,
+    });
+    this.anims.create({
+      key: 'soldier-walk-anim',
+      frames: this.anims.generateFrameNumbers('soldier-walking', { start: 0, end: 10 }),
+      frameRate: 12,
+      repeat: -1,
+    });
+    this.anims.create({
+      key: 'soldier-shoot-anim',
+      frames: this.anims.generateFrameNumbers('soldier-shooting', { start: 0, end: 16 }),
+      frameRate: 12,
+      repeat: 0,
     });
 
     // 2. Fondo
@@ -77,7 +91,10 @@ export class MainScene extends Phaser.Scene {
     // 4. Crear Grupos y poblar mapa
     this.civiliansGroup = this.physics.add.group();
     this.hordeGroup = this.physics.add.group();
+    this.enemiesGroup = this.physics.add.group();
+    this.bulletsGroup = this.physics.add.group();
     this.allCivilians = []; // Arreglo para poder iterarlos en el update
+
 
     for (let i = 0; i < 50; i++) {
       let x = Phaser.Math.Between(100, anchoMapa - 100);
@@ -87,16 +104,14 @@ export class MainScene extends Phaser.Scene {
       this.civiliansGroup.add(civil);
       this.allCivilians.push(civil);
     }
+    // Spawn de prueba de soldados
+    for (let i = 0; i < 10; i++) {
+      let soldado = new Soldier(this, 300 + (i * 200), 300);
+      this.enemiesGroup.add(soldado);
+    }
 
     // 5. Configurar interacción de Infección
-    this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
-      // Solo infecta si el jugador ataca y el civil no está infectado
-      if (this.player.isAttacking && !civilObj.isInfected) {
-        civilObj.infectar();
-        this.civiliansGroup.remove(civilObj);
-        this.hordeGroup.add(civilObj);
-      }
-    });
+
     this.input.keyboard.on('keydown-SPACE', () => {
       this.events.emit('comandante-reagrupar');
     });
@@ -104,6 +119,7 @@ export class MainScene extends Phaser.Scene {
     this.input.keyboard.on('keyup-SPACE', () => {
       this.events.emit('comandante-libre');
     });
+
     // 6. Crear grupo estático para obstáculos
     this.obstaculos = this.physics.add.staticGroup();
 
@@ -132,6 +148,8 @@ export class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.hordeGroup, this.obstaculos);
     this.physics.add.collider(this.civiliansGroup, this.civiliansGroup);
     this.physics.add.collider(this.hordeGroup, this.hordeGroup);
+    this.physics.add.collider(this.enemiesGroup, this.obstaculos);
+    this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
     this.physics.add.overlap(this.hordeGroup, this.civiliansGroup, (zombieObj, civilObj) => {
       const dist = Phaser.Math.Distance.Between(zombieObj.x, zombieObj.y, civilObj.x, civilObj.y);
 
@@ -148,32 +166,81 @@ export class MainScene extends Phaser.Scene {
           civilObj.infectar();
           this.civiliansGroup.remove(civilObj);
           this.hordeGroup.add(civilObj);
+          if (this.player.curar) this.player.curar(15);
         });
       }
     });
-
-    this.physics.add.overlap(this.hordeGroup, this.civiliansGroup, (zombieObj, civilObj) => {
-      // SEGURO MATEMÁTICO
-      const dist = Phaser.Math.Distance.Between(zombieObj.x, zombieObj.y, civilObj.x, civilObj.y);
-
-      if (dist < 50 && !civilObj.isInfected) {
-        zombieObj.ejecutarAtaque();
+    this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
+      // Solo infecta si el jugador ataca y el civil no está infectado
+      if (this.player.isAttacking && !civilObj.isInfected) {
         civilObj.infectar();
         this.civiliansGroup.remove(civilObj);
         this.hordeGroup.add(civilObj);
+
+        if (playerObj.curar) playerObj.curar(15);
       }
+    });
+    this.physics.add.collider(this.bulletsGroup, this.obstaculos, (bala, obstaculo) => {
+      bala.destroy();
+    });
+
+    this.physics.add.overlap(this.bulletsGroup, this.hordeGroup, (bala, zombie) => {
+      bala.destroy();
+      if (zombie.recibirDaño) zombie.recibirDaño(15); 
+    });
+
+    this.physics.add.overlap(this.player, this.bulletsGroup, (jugador, bala) => {
+      bala.destroy(); 
+      if (jugador.recibirDaño) jugador.recibirDaño(10);
+    });
+    this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
+      if (jugador.isAttacking && !enemigo.isDead) {
+        enemigo.recibirDaño(100); 
+        
+        if (jugador.curar) jugador.curar(25); 
+      }
+    });
+    this.physics.add.overlap(this.hordeGroup, this.enemiesGroup, (zombie, enemigo) => {
+      if (!zombie.isDead && !enemigo.isDead && !zombie.isAttacking) {
+        zombie.ejecutarAtaque();
+        enemigo.recibirDaño(20); 
+      }
+    });
+
+    //Evento de soldado disparando
+    this.events.on('enemigo-muerto', (data) => {
+      // Creamos un zombi exactamente en la coordenada donde murió el militar
+      let nuevoZombie = new Civilian(this, data.x, data.y);
+      nuevoZombie.infectar();
+      this.hordeGroup.add(nuevoZombie);
+      this.allCivilians.push(nuevoZombie);
+    });
+
+    this.events.on('disparo-enemigo', (data) => {
+      let bala = this.add.circle(data.x, data.y, 4, 0xffaa00); //Porque todavia no hay sprite de la bala
+      this.physics.add.existing(bala);
+      this.bulletsGroup.add(bala);
+
+      //Viaja en la direccion del soldado
+      this.physics.velocityFromRotation(data.angulo, 600, bala.body.velocity);
+      this.time.delayedCall(1500, () => {
+        if (bala.active) bala.destroy();
+      });
     });
   }
 
-  update() {
+  update(time,delta) {
     // Delegar la actualización a cada entidad
     this.player.update();
     const hordaActual = this.hordeGroup.getChildren();
     const civilesActuales = this.civiliansGroup.getChildren();
 
     this.allCivilians.forEach((civil) => {
-      // Pasar comando de reagrupar si Espacio está presionado
-      civil.update(this.player, hordaActual, civilesActuales);
+      if (civil.active) civil.update(this.player, hordaActual, civilesActuales);
+    });
+
+    this.enemiesGroup.getChildren().forEach((enemy) => {
+      if (enemy.active) enemy.update(time, delta, this.player, hordaActual);
     });
   }
 }

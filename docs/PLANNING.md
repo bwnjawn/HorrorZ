@@ -48,8 +48,8 @@
 - [ ] Diseñar sprites de civiles, policías y militares.
 - [ ] Diseñar efectos visuales de combate y peligro.
 - [x] Crear el seguimiento y crecimiento de la horda.
-- [ ] Crear comportamientos básicos de civiles.
-- [ ] Crear comportamientos básicos de enemigos.
+- [x] Crear comportamientos básicos de civiles.
+- [x] Crear comportamientos básicos de enemigos.
 - [ ] Crear la interfaz HUD del jugador.
 - [ ] Verificar interacción entre entidades y colisiones.
 

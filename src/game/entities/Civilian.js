@@ -13,57 +13,84 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(150, 250);
     this.body.setOffset(80, 60);
 
-    this.setCollideWorldBounds(true);
+    this.setCollideWorldBounds(true); //Hay q desactivar esto cuando agrandemos el mapa
     this.setBounce(1, 1);
     this.play('civil-walk-anim');
 
-    // Variables de estado
+    // Propiedades de vida
+    this.health = 30;
+    this.isDead = false;
+
+    // propiedades de estado
     this.isInfected = false;
     this.panicDistance = 250;
     this.escapeSpeed = 150;
     this.wanderSpeed = 50;
 
-    // Propiedades de Enjambre
+    // propiedades de movimiento
     this.maxSpeed = 280;
     this.maxForce = 15;
     this.acceleration = new Phaser.Math.Vector2(0, 0);
     this.velocity = new Phaser.Math.Vector2(0, 0);
     this.estadoHorda = 'LIBRE';
     this.isAttacking = false;
+
     scene.events.on('comandante-reagrupar', () => {
-      if (this.isInfected) this.estadoHorda = 'REAGRUPANDO';
+      if (this.isInfected && !this.isDead) this.estadoHorda = 'REAGRUPANDO';
     });
     scene.events.on('comandante-libre', () => {
-      if (this.isInfected) this.estadoHorda = 'LIBRE';
+      if (this.isInfected && !this.isDead) this.estadoHorda = 'LIBRE';
     });
+  }
+  recibirDaño(cantidad) {
+    if (this.isDead || !this.isInfected) return;
+    this.health -= cantidad;
+    
+    // Feedback de impacto (Rojo)
+    this.setTint(0xff0000);
+    this.scene.time.delayedCall(150, () => {
+      if (!this.isDead && this.active) this.clearTint();
+    });
+    if (this.health <= 0) {
+      this.morirDefinitivamente();
+    }
+  }
+
+  morirDefinitivamente() {
+    this.isDead = true;
+    this.setVelocity(0, 0);
+    this.destroy(); 
   }
 
   infectar() {
-    if (this.isInfected) return;
+    if (this.isDead || this.isInfected) return;
     this.isInfected = true;
+    this.health = 50;
     this.ejecutarAtaque();
   }
 
-  // 3. Crea esta NUEVA función debajo de infectar():
   ejecutarAtaque() {
-    if (this.isAttacking) return;
+    if (this.isAttacking || this.isDead) return;
 
     this.isAttacking = true;
     this.setTint(0x550000);
-    this.play('zombie-attack-anim', true); // Reproduce la animación de mordida
+    this.setTexture('zombie-attack');
+    this.play('zombie-attack-anim', true); 
+
     // Cuando la animación termine, vuelve a caminar
     this.once('animationcomplete-zombie-attack-anim', () => {
+      if (this.isDead || !this.active) return;
       this.isAttacking = false;
+      this.setTexture('zombie-walk');
       this.play('zombie-walk-anim', true);
     });
   }
 
   getClosestCivilian(civiles) {
     let closest = null;
-    let minDistance = 250; // Radio masivo: si hay un humano en el mapa, lo verán
-
+    let minDistance = 250; 
     civiles.forEach((civil) => {
-      if (!civil.isInfected) {
+      if (!civil.isInfected && civil.active && !civil.isDead) {
         // Solo detectar a los sanos
         const dist = Phaser.Math.Distance.Between(this.x, this.y, civil.x, civil.y);
         if (dist < minDistance) {
@@ -77,9 +104,10 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
   }
 
   applySeek(target) {
+    if (!target || !target.active || target.isDead) return new Phaser.Math.Vector2(0, 0);
     const desired = new Phaser.Math.Vector2(target.x, target.y).subtract(new Phaser.Math.Vector2(this.x, this.y));
 
-    // Si estamos cerca, bajamos la velocidad para no orbitar locamente
+    // Si estamos cerca, bajamos la velocidad para no dar vueltas
     const distance = desired.length();
     desired.normalize();
 
@@ -89,7 +117,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     } else {
       desired.scale(this.maxSpeed);
     }
-
+    //Fuerza de correccion
     const steer = desired.subtract(this.velocity);
     if (steer.length() > this.maxForce) steer.normalize().scale(this.maxForce);
     return steer;
@@ -102,6 +130,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     let count = 0;
 
     horda.forEach((neighbor) => {
+      if (!neighbor.active || neighbor.isDead || neighbor === this) return; 
       const d = Phaser.Math.Distance.Between(this.x, this.y, neighbor.x, neighbor.y);
       if (d > 0 && d < radius) {
         const diff = new Phaser.Math.Vector2(this.x, this.y).subtract(new Phaser.Math.Vector2(neighbor.x, neighbor.y)).normalize().divide({ x: d, y: d }); // Mientras más cerca, más fuerte el empujón
@@ -119,6 +148,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
   }
 
   update(player, horda, civiles) {
+    if (this.isDead || !this.active) return;
     if (this.isInfected) {
       if (this.isAttacking) {
         this.acceleration.set(0, 0);
@@ -144,15 +174,15 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
         if (civiles && civiles.length > 0) {
           const presaCercana = this.getClosestCivilian(civiles);
           if (presaCercana) {
-            target = presaCercana; // CORRECCIÓN CLAVE: El objetivo ahora es el civil
+            target = presaCercana; 
             pesoAtraccion = 1.8;
             pesoSeparacion = 1.0;
           }
         }
       }
       // Sumar fuerzas
-      const forceSeek = this.applySeek(target).scale(pesoAtraccion); // Peso de atracción
-      const forceSeparate = this.applySeparate(horda).scale(pesoSeparacion); // Peso de separación (más fuerte)
+      const forceSeek = this.applySeek(target).scale(pesoAtraccion); 
+      const forceSeparate = this.applySeparate(horda).scale(pesoSeparacion); 
 
       this.acceleration.add(forceSeek);
       this.acceleration.add(forceSeparate);
@@ -169,17 +199,20 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
       this.setRotation(this.velocity.angle() + Math.PI / 2);
       this.acceleration.scale(0); // Resetear aceleración para el próximo frame
 
-      this.play('zombie-walk-anim', true);
+      if (this.anims && this.anims.currentAnim && this.anims.currentAnim.key !== 'zombie-attack-anim') {
+        this.play('zombie-walk-anim', true);
+      }
     } else {
       // Lógica de escape de los civiles
       let amenazaCercana = player;
       let distAmenaza = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
       if (horda) {
         horda.forEach((zombie) => {
+          if (!zombie.active || zombie.isDead) return;
           const dist = Phaser.Math.Distance.Between(this.x, this.y, zombie.x, zombie.y);
           if (dist < distAmenaza) {
             distAmenaza = dist;
-            amenazaCercana = zombie; // Cambia el origen de su miedo al zombie
+            amenazaCercana = zombie; 
           }
         });
       }
