@@ -34,6 +34,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.velocity = new Phaser.Math.Vector2(0, 0);
     this.estadoHorda = 'LIBRE';
     this.isAttacking = false;
+    this.setLighting(true);
 
     scene.events.on('comandante-reagrupar', () => {
       if (this.isInfected && !this.isDead) this.estadoHorda = 'REAGRUPANDO';
@@ -133,7 +134,10 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
       if (!neighbor.active || neighbor.isDead || neighbor === this) return;
       const d = Phaser.Math.Distance.Between(this.x, this.y, neighbor.x, neighbor.y);
       if (d > 0 && d < radius) {
-        const diff = new Phaser.Math.Vector2(this.x, this.y).subtract(new Phaser.Math.Vector2(neighbor.x, neighbor.y)).normalize().divide({ x: d, y: d }); // Mientras más cerca, más fuerte el empujón
+        const diff = new Phaser.Math.Vector2(this.x, this.y)
+          .subtract(new Phaser.Math.Vector2(neighbor.x, neighbor.y))
+          .normalize()
+          .divide({ x: d, y: d }); // Mientras más cerca, más fuerte el empujón
         steer.add(diff);
         count++;
       }

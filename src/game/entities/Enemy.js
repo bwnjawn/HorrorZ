@@ -1,21 +1,26 @@
 import Phaser from 'phaser';
 
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene, x, y, texture) {
+  constructor(scene, x, y, texture, statsConfig) {
     super(scene, x, y, texture);
     scene.add.existing(this);
     scene.physics.add.existing(this);
-    this.setScale(0.1);
+
+    this.setScale(statsConfig.scale);
+    this.colorOriginal = statsConfig.colorTint;
+    this.setTint(statsConfig.colorTint); //Esto se saca cuando cambiemos lo sprites
 
     this.setCollideWorldBounds(true); //Hay q desactivar esto cuando agrandemos el mapa
+    this.setLighting(true);
 
     // Propiedades de estado
-    this.health = 60;
+    this.health = statsConfig.hp;
     this.estado = 'PATRULLANDO';
     this.isDead = false;
+    this.healReward = statsConfig.healReward;
 
     // Propiedades de movimiento
-    this.maxSpeed = 100;
+    this.maxSpeed = statsConfig.speed;
     this.maxForce = 10;
     this.acceleration = new Phaser.Math.Vector2(0, 0);
     this.velocity = new Phaser.Math.Vector2(0, 0);
@@ -26,10 +31,23 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   recibirDaño(cantidad) {
-    if (this.isDead) return;
+    if (this.isDead || this.esInvulnerable) return;
     this.health -= cantidad;
-    this.setTint(0xff0000);
-    this.scene.time.delayedCall(150, () => this.clearTint());
+    this.esInvulnerable = true;
+
+    this.setTint(0xffffff);
+
+    this.scene.time.delayedCall(1300, () => {
+      if (!this.isDead) {
+        this.clearTint();
+        this.setTint(this.colorOriginal);
+      }
+    });
+
+    this.scene.time.delayedCall(1500, () => {
+      this.esInvulnerable = false;
+    });
+
     if (this.health <= 0) {
       this.morirEInfectarse();
     }
@@ -38,7 +56,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.isDead = true;
     this.setVelocity(0, 0);
 
-    this.scene.events.emit('enemigo-muerto', { x: this.x, y: this.y });
+    this.scene.events.emit('enemigo-muerto', { x: this.x, y: this.y, healReward: this.healReward });
     this.destroy();
   }
   calcularNuevoPuntoPatrulla(player) {
@@ -88,6 +106,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     //Fuerza de correccion
     const steer = desired.subtract(this.velocity);
     if (steer.length() > this.maxForce) steer.normalize().scale(this.maxForce);
+    return steer;
+  }
+  applyFlee(target) {
+    const desired = new Phaser.Math.Vector2(this.x, this.y).subtract(new Phaser.Math.Vector2(target.x, target.y));
+    desired.normalize().scale(this.maxSpeed);
+
+    const steer = desired.subtract(this.velocity);
+    if (steer.length() > this.maxForce) steer.normalize().scale(this.maxForce);
+
     return steer;
   }
   updateBase(time, delta, player) {

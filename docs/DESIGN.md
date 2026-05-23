@@ -1,23 +1,21 @@
 # 1. Mockups
 
-- Pantalla de inicio: Posee las opciones iniciales que aparecen al abrir el juego.
-  ![Inicio](<MOCKUPS/pantalla de inicio.png>)
-- Selector de personaje: Interfaz para elegir el tipo de líder antes de comenzar.
-  ![Selector](<MOCKUPS/Seleccion de personaje.png>)
+- Pantalla de inicio: Posee las opciones iniciales que aparecen al abrir el juego. ![Inicio](<MOCKUPS/pantalla de inicio.png>)
+- Selector de personaje: Interfaz para elegir el tipo de líder antes de comenzar. ![Selector](<MOCKUPS/Seleccion de personaje.png>)
 
-- Imagen referencial del juego: Representación visual del entorno urbano y la horda.
-  ![Gameplay](MOCKUPS/gameplay.png)
-- Pantalla de Game Over: Resumen de estadísticas finales del jugador.
-  ![Game Over](<MOCKUPS/Pantalla de muerte.png>)
+- Imagen referencial del juego: Representación visual del entorno urbano y la horda. ![Gameplay](MOCKUPS/gameplay.png)
+- Pantalla de Game Over: Resumen de estadísticas finales del jugador. ![Game Over](<MOCKUPS/Pantalla de muerte.png>)
 
 # 2. Especificaciones de Tecnología
 
 ### **Framework y Justificación**
 
-- **Base: Vue.js**
-  El equipo técnico cuenta con experiencia previa en el ecosistema de Vue. Esto reduce el riesgo de retrasos en el aprendizaje y permite centrar los esfuerzos en las mecánicas del juego. Este framework se utilizará para manejar las estadísticas del juego (salud, tamaño de horda, bonificadores) mediante un estado reactivo.
-- **Motor de Juego: Phaser**
-  Se elige Phaser por ser el más conocido en la creación de juegos HTML. Su amplia base de usuarios y documentación extensa garantizan que el equipo pueda resolver bloqueos técnicos mediante soluciones ya probadas y optimizadas por la comunidad. Se utilizará para realizar el motor del juego, es decir, movimientos, gestión de hordas, acciones de las entidades, sonido, etc.
+- **Base: Vue.js** El equipo técnico cuenta con experiencia previa en el ecosistema de Vue. Esto reduce el riesgo de retrasos en el aprendizaje y
+  permite centrar los esfuerzos en las mecánicas del juego. Este framework se utilizará para manejar las estadísticas del juego (salud, tamaño de
+  horda, bonificadores) mediante un estado reactivo.
+- **Motor de Juego: Phaser** Se elige Phaser por ser el más conocido en la creación de juegos HTML. Su amplia base de usuarios y documentación extensa
+  garantizan que el equipo pueda resolver bloqueos técnicos mediante soluciones ya probadas y optimizadas por la comunidad. Se utilizará para realizar
+  el motor del juego, es decir, movimientos, gestión de hordas, acciones de las entidades, sonido, etc.
 
 ### **Dependencias Principales**
 
@@ -43,15 +41,18 @@
 
 # 3. Descripción del juego
 
-**HorrorZ** es un juego de supervivencia y acción en 2D con vista top-down. El jugador asume el rol de un zombie en un entorno urbano, cuyo objetivo es propagar la infección convirtiendo civiles y resistiendo el contraataque de las fuerzas del orden el mayor tiempo posible.
+**HorrorZ** es un juego de supervivencia y acción en 2D con vista top-down. El jugador asume el rol de un zombie en un entorno urbano, cuyo objetivo
+es propagar la infección convirtiendo civiles y resistiendo el contraataque de las fuerzas del orden el mayor tiempo posible.
 
 **Mecánicas Principales**
 
-- **Movimiento Perpetuo**: El zombi líder está en constante movimiento. El jugador no puede quedarse quieto, lo que obliga a una navegación activa por las calles de la ciudad.
+- **Movimiento Perpetuo**: El zombi líder está en constante movimiento. El jugador no puede quedarse quieto, lo que obliga a una navegación activa por
+  las calles de la ciudad.
 - **Salud del personaje**: Tienes una salud limitada según el personaje que aumenta a medida que crece la horda de zombies.
 - **Conversión de Horda**: Al entrar en contacto con civiles, estos se transforman y se unen a la horda que sigue al líder.
 - **Escalado de Estadísticas**: A medida que la horda crece, aumentan el rango de conversión, la vida y la resistencia del zombi principal.
-- **Interacción con el Entorno**: Los civiles pueden huir y esconderse dentro de las casas para evitar ser infectados. Mientras que los policías y militares tratan de detenerte.
+- **Interacción con el Entorno**: Los civiles pueden huir y esconderse dentro de las casas para evitar ser infectados. Mientras que los policías y
+  militares tratan de detenerte.
 
 **Reglas**
 

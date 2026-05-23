@@ -10,7 +10,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setScale(0.1);
     this.setCollideWorldBounds(true); //Hay q desactivar esto cuando agrandemos el mapa
-
+    this.setLighting(true);
     // Variables de estado copiadas de tu código
     this.speed = 300;
     this.isAttacking = false;

@@ -2,7 +2,9 @@ import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { Civilian } from '../entities/Civilian';
 import { Soldier } from '../entities/Soldier';
+import { Medic } from '../entities/Medic';
 import { useGameStore } from '../../stores/gameStore';
+import { ENEMY_TYPES } from '../config/StatsConfig';
 
 export class MainScene extends Phaser.Scene {
   constructor() {
@@ -67,6 +69,9 @@ export class MainScene extends Phaser.Scene {
       repeat: 0,
     });
 
+    this.lights.enable();
+    this.lights.setAmbientColor(0x131329);
+
     // 2. Fondo
     const map = this.make.tilemap({ key: 'Map_HorrorZ' });
 
@@ -83,6 +88,9 @@ export class MainScene extends Phaser.Scene {
     const _capaDetalles = map.createLayer('Capa de patrones 4', todosLosTilesets, 0, 0);
     const _capaCasas = map.createLayer('Casas', todosLosTilesets, 0, 0);
 
+    capaSuelo.setLighting(true);
+    _capaDetalles.setLighting(true);
+    _capaCasas.setLighting(true);
     // Dimensiones del mapa
     const anchoMapa = map.widthInPixels;
     const altoMapa = map.heightInPixels;
@@ -94,6 +102,7 @@ export class MainScene extends Phaser.Scene {
     let spawnX = Phaser.Math.Between(10, anchoMapa - 10);
     let spawnY = Phaser.Math.Between(10, altoMapa - 10);
     this.player = new Player(this, spawnX, spawnY);
+    this.playerLight = this.lights.addLight(spawnX, spawnY, 500, 0xffffff, 0.3);
 
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
     this.cameras.main.setBounds(0, 0, anchoMapa, altoMapa);
@@ -115,10 +124,23 @@ export class MainScene extends Phaser.Scene {
       this.civiliansGroup.add(civil);
       this.allCivilians.push(civil);
     }
-    // Spawn de prueba de soldados
-    for (let i = 0; i < 10; i++) {
-      let soldado = new Soldier(this, 300 + i * 200, 300);
-      this.enemiesGroup.add(soldado);
+
+    // Spawn de prueba de soldados temporal
+    for (let i = 0; i < 5; i++) {
+      let baseX = Phaser.Math.Between(200, anchoMapa - 200);
+      let baseY = Phaser.Math.Between(200, altoMapa - 200);
+
+      let normal = new Soldier(this, baseX, baseY, ENEMY_TYPES.NORMAL);
+      let elite = new Soldier(this, baseX + 40, baseY, ENEMY_TYPES.MILITAR);
+      let sniper = new Soldier(this, baseX - 40, baseY, ENEMY_TYPES.SNIPER);
+      let tank = new Soldier(this, baseX, baseY + 40, ENEMY_TYPES.TANK);
+      let kamikaze = new Soldier(this, baseX, baseY - 40, ENEMY_TYPES.KAMIKAZE);
+      let melee = new Soldier(this, baseX + 40, baseY + 40, ENEMY_TYPES.MELEE);
+
+      // El médico usa su propia clase Medic
+      let medic = new Medic(this, baseX - 40, baseY - 40, ENEMY_TYPES.MEDIC);
+
+      this.enemiesGroup.addMultiple([normal, elite, sniper, tank, kamikaze, melee, medic]);
     }
 
     // 5. Configurar interacción de Infección
@@ -208,9 +230,6 @@ export class MainScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
       if (jugador.isAttacking && !enemigo.isDead) {
         enemigo.recibirDaño(100);
-
-        if (jugador.curar) jugador.curar(25);
-        this.store.healPlayer(15);
       }
     });
     this.physics.add.overlap(this.hordeGroup, this.enemiesGroup, (zombie, enemigo) => {
@@ -227,6 +246,10 @@ export class MainScene extends Phaser.Scene {
       nuevoZombie.infectar();
       this.hordeGroup.add(nuevoZombie);
       this.allCivilians.push(nuevoZombie);
+      if (data.healReward) {
+        if (this.player.curar) this.player.curar(data.healReward);
+        this.store.healPlayer(data.healReward);
+      }
     });
 
     this.events.on('disparo-enemigo', (data) => {
@@ -240,9 +263,27 @@ export class MainScene extends Phaser.Scene {
         if (bala.active) bala.destroy();
       });
     });
+    this.events.on('explosion-kamikaze', (data) => {
+      let distAlPlayer = Phaser.Math.Distance.Between(data.x, data.y, this.player.x, this.player.y);
+      if (distAlPlayer < 80) {
+        this.player.recibirDaño(data.daño);
+        this.store.takeDamage(data.daño);
+      }
+
+      this.hordeGroup.getChildren().forEach((zombi) => {
+        let distAlZombi = Phaser.Math.Distance.Between(data.x, data.y, zombi.x, zombi.y);
+        if (distAlZombi < 80 && zombi.recibirDaño) {
+          zombi.recibirDaño(data.daño);
+        }
+      });
+    });
   }
 
   update(time, delta) {
+    if (this.playerLight && this.player) {
+      this.playerLight.x = this.player.x;
+      this.playerLight.y = this.player.y;
+    }
     // Delegar la actualización a cada entidad
     this.player.update();
     const hordaActual = this.hordeGroup.getChildren();
