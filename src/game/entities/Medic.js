@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Enemy } from './Enemy';
+
 export class Medic extends Enemy {
   constructor(scene, x, y, typeConfig) {
     super(scene, x, y, typeConfig.texture, typeConfig);
@@ -37,6 +38,7 @@ export class Medic extends Enemy {
       this.play('soldier-shoot-anim', true); // Animación temporal de curar
 
       this.aliadoHerido.health += this.potenciaCuracion;
+
       if (this.aliadoHerido.health > this.aliadoHerido.maxHealth) {
         this.aliadoHerido.health = this.aliadoHerido.maxHealth;
       }
@@ -57,6 +59,7 @@ export class Medic extends Enemy {
 
     if (this.aliadoHerido) {
       const distancia = Phaser.Math.Distance.Between(this.x, this.y, this.aliadoHerido.x, this.aliadoHerido.y);
+
       this.setRotation(Phaser.Math.Angle.Between(this.x, this.y, this.aliadoHerido.x, this.aliadoHerido.y) + Math.PI / 2);
 
       if (distancia <= this.rangoCuracion) {

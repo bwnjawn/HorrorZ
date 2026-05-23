@@ -18,6 +18,22 @@ export class Soldier extends Enemy {
     this.ultimoDisparo = 0;
     this.objetivoActual = null;
   }
+  respawn(x, y, typeConfig) {
+    super.respawnBase(x, y, typeConfig);
+
+    this.role = typeConfig.type;
+    this.rangoVision = typeConfig.visionRange;
+    this.rangoDisparo = typeConfig.attackRange;
+    this.rangoRetirada = typeConfig.retreatRange;
+    this.cadenciaDisparo = typeConfig.fireRate;
+    this.dañoBala = typeConfig.damage;
+    this.maxHealth = typeConfig.hp;
+
+    this.ultimoDisparo = 0;
+    this.objetivoActual = null;
+
+    this.play('soldier-walk-anim', true);
+  }
 
   buscarObjetivo(player, horda) {
     let objetivoMasCercano = null;
@@ -25,23 +41,28 @@ export class Soldier extends Enemy {
 
     if (this.role === 'KAMIKAZE') {
       const distJugador = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
+
       if (player.active && !player.isDead && distJugador < distanciaMinima) {
         this.objetivoActual = player;
       }
+
       return;
     }
 
     // Revisar distancia con el jugador
     const distJugador = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
+
     if (player.active && !player.isDead && distJugador < distanciaMinima) {
       distanciaMinima = distJugador;
       objetivoMasCercano = player;
     }
+
     // Revisar distancia con la horda
     if (horda) {
       horda.forEach((zombie) => {
         if (!zombie.active || zombie.isDead) return;
         const distZombie = Phaser.Math.Distance.Between(this.x, this.y, zombie.x, zombie.y);
+
         if (distZombie < distanciaMinima) {
           distanciaMinima = distZombie;
           objetivoMasCercano = zombie;
@@ -55,9 +76,11 @@ export class Soldier extends Enemy {
       if (this.role === 'RANGED') {
         this.play('soldier-shoot-anim', true);
         const anguloHaciaObjetivo = Phaser.Math.Angle.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
+
         this.scene.events.emit('disparo-enemigo', { x: this.x, y: this.y, angulo: anguloHaciaObjetivo, daño: this.dañoBala });
       } else if (this.role === 'MELEE') {
         this.play('soldier-shoot-anim', true);
+
         if (this.objetivoActual.recibirDaño) {
           this.objetivoActual.recibirDaño(this.dañoBala);
         } else if (this.objetivoActual === this.scene.player) {
@@ -65,6 +88,7 @@ export class Soldier extends Enemy {
         }
       } else if (this.role === 'KAMIKAZE') {
         this.ejecutarExplosion();
+
         return;
       }
       this.ultimoDisparo = time;
@@ -83,20 +107,23 @@ export class Soldier extends Enemy {
 
     // Emitir un evento especial de explosión para que MainScene cree efectos visuales
     this.scene.events.emit('explosion-kamikaze', { x: this.x, y: this.y, daño: this.dañoBala });
-    this.destroy();
+    this.desactivar();
   }
 
   update(time, delta, player, horda) {
     if (this.isDead) return;
     let teniaObjetivo = this.objetivoActual !== null;
+
     this.buscarObjetivo(player, horda);
 
     if (teniaObjetivo && !this.objetivoActual) {
       this.calcularNuevoPuntoPatrulla(player);
     }
+
     if (this.objetivoActual) {
       const distancia = Phaser.Math.Distance.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
       const anguloHaciaObjetivo = Phaser.Math.Angle.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
+
       this.setRotation(anguloHaciaObjetivo + Math.PI / 2);
 
       if (distancia <= this.rangoDisparo) {
@@ -106,6 +133,7 @@ export class Soldier extends Enemy {
 
           this.acceleration.set(0, 0);
           const forceFlee = this.applyFlee(this.objetivoActual);
+
           this.acceleration.add(forceFlee);
           this.velocity.add(this.acceleration);
 

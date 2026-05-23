@@ -49,6 +49,7 @@ const healthPercentage = computed(() => {
 const formattedTime = computed(() => {
   const minutes = Math.floor(store.timeAlive / 60);
   const seconds = store.timeAlive % 60;
+
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 });
 
@@ -56,6 +57,7 @@ const formattedTime = computed(() => {
 const skillStatusText = computed(() => {
   if (store.isRegrouping) return '¡REAGRUPANDO!';
   if (store.regroupCooldown > 0) return `ESPERA: ${store.regroupCooldown}s`;
+
   return 'ESPACIO: Reagrupar';
 });
 </script>

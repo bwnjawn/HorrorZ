@@ -68,13 +68,15 @@
 **Objetivo:** Implementar mecánicas avanzadas de combate, comportamiento y progresión del juego.
 
 - **Tareas Planificadas:**
-- [ ] Crear sistema de ataque de enemigos.
+- [x] Crear sistema de ataque de enemigos.
 - [ ] Crear sistema de daño y resistencia.
-- [ ] Balancear combate entre zombis y enemigos.
 - [ ] Implementar comportamiento avanzado de civiles.
-- [ ] Implementar comportamiento avanzado de policías y militares.
+- [x] Implementar comportamiento avanzado de policías y militares.
+- [x] Implementar sistema de spawn de entidades
+- [ ] Balancear combate entre zombis y enemigos.
 - [ ] Implementar indicadores visuales de daño y peligro.
 - [ ] Crear sistema de cooldown de habilidades.
+- [ ] Crear menus iniciales.
 - [ ] Verificar estabilidad de las mecánicas principales.
 
 ## **Seguimiento de la Semana**

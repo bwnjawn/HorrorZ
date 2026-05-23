@@ -19,27 +19,48 @@ export default [
 
   {
     name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'], //
+    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
   },
 
-  js.configs.recommended, //
-  ...pluginVue.configs['flat/essential'], //
-  skipFormatting, //
+  js.configs.recommended,
+  ...pluginVue.configs['flat/essential'],
+  skipFormatting,
 
   {
     rules: {
       // REGLAS DE JAVASCRIPT
-      'no-unused-vars': 'warn', //
+      'no-unused-vars': 'warn',
       // 'no-console': 'warn',    // Comentado para etapa de debug
-      eqeqeq: 'error', //
-      curly: ['error', 'multi-line'], //
+      eqeqeq: 'error',
+      curly: ['error', 'multi-line'],
       // 'no-debugger': 'error',  // Comentado para etapa de debug
 
+      // ESPACIADO ESTRUCTURAL (Padding)
+      'padding-line-between-statements': [
+        'error',
+        { blankLine: 'always', prev: 'import', next: '*' },
+        { blankLine: 'never', prev: 'import', next: 'import' },
+
+        // Bloques y Returns
+        { blankLine: 'always', prev: '*', next: 'block-like' },
+        { blankLine: 'always', prev: '*', next: 'return' },
+
+        // Variables simples (una línea)
+        { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
+        { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
+
+        // Variables multilínea (Arrow functions grandes)
+        { blankLine: 'always', prev: 'multiline-const', next: '*' },
+
+        // Funciones, Clases y Exports
+        { blankLine: 'always', prev: '*', next: ['function', 'class', 'export'] },
+      ],
+
       // REGLAS DE VUE
-      'vue/multi-word-component-names': 'off', //
-      'vue/require-default-prop': 'error', //
-      'vue/no-unused-vars': 'error', //
-      'vue/component-api-style': ['error', ['script-setup']], //
+      'vue/multi-word-component-names': 'off',
+      'vue/require-default-prop': 'error',
+      'vue/no-unused-vars': 'error',
+      'vue/component-api-style': ['error', ['script-setup']],
     },
   },
 ];

@@ -101,6 +101,7 @@ export class MainScene extends Phaser.Scene {
     // 3. Crear Jugador
     let spawnX = Phaser.Math.Between(10, anchoMapa - 10);
     let spawnY = Phaser.Math.Between(10, altoMapa - 10);
+
     this.player = new Player(this, spawnX, spawnY);
     this.playerLight = this.lights.addLight(spawnX, spawnY, 500, 0xffffff, 0.3);
 
@@ -116,32 +117,13 @@ export class MainScene extends Phaser.Scene {
     this.bulletsGroup = this.physics.add.group();
     this.allCivilians = []; // Arreglo para poder iterarlos en el update
 
-    for (let i = 0; i < 50; i++) {
-      let x = Phaser.Math.Between(100, anchoMapa - 100);
-      let y = Phaser.Math.Between(100, altoMapa - 100);
-
-      let civil = new Civilian(this, x, y);
-      this.civiliansGroup.add(civil);
-      this.allCivilians.push(civil);
-    }
-
-    // Spawn de prueba de soldados temporal
-    for (let i = 0; i < 5; i++) {
-      let baseX = Phaser.Math.Between(200, anchoMapa - 200);
-      let baseY = Phaser.Math.Between(200, altoMapa - 200);
-
-      let normal = new Soldier(this, baseX, baseY, ENEMY_TYPES.NORMAL);
-      let elite = new Soldier(this, baseX + 40, baseY, ENEMY_TYPES.MILITAR);
-      let sniper = new Soldier(this, baseX - 40, baseY, ENEMY_TYPES.SNIPER);
-      let tank = new Soldier(this, baseX, baseY + 40, ENEMY_TYPES.TANK);
-      let kamikaze = new Soldier(this, baseX, baseY - 40, ENEMY_TYPES.KAMIKAZE);
-      let melee = new Soldier(this, baseX + 40, baseY + 40, ENEMY_TYPES.MELEE);
-
-      // El médico usa su propia clase Medic
-      let medic = new Medic(this, baseX - 40, baseY - 40, ENEMY_TYPES.MEDIC);
-
-      this.enemiesGroup.addMultiple([normal, elite, sniper, tank, kamikaze, melee, medic]);
-    }
+    this.time.addEvent({
+      delay: 2000,
+      callback: () => {
+        this.ejecutarSpawnDinamico();
+      },
+      loop: true,
+    });
 
     // 5. Configurar interacción de Infección
 
@@ -243,9 +225,11 @@ export class MainScene extends Phaser.Scene {
     this.events.on('enemigo-muerto', (data) => {
       // Creamos un zombi exactamente en la coordenada donde murió el militar
       let nuevoZombie = new Civilian(this, data.x, data.y);
+
       nuevoZombie.infectar();
       this.hordeGroup.add(nuevoZombie);
       this.allCivilians.push(nuevoZombie);
+
       if (data.healReward) {
         if (this.player.curar) this.player.curar(data.healReward);
         this.store.healPlayer(data.healReward);
@@ -254,6 +238,7 @@ export class MainScene extends Phaser.Scene {
 
     this.events.on('disparo-enemigo', (data) => {
       let bala = this.add.circle(data.x, data.y, 4, 0xffaa00); //Porque todavia no hay sprite de la bala
+
       this.physics.add.existing(bala);
       this.bulletsGroup.add(bala);
 
@@ -265,6 +250,7 @@ export class MainScene extends Phaser.Scene {
     });
     this.events.on('explosion-kamikaze', (data) => {
       let distAlPlayer = Phaser.Math.Distance.Between(data.x, data.y, this.player.x, this.player.y);
+
       if (distAlPlayer < 80) {
         this.player.recibirDaño(data.daño);
         this.store.takeDamage(data.daño);
@@ -272,6 +258,7 @@ export class MainScene extends Phaser.Scene {
 
       this.hordeGroup.getChildren().forEach((zombi) => {
         let distAlZombi = Phaser.Math.Distance.Between(data.x, data.y, zombi.x, zombi.y);
+
         if (distAlZombi < 80 && zombi.recibirDaño) {
           zombi.recibirDaño(data.daño);
         }
@@ -296,5 +283,115 @@ export class MainScene extends Phaser.Scene {
     this.enemiesGroup.getChildren().forEach((enemy) => {
       if (enemy.active) enemy.update(time, delta, this.player, hordaActual);
     });
+  }
+
+  obtenerPosicionAnillo() {
+    const cam = this.cameras.main;
+    const anchoVisible = cam.width / cam.zoom;
+    const altoVisible = cam.height / cam.zoom;
+
+    // Siempre spawnean fuera de la vision del player
+    const radioMinimo = Math.max(anchoVisible, altoVisible) / 2 + 50;
+    const radioMaximo = radioMinimo + 300; // El grosor del anillo donde pueden nacer
+
+    let posicionValida = false;
+    let spawnX = 0;
+    let spawnY = 0;
+    let intentos = 0;
+
+    while (!posicionValida && intentos < 10) {
+      // Geometría circular: Elegir un ángulo y una distancia aleatoria
+      const angulo = Phaser.Math.FloatBetween(0, Math.PI * 2);
+      const radio = Phaser.Math.FloatBetween(radioMinimo, radioMaximo);
+
+      // Calcular X e Y respecto al centro de la cámara
+      spawnX = cam.midPoint.x + Math.cos(angulo) * radio;
+      spawnY = cam.midPoint.y + Math.sin(angulo) * radio;
+
+      if (spawnX > 50 && spawnX < this.physics.world.bounds.width - 50 && spawnY > 50 && spawnY < this.physics.world.bounds.height - 50) {
+        posicionValida = true;
+      }
+      intentos++;
+    }
+
+    return posicionValida ? { x: spawnX, y: spawnY } : null;
+  }
+
+  ejecutarSpawnDinamico() {
+    const posicion = this.obtenerPosicionAnillo();
+
+    if (!posicion) return;
+
+    const director = this.obtenerPesosDelDirector();
+    const dado = Phaser.Math.Between(1, 100);
+
+    //Modificar probabilidad.
+    if (dado <= director.probabilidadCivil) {
+      let civilReciclado = this.civiliansGroup.getFirstDead(false);
+
+      if (civilReciclado) {
+        civilReciclado.respawn(posicion.x, posicion.y);
+      } else {
+        let civil = new Civilian(this, posicion.x, posicion.y);
+
+        this.civiliansGroup.add(civil);
+        this.allCivilians.push(civil);
+      }
+
+      return;
+    }
+    const tipoElegido = Phaser.Utils.Array.GetRandom(director.poolMilitares);
+
+    const enemigosMuertos = this.enemiesGroup.getChildren().filter((e) => !e.active);
+
+    let enemigoReciclado = enemigosMuertos.find((enemigo) => {
+      if (tipoElegido.type === 'MEDIC') {
+        return enemigo.constructor.name === 'Medic'; // Si la ficha es Medic, busca un Medic
+      } else {
+        return enemigo.constructor.name === 'Soldier'; // Si la ficha es militar, busca un Soldier
+      }
+    });
+
+    if (enemigoReciclado) {
+      if (tipoElegido.type === 'MEDIC') {
+        enemigoReciclado.respawnBase(posicion.x, posicion.y, tipoElegido);
+      } else {
+        enemigoReciclado.respawn(posicion.x, posicion.y, tipoElegido);
+      }
+    } else {
+      if (tipoElegido.type === 'MEDIC') {
+        let nuevoMedic = new Medic(this, posicion.x, posicion.y, tipoElegido);
+
+        this.enemiesGroup.add(nuevoMedic);
+      } else {
+        let nuevoSoldado = new Soldier(this, posicion.x, posicion.y, tipoElegido);
+
+        this.enemiesGroup.add(nuevoSoldado);
+      }
+    }
+  }
+
+  obtenerPesosDelDirector() {
+    const minutosJugados = this.time.now / 60000;
+
+    // Variables que el Director va a modificar
+    let probabilidadCivil;
+    let poolMilitares;
+
+    if (minutosJugados < 1) {
+      probabilidadCivil = 80;
+      poolMilitares = [ENEMY_TYPES.NORMAL];
+    } else if (minutosJugados < 3) {
+      probabilidadCivil = 60;
+      poolMilitares = [ENEMY_TYPES.NORMAL, ENEMY_TYPES.NORMAL, ENEMY_TYPES.MELEE, ENEMY_TYPES.MEDIC];
+    } else if (minutosJugados < 5) {
+      probabilidadCivil = 40;
+      poolMilitares = [ENEMY_TYPES.NORMAL, ENEMY_TYPES.MILITAR, ENEMY_TYPES.MILITAR, ENEMY_TYPES.SNIPER, ENEMY_TYPES.MELEE, ENEMY_TYPES.MEDIC];
+    } else {
+      probabilidadCivil = 15;
+      poolMilitares = [ENEMY_TYPES.MILITAR, ENEMY_TYPES.SNIPER, ENEMY_TYPES.KAMIKAZE, ENEMY_TYPES.KAMIKAZE, ENEMY_TYPES.TANK, ENEMY_TYPES.MEDIC];
+    }
+
+    return { probabilidadCivil, poolMilitares };
   }
 }

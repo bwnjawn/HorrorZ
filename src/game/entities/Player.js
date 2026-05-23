@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { useGameStore } from '../../stores/gameStore';
+
 export class Player extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
     super(scene, x, y, 'zombie-walk');
@@ -58,6 +59,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.isDead) return;
 
     this.health += cantidad;
+
     if (this.health > this.maxHealth) {
       this.health = this.maxHealth; //Esto quiza sacar despues para ir agrandando la barra de vida----------------------------------------------
     }
