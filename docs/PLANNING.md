@@ -69,7 +69,7 @@
 
 - **Tareas Planificadas:**
 - [x] Crear sistema de ataque de enemigos.
-- [ ] Crear sistema de daño y resistencia.
+- [x] Crear sistema de daño y resistencia de distintos tipos de zombies.
 - [ ] Implementar comportamiento avanzado de civiles.
 - [x] Implementar comportamiento avanzado de policías y militares.
 - [x] Implementar sistema de spawn de entidades

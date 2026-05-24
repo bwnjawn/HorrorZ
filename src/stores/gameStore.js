@@ -10,26 +10,38 @@ export const useGameStore = defineStore('game', {
     isRegrouping: false,
     regroupCooldown: 0,
     isGameOver: false,
+    isGameStarted: false,
+    selectedZombie: null,
   }),
   actions: {
+    startGame(zombieId) {
+      this.selectedZombie = zombieId;
+      this.isGameStarted = true;
+    },
+
     takeDamage(amount) {
       this.playerHealth = Math.max(0, this.playerHealth - amount);
     },
+
     healPlayer(amount) {
       this.playerHealth = Math.min(this.playerMaxHealth, this.playerHealth + amount);
     },
+
     infectCivilian() {
       if (this.civilianCount > 0) {
         this.civilianCount--;
         this.zombieCount++;
       }
     },
+
     incrementTime() {
       this.timeAlive++;
     },
+
     setGameOver() {
       this.isGameOver = true;
     },
+
     resetGame() {
       window.location.reload();
     },

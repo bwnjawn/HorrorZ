@@ -1,10 +1,14 @@
 import Phaser from 'phaser';
-import { Player } from '../entities/Player';
+import { Coloso } from '../entities/Coloso';
+import { Invocador } from '../entities/Invocador';
+import { Lamento } from '../entities/Lamento';
+import { Atrofia } from '../entities/Atrofia';
 import { Civilian } from '../entities/Civilian';
 import { Soldier } from '../entities/Soldier';
 import { Medic } from '../entities/Medic';
 import { useGameStore } from '../../stores/gameStore';
 import { ENEMY_TYPES } from '../config/StatsConfig';
+import { PLAYER_TYPES } from '../config/PlayerStatsConfig';
 
 export class MainScene extends Phaser.Scene {
   constructor() {
@@ -102,10 +106,54 @@ export class MainScene extends Phaser.Scene {
     let spawnX = Phaser.Math.Between(10, anchoMapa - 10);
     let spawnY = Phaser.Math.Between(10, altoMapa - 10);
 
-    this.player = new Player(this, spawnX, spawnY);
-    this.playerLight = this.lights.addLight(spawnX, spawnY, 500, 0xffffff, 0.3);
+    this.scene.pause();
+    const unsubscribe = this.store.$subscribe((mutation, state) => {
+      if (state.isGameStarted && !this.player) {
+        // ¿Qué botón apretó? Instanciamos la clase correspondiente
+        if (state.selectedZombie === PLAYER_TYPES.COLOSO.id) {
+          this.player = new Coloso(this, spawnX, spawnY);
+        } else if (state.selectedZombie === PLAYER_TYPES.ATROFIA.id) {
+          // Todavía no tenemos Atrofia.js, así que usamos Player pasándole el config
+          this.player = new Atrofia(this, spawnX, spawnY, PLAYER_TYPES.ATROFIA);
+        } else if (state.selectedZombie === PLAYER_TYPES.INVOCADOR.id) {
+          this.player = new Invocador(this, spawnX, spawnY, PLAYER_TYPES.INVOCADOR);
+        } else if (state.selectedZombie === PLAYER_TYPES.LAMENTO.id) {
+          this.player = new Lamento(this, spawnX, spawnY, PLAYER_TYPES.LAMENTO);
+        }
+        // Ya creamos al jugador, la cámara debe seguirlo ahora
+        this.playerLight = this.lights.addLight(spawnX, spawnY, 500, 0xffffff, 0.3);
+        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
-    this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+        this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
+          // Solo infecta si el jugador ataca y el civil no está infectado
+          if (this.player.isAttacking && !civilObj.isInfected) {
+            civilObj.infectar();
+            this.civiliansGroup.remove(civilObj);
+            this.hordeGroup.add(civilObj);
+            this.store.infectCivilian();
+
+            if (playerObj.curar) playerObj.curar(15);
+            this.store.healPlayer(15);
+          }
+        });
+        this.physics.add.overlap(this.player, this.bulletsGroup, (jugador, bala) => {
+          bala.destroy();
+          if (jugador.recibirDaño) jugador.recibirDaño(10);
+          this.store.takeDamage(10);
+        });
+        this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
+          if (jugador.isAttacking && !enemigo.isDead) {
+            enemigo.recibirDaño(100);
+          }
+        });
+        this.physics.add.collider(this.player, this.obstaculos);
+
+        // Reanudamos el juego
+        this.scene.resume();
+        unsubscribe(); // Dejamos de escuchar al store para ahorrar memoria
+      }
+    });
+
     this.cameras.main.setBounds(0, 0, anchoMapa, altoMapa);
     this.physics.world.setBounds(0, 0, anchoMapa, altoMapa);
     this.cameras.main.setZoom(2);
@@ -158,7 +206,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     // 7.   Colisiones generales
-    this.physics.add.collider(this.player, this.obstaculos);
+
     this.physics.add.collider(this.civiliansGroup, this.obstaculos);
     this.physics.add.collider(this.hordeGroup, this.obstaculos);
     this.physics.add.collider(this.civiliansGroup, this.civiliansGroup);
@@ -183,18 +231,7 @@ export class MainScene extends Phaser.Scene {
         });
       }
     });
-    this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
-      // Solo infecta si el jugador ataca y el civil no está infectado
-      if (this.player.isAttacking && !civilObj.isInfected) {
-        civilObj.infectar();
-        this.civiliansGroup.remove(civilObj);
-        this.hordeGroup.add(civilObj);
-        this.store.infectCivilian();
 
-        if (playerObj.curar) playerObj.curar(15);
-        this.store.healPlayer(15);
-      }
-    });
     this.physics.add.collider(this.bulletsGroup, this.obstaculos, (bala, _obstaculo) => {
       bala.destroy();
     });
@@ -204,16 +241,6 @@ export class MainScene extends Phaser.Scene {
       if (zombie.recibirDaño) zombie.recibirDaño(15);
     });
 
-    this.physics.add.overlap(this.player, this.bulletsGroup, (jugador, bala) => {
-      bala.destroy();
-      if (jugador.recibirDaño) jugador.recibirDaño(10);
-      this.store.takeDamage(10);
-    });
-    this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
-      if (jugador.isAttacking && !enemigo.isDead) {
-        enemigo.recibirDaño(100);
-      }
-    });
     this.physics.add.overlap(this.hordeGroup, this.enemiesGroup, (zombie, enemigo) => {
       if (!zombie.isDead && !enemigo.isDead && !zombie.isAttacking) {
         zombie.ejecutarAtaque();
@@ -271,8 +298,11 @@ export class MainScene extends Phaser.Scene {
       this.playerLight.x = this.player.x;
       this.playerLight.y = this.player.y;
     }
+
     // Delegar la actualización a cada entidad
-    this.player.update();
+    if (this.player) {
+      this.player.update(time, delta);
+    }
     const hordaActual = this.hordeGroup.getChildren();
     const civilesActuales = this.civiliansGroup.getChildren();
 

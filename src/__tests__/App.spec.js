@@ -9,3 +9,4 @@ describe('App', () => {
     expect(wrapper.text()).toContain('You did it!');
   });
 });
+

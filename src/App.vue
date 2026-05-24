@@ -1,9 +1,12 @@
 <script setup>
+import { useGameStore } from './stores/gameStore';
+import MainMenu from './components/MainMenu.vue';
 import { onMounted, onUnmounted } from 'vue';
 import Phaser from 'phaser';
 import { gameConfig } from './game/config';
 import HudOverlay from './components/HudOverlay.vue';
 
+const store = useGameStore();
 let gameInstance = null;
 
 onMounted(() => {
@@ -19,13 +22,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main>
-    <HudOverlay />
+  <div id="app">
+    <MainMenu v-if="!store.isGameStarted" />
 
     <div id="game-container"></div>
-  </main>
-</template>
 
+    <HudOverlay v-if="store.isGameStarted" />
+  </div>
+</template>
 <style>
 /* Reset global para quitar márgenes del navegador */
 html,
