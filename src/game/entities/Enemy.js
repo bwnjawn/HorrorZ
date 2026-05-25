@@ -30,12 +30,20 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.tiempoAtascado = 0;
   }
 
-  recibirDaño(cantidad) {
+  recibirDaño(cantidad, tipoDaño = 'normal') {
+    if (this.isDead || (this.esInvulnerable && tipoDaño !== 'veneno')) return;
+
     if (this.isDead || this.esInvulnerable) return;
     this.health -= cantidad;
     this.esInvulnerable = true;
 
-    this.setTint(0xffffff);
+    if (tipoDaño !== 'veneno') {
+      this.esInvulnerable = true;
+      this.scene.time.delayedCall(1500, () => {
+        this.esInvulnerable = false;
+      });
+    }
+    this.setTint(tipoDaño === 'veneno' ? 0x00ff00 : 0xffffff);
 
     this.scene.time.delayedCall(1300, () => {
       if (!this.isDead) {

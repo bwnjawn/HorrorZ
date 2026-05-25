@@ -25,6 +25,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.maxStamina = config?.maxStamina || 150;
     this.stamina = this.maxStamina;
     this.isFatigued = false;
+    this.abilityCooldown = config?.abilityCooldown || 5000;
+    this.lastAbilityTime = 0;
 
     // Estados
     this.isDead = false;
@@ -95,6 +97,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (!this.isDead) this.clearTint();
     });
     if (this.health <= 0) this.morir();
+  }
+  onInfectarCivil() {}
+
+  puedeUsarHabilidad() {
+    const currentTime = this.scene.time.now;
+
+    if (currentTime - this.lastAbilityTime >= this.abilityCooldown) {
+      this.lastAbilityTime = currentTime;
+
+      return true;
+    }
+    console.log(`Habilidad en enfriamiento. Faltan ${((this.abilityCooldown - (currentTime - this.lastAbilityTime)) / 1000).toFixed(1)}s`);
+
+    return false;
   }
 
   curar(cantidad) {
@@ -176,25 +192,33 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     if (!this.isAttacking) {
-      this.setVelocity(0, 0);
       let speedToApply = this.isChargingAttack ? currentSpeed * 0.4 : currentSpeed;
 
+      let moveX = 0;
+      let moveY = 0;
+
       if (this.keys.left.isDown) {
-        this.setVelocityX(-speedToApply);
-        this.setRotation(Phaser.Math.DegToRad(270));
-        isMoving = true;
+        moveX = -1;
       } else if (this.keys.right.isDown) {
-        this.setVelocityX(speedToApply);
-        this.setRotation(Phaser.Math.DegToRad(90));
-        isMoving = true;
-      } else if (this.keys.up.isDown) {
-        this.setVelocityY(-speedToApply);
-        this.setRotation(Phaser.Math.DegToRad(0));
-        isMoving = true;
+        moveX = 1;
+      }
+
+      if (this.keys.up.isDown) {
+        moveY = -1;
       } else if (this.keys.down.isDown) {
-        this.setVelocityY(speedToApply);
-        this.setRotation(Phaser.Math.DegToRad(180));
+        moveY = 1;
+      }
+
+      if (moveX !== 0 || moveY !== 0) {
         isMoving = true;
+        let vectorVelocidad = new Phaser.Math.Vector2(moveX, moveY);
+
+        vectorVelocidad.normalize();
+        this.setVelocityX(vectorVelocidad.x * speedToApply);
+        this.setVelocityY(vectorVelocidad.y * speedToApply);
+        this.setRotation(vectorVelocidad.angle() + Math.PI / 2);
+      } else {
+        this.setVelocity(0, 0);
       }
     }
 

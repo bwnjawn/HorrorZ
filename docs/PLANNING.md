@@ -75,8 +75,8 @@
 - [x] Implementar sistema de spawn de entidades
 - [ ] Balancear combate entre zombis y enemigos.
 - [ ] Implementar indicadores visuales de daño y peligro.
-- [ ] Crear sistema de cooldown de habilidades.
-- [ ] Crear menus iniciales.
+- [x] Crear sistema de cooldown de habilidades.
+- [x] Crear menus iniciales.
 - [ ] Verificar estabilidad de las mecánicas principales.
 
 ## **Seguimiento de la Semana**

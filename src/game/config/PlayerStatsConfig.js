@@ -27,6 +27,7 @@ export const PLAYER_TYPES = {
     baseSpeed: 200, // Muy lento
     maxStamina: 100, // Se cansa muy rápido si corre
     baseDamage: 50,
+    abilityCooldown: 6000,
     spriteKey: 'zombie-walk', // Placeholder hasta que tengas su sprite real
     //animWalk: 'coloso-walk-anim',
     //animAttack: ,
@@ -40,6 +41,7 @@ export const PLAYER_TYPES = {
     baseSpeed: 400, // Muy rápido
     maxStamina: 250, // Puede correr por mucho tiempo
     baseDamage: 20,
+    abilityCooldown: 3000,
     spriteKey: 'zombie-walk',
     //animWalk: 'atrofia-walk-anim',
     //animAttack: ,
@@ -53,6 +55,7 @@ export const PLAYER_TYPES = {
     baseSpeed: 300,
     maxStamina: 150,
     baseDamage: 15, // Débil cuerpo a cuerpo
+    abilityCooldown: 12000,
     spriteKey: 'zombie-walk',
     //animWalk: 'invocador-walk-anim',
     //animAttack: ,
@@ -66,6 +69,7 @@ export const PLAYER_TYPES = {
     baseSpeed: 250,
     maxStamina: 180,
     baseDamage: 30, // Daño por quemadura/veneno
+    abilityCooldown: 100,
     spriteKey: 'zombie-walk',
     //animWalk: 'lamento-walk-anim',
     //animAttack: ,

@@ -64,18 +64,25 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.play('civil-walk-anim', true);
   }
 
-  recibirDaño(cantidad) {
-    if (this.isDead || !this.isInfected) return;
+  recibirDaño(cantidad, tipoDaño = 'normal') {
+    if (this.isDead || (this.esInvulnerable && tipoDaño !== 'veneno')) return;
+
     this.health -= cantidad;
 
-    // Feedback de impacto (Rojo)
-    this.setTint(0xff0000);
+    this.setTint(tipoDaño === 'veneno' ? 0x00ff00 : 0xff0000);
     this.scene.time.delayedCall(150, () => {
       if (!this.isDead && this.active) this.clearTint();
     });
 
     if (this.health <= 0) {
-      this.morirDefinitivamente();
+      if (!this.isInfected) {
+        this.infectar();
+        this.scene.civiliansGroup.remove(this);
+        this.scene.hordeGroup.add(this);
+        if (this.scene.store) this.scene.store.infectCivilian();
+      } else {
+        this.morirDefinitivamente();
+      }
     }
   }
 
