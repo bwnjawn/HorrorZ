@@ -1,6 +1,5 @@
 <template>
   <div class="char-select">
-
     <!-- Header -->
     <div class="header">
       <button class="btn-back" @click="store.goToTitle()">◀ VOLVER</button>
@@ -21,10 +20,14 @@
         @click="selectedId = zombie.id"
       >
         <!-- Indicador de selección -->
+
         <div class="card-corner card-corner-tl"></div>
         <div class="card-corner card-corner-br"></div>
 
         <!-- Badge de clase -->
+        <div class="portrait-container">
+          <div class="zombie-portrait" :class="'portrait-' + zombie.id"></div>
+        </div>
         <div class="class-badge">{{ zombie.id.toUpperCase() }}</div>
 
         <h2 class="char-name">{{ zombie.name }}</h2>
@@ -64,7 +67,6 @@
 
         <!-- Habilidad pasiva -->
         <div class="passive-box">
-          <span class="passive-icon">⚡</span>
           <p class="passive-text">{{ zombie.passiveDescription }}</p>
         </div>
 
@@ -91,7 +93,6 @@
         <span class="confirm-hint muted">Selecciona un personaje para continuar</span>
       </template>
     </div>
-
   </div>
 </template>
 
@@ -106,6 +107,7 @@ const selectedId = ref(null);
 
 const selectedName = computed(() => {
   const z = zombies.find((z) => z.id === selectedId.value);
+
   return z ? z.name : '';
 });
 
@@ -130,10 +132,7 @@ function seleccionarPersonaje() {
   background: #080808;
   background-image:
     radial-gradient(ellipse 100% 50% at 50% 0%, #1a0000 0%, transparent 60%),
-    repeating-linear-gradient(
-      0deg, transparent, transparent 2px,
-      rgba(255, 0, 0, 0.012) 2px, rgba(255, 0, 0, 0.012) 4px
-    );
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 0, 0, 0.012) 2px, rgba(255, 0, 0, 0.012) 4px);
   color: #e0e0e0;
   display: flex;
   flex-direction: column;
@@ -154,8 +153,12 @@ function seleccionarPersonaje() {
   border-bottom: 1px solid #1e0000;
   flex-shrink: 0;
 }
-.header-center { text-align: center; }
-.header-spacer { width: 100px; }
+.header-center {
+  text-align: center;
+}
+.header-spacer {
+  width: 100px;
+}
 
 .section-label {
   font-size: 0.65rem;
@@ -218,7 +221,9 @@ function seleccionarPersonaje() {
 .zombie-card.selected {
   border-color: #cc0000;
   background: #130000;
-  box-shadow: 0 0 0 1px #8b0000, 0 8px 32px rgba(200, 0, 0, 0.25);
+  box-shadow:
+    0 0 0 1px #8b0000,
+    0 8px 32px rgba(200, 0, 0, 0.25);
 }
 
 /* Esquinas decorativas en la card */
@@ -230,9 +235,21 @@ function seleccionarPersonaje() {
   transition: opacity 0.2s;
 }
 .zombie-card.selected .card-corner,
-.zombie-card:hover .card-corner { opacity: 1; }
-.card-corner-tl { top: -1px; left: -1px; border-top: 2px solid #cc0000; border-left: 2px solid #cc0000; }
-.card-corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid #cc0000; border-right: 2px solid #cc0000; }
+.zombie-card:hover .card-corner {
+  opacity: 1;
+}
+.card-corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid #cc0000;
+  border-left: 2px solid #cc0000;
+}
+.card-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid #cc0000;
+  border-right: 2px solid #cc0000;
+}
 
 .class-badge {
   position: absolute;
@@ -244,7 +261,10 @@ function seleccionarPersonaje() {
   border: 1px solid #2a0000;
   padding: 2px 6px;
 }
-.zombie-card.selected .class-badge { color: #cc4444; border-color: #660000; }
+.zombie-card.selected .class-badge {
+  color: #cc4444;
+  border-color: #660000;
+}
 
 .char-name {
   font-family: 'Bebas Neue', sans-serif;
@@ -253,7 +273,9 @@ function seleccionarPersonaje() {
   margin: 0;
   color: #e0e0e0;
 }
-.zombie-card.selected .char-name { color: #ff6666; }
+.zombie-card.selected .char-name {
+  color: #ff6666;
+}
 
 .char-desc {
   font-size: 0.78rem;
@@ -297,10 +319,18 @@ function seleccionarPersonaje() {
   border-radius: 2px;
   transition: width 0.5s ease;
 }
-.stat-bar-health  { background: linear-gradient(to right, #8b0000, #cc0000); }
-.stat-bar-speed   { background: linear-gradient(to right, #004488, #0088ff); }
-.stat-bar-stamina { background: linear-gradient(to right, #005500, #00cc44); }
-.stat-bar-damage  { background: linear-gradient(to right, #884400, #ff8800); }
+.stat-bar-health {
+  background: linear-gradient(to right, #8b0000, #cc0000);
+}
+.stat-bar-speed {
+  background: linear-gradient(to right, #004488, #0088ff);
+}
+.stat-bar-stamina {
+  background: linear-gradient(to right, #005500, #00cc44);
+}
+.stat-bar-damage {
+  background: linear-gradient(to right, #884400, #ff8800);
+}
 .stat-val {
   font-size: 0.65rem;
   color: #444;
@@ -317,7 +347,10 @@ function seleccionarPersonaje() {
   border-left: 2px solid #5c3a00;
   padding: 8px 10px;
 }
-.passive-icon { font-size: 0.9rem; flex-shrink: 0; }
+.passive-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
 .passive-text {
   font-size: 0.72rem;
   color: #cc8833;
@@ -333,8 +366,12 @@ function seleccionarPersonaje() {
   gap: 6px;
   font-size: 0.65rem;
 }
-.cd-label { color: #444; }
-.cd-val   { color: #777; }
+.cd-label {
+  color: #444;
+}
+.cd-val {
+  color: #777;
+}
 
 /* ── BARRA INFERIOR ─────────────────────────────────────────── */
 .confirm-bar {
@@ -352,8 +389,13 @@ function seleccionarPersonaje() {
   font-size: 0.85rem;
   color: #888;
 }
-.confirm-hint strong { color: #cc4444; }
-.confirm-hint.muted  { color: #333; font-style: italic; }
+.confirm-hint strong {
+  color: #cc4444;
+}
+.confirm-hint.muted {
+  color: #333;
+  font-style: italic;
+}
 
 .btn-play {
   background: #8b0000;
@@ -374,5 +416,76 @@ function seleccionarPersonaje() {
   box-shadow: 0 0 24px rgba(200, 0, 0, 0.5);
   transform: scale(1.03);
 }
-.play-arrow { font-size: 1.1rem; }
+.play-arrow {
+  font-size: 1.1rem;
+}
+
+.portrait-container {
+  width: 100%;
+  height: 180px; /* Ajusta según prefieras */
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  background: radial-gradient(circle, rgba(60, 0, 0, 0.3) 0%, transparent 70%);
+  border-radius: 4px;
+}
+
+.portrait-container {
+  width: 100%;
+  height: 150px; /* Tamaño del cuadro de la imagen */
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+  background: radial-gradient(circle, rgba(139, 0, 0, 0.15) 0%, transparent 70%);
+  border-radius: 4px;
+  border: 1px solid #1a0000;
+}
+
+.zombie-portrait {
+  width: 100%;
+  height: 100%;
+  /* IMPORTANTE: Verifica que este nombre de archivo sea exactamente igual (mayúsculas/minúsculas) */
+  background-image: url('../assets/ui/Personajes.png');
+  background-size: 400% 100%;
+  background-repeat: no-repeat;
+  transition: transform 0.3s ease;
+  animation: pulseRotate 4s ease-in-out infinite;
+}
+
+/* Animación de dilatación o respiración */
+@keyframes pulseRotate {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+/* Efecto al pasar el mouse o seleccionar */
+.zombie-card:hover .zombie-portrait,
+.zombie-card.selected .zombie-portrait {
+  animation-duration: 1.5s;
+  filter: drop-shadow(0 0 10px rgba(200, 0, 0, 0.6));
+}
+
+/* ── RECORTE PARA CADA ZOMBIE ───────────────────────────────── */
+/* Basado en los IDs reales de tu PlayerStatsConfig.js */
+.portrait-coloso {
+  background-position: 0% center;
+}
+.portrait-atrofia {
+  background-position: 33.33% center;
+}
+.portrait-invocador {
+  background-position: 66.66% center;
+}
+.portrait-lamento {
+  background-position: 100% center;
+}
 </style>

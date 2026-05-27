@@ -60,7 +60,10 @@ watch(
 </template>
 
 <style>
-html, body, #app, main {
+html,
+body,
+#app,
+main {
   margin: 0;
   padding: 0;
   width: 100%;

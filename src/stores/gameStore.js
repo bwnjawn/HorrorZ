@@ -17,13 +17,13 @@ export const useGameStore = defineStore('game', {
     playerMaxHealth: 200,
 
     // ── STATS DE LA HORDA / CIVILES ────────────────────────────────────
-    zombieCount: 0,    // zombis actuales en la horda
-    civilianCount: 0,  // civiles totales spawneados (vivos + muertos)
+    zombieCount: 0, // zombis actuales en la horda
+    civilianCount: 0, // civiles totales spawneados (vivos + muertos)
 
     // ── PUNTUACIÓN ─────────────────────────────────────────────────────
-    timeAlive: 0,       // segundos sobrevividos
-    totalInfected: 0,   // total de infecciones realizadas
-    maxHordeSize: 0,    // pico máximo de la horda
+    timeAlive: 0, // segundos sobrevividos
+    totalInfected: 0, // total de infecciones realizadas
+    maxHordeSize: 0, // pico máximo de la horda
 
     // ── MECÁNICA DE REAGRUPAMIENTO ─────────────────────────────────────
     isRegrouping: false,
@@ -37,6 +37,7 @@ export const useGameStore = defineStore('game', {
     formattedTime: (state) => {
       const m = Math.floor(state.timeAlive / 60);
       const s = state.timeAlive % 60;
+
       return `${m}:${s.toString().padStart(2, '0')}`;
     },
   },
@@ -57,6 +58,7 @@ export const useGameStore = defineStore('game', {
 
       // Sincronizar vida máxima con el personaje elegido
       const config = Object.values(PLAYER_TYPES).find((p) => p.id === zombieId);
+
       if (config) {
         this.playerMaxHealth = config.baseHealth;
         this.playerHealth = config.baseHealth;
@@ -104,6 +106,7 @@ export const useGameStore = defineStore('game', {
     infectCivilian() {
       this.zombieCount++;
       this.totalInfected++;
+
       if (this.zombieCount > this.maxHordeSize) {
         this.maxHordeSize = this.zombieCount;
       }

@@ -1,22 +1,11 @@
 <template>
-  <div class="title-screen">
-    <!-- Fondo con partículas de niebla -->
-    <div class="fog fog-1"></div>
-    <div class="fog fog-2"></div>
-    <div class="fog fog-3"></div>
-
-    <!-- Gotas de sangre decorativas -->
-    <div class="blood-drops">
-      <span v-for="n in 8" :key="n" class="drop" :style="dropStyle(n)"></span>
-    </div>
-
-    <div class="content">
+  <TerrorLayout>
+    <!-- PANTALLA PRINCIPAL -->
+    <div v-if="currentView === 'title'" class="content">
       <!-- Logo -->
       <div class="logo-wrapper">
         <p class="pre-title">— SOBREVIVE O CONTAGIA —</p>
-        <h1 class="game-title">
-          <span class="horror">HORROR</span><span class="z">Z</span>
-        </h1>
+        <h1 class="game-title"><span class="horror">HORROR</span><span class="z">Z</span></h1>
         <div class="title-underline"></div>
       </div>
 
@@ -26,140 +15,39 @@
         <span class="tagline-accent">No dejes que te detengan.</span>
       </p>
 
-      <!-- Botón principal -->
-      <button class="btn-start" @click="store.goToCharSelect()">
-        <span class="btn-text">COMENZAR</span>
-        <span class="btn-arrow">▶</span>
-      </button>
+      <!-- Grupo de Botones -->
+      <div class="button-group">
+        <button class="btn-start" @click="store.goToCharSelect()">
+          <span class="btn-text">COMENZAR</span>
+          <span class="btn-arrow">▶</span>
+        </button>
 
-      <!-- Controles rápidos -->
-      <div class="controls-hint">
-        <div class="hint-row">
-          <kbd>WASD</kbd><span>Mover</span>
-          <kbd>SHIFT</kbd><span>Correr</span>
-          <kbd>CLIC IZQ</kbd><span>Atacar / Mantener: Ataque Cargado</span>
-        </div>
-        <div class="hint-row">
-          <kbd>CLIC DER</kbd><span>Habilidad especial</span>
-          <kbd>ESPACIO</kbd><span>Reagrupar horda</span>
-        </div>
+        <button class="btn-controls" @click="currentView = 'controls'">
+          <span class="btn-text">CONTROLES</span>
+          <span class="btn-arrow">⚙</span>
+        </button>
       </div>
     </div>
 
-    <!-- Esquinas decorativas -->
-    <div class="corner corner-tl"></div>
-    <div class="corner corner-tr"></div>
-    <div class="corner corner-bl"></div>
-    <div class="corner corner-br"></div>
-  </div>
+    <!-- PANTALLA DE CONTROLES -->
+    <ControlsScreen v-else-if="currentView === 'controls'" @back="currentView = 'title'" />
+  </TerrorLayout>
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { useGameStore } from '../stores/gameStore';
+import TerrorLayout from './TerrorLayout.vue';
+import ControlsScreen from './ControlsScreen.vue';
 
 const store = useGameStore();
 
-// Posiciones aleatorias pero deterministas para las gotas
-function dropStyle(n) {
-  const positions = [8, 17, 28, 41, 55, 68, 79, 91];
-  const delays = [0, 0.8, 1.4, 0.3, 1.9, 0.6, 1.2, 2.1];
-  const heights = [60, 45, 80, 55, 70, 40, 65, 50];
-
-  return {
-    left: `${positions[n - 1]}%`,
-    animationDelay: `${delays[n - 1]}s`,
-    height: `${heights[n - 1]}px`,
-  };
-}
+// Gestiona si vemos el título o los controles dentro del mismo fondo
+const currentView = ref('title');
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap');
-
-/* ── FONDO Y LAYOUT ─────────────────────────────────────────── */
-.title-screen {
-  position: fixed;
-  inset: 0;
-  background: #080808;
-  background-image:
-    radial-gradient(ellipse 80% 60% at 50% 100%, #1a0000 0%, transparent 70%),
-    radial-gradient(ellipse 50% 30% at 20% 50%, #0d0005 0%, transparent 60%),
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(255, 0, 0, 0.015) 2px,
-      rgba(255, 0, 0, 0.015) 4px
-    );
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  font-family: 'Share Tech Mono', monospace;
-}
-
-/* ── NIEBLA ─────────────────────────────────────────────────── */
-.fog {
-  position: absolute;
-  bottom: 0;
-  left: -20%;
-  width: 140%;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  animation: fogDrift 18s ease-in-out infinite;
-}
-.fog-1 {
-  height: 35vh;
-  background: radial-gradient(ellipse at center bottom, rgba(100, 0, 0, 0.18) 0%, transparent 70%);
-  animation-duration: 20s;
-  animation-delay: 0s;
-}
-.fog-2 {
-  height: 25vh;
-  left: -30%;
-  background: radial-gradient(ellipse at center bottom, rgba(50, 0, 20, 0.14) 0%, transparent 70%);
-  animation-duration: 25s;
-  animation-delay: -8s;
-}
-.fog-3 {
-  height: 20vh;
-  left: 10%;
-  background: radial-gradient(ellipse at center bottom, rgba(0, 0, 0, 0.3) 0%, transparent 70%);
-  animation-duration: 15s;
-  animation-delay: -4s;
-}
-@keyframes fogDrift {
-  0%, 100% { opacity: 0; transform: translateX(0) scaleX(1); }
-  30%       { opacity: 1; }
-  50%       { opacity: 0.8; transform: translateX(5%) scaleX(1.05); }
-  70%       { opacity: 1; }
-}
-
-/* ── GOTAS DE SANGRE ────────────────────────────────────────── */
-.blood-drops {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  pointer-events: none;
-}
-.drop {
-  position: absolute;
-  top: 0;
-  width: 3px;
-  border-radius: 0 0 50% 50%;
-  background: linear-gradient(to bottom, #8b0000, #cc0000, #ff000088);
-  opacity: 0;
-  animation: drip 4s ease-in infinite;
-}
-@keyframes drip {
-  0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
-  15%  { opacity: 1; transform: scaleY(1); }
-  85%  { opacity: 1; }
-  100% { opacity: 0; }
-}
 
 /* ── CONTENIDO CENTRAL ──────────────────────────────────────── */
 .content {
@@ -172,12 +60,19 @@ function dropStyle(n) {
   text-align: center;
   animation: fadeIn 1.2s ease-out forwards;
 }
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* ── LOGO ───────────────────────────────────────────────────── */
+/* ── LOGO & TAGLINE ─────────────────────────────────────────── */
 .logo-wrapper {
   display: flex;
   flex-direction: column;
@@ -208,18 +103,11 @@ function dropStyle(n) {
     4px 4px 0 #0d0000;
 }
 .z {
-  color: #cc0000;
+  color: #eb3131;
   text-shadow:
     0 0 20px #ff0000,
     0 0 40px #cc0000,
     2px 2px 0 #4d0000;
-}
-@keyframes titleFlicker {
-  0%, 95%, 100% { opacity: 1; }
-  96%           { opacity: 0.85; }
-  97%           { opacity: 1; }
-  98%           { opacity: 0.7; }
-  99%           { opacity: 1; }
 }
 .title-underline {
   width: 60%;
@@ -228,7 +116,26 @@ function dropStyle(n) {
   margin-top: 4px;
 }
 
-/* ── TAGLINE ────────────────────────────────────────────────── */
+@keyframes titleFlicker {
+  0%,
+  95%,
+  100% {
+    opacity: 1;
+  }
+  96% {
+    opacity: 0.85;
+  }
+  97% {
+    opacity: 1;
+  }
+  98% {
+    opacity: 0.7;
+  }
+  99% {
+    opacity: 1;
+  }
+}
+
 .tagline {
   font-family: 'Share Tech Mono', monospace;
   font-size: 0.95rem;
@@ -242,40 +149,79 @@ function dropStyle(n) {
   font-size: 1rem;
 }
 
-/* ── BOTÓN ──────────────────────────────────────────────────── */
-.btn-start {
+/* ── BOTONES ────────────────────────────────────────────────── */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 250px;
+}
+
+.btn-start,
+.btn-controls {
   position: relative;
   background: transparent;
-  border: 2px solid #8b0000;
-  color: #ff4444;
   font-family: 'Bebas Neue', sans-serif;
   font-size: 1.5rem;
   letter-spacing: 0.2em;
-  padding: 14px 52px;
+  padding: 14px 0;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   transition: all 0.2s ease;
   overflow: hidden;
   animation: fadeIn 1.2s ease-out 0.7s both;
+  width: 100%;
 }
-.btn-start::before {
+
+.btn-start {
+  border: 2px solid #8b0000;
+  color: #ff4444;
+}
+
+.btn-controls {
+  border: 2px solid #444;
+  color: #aaa;
+  animation-delay: 0.9s;
+}
+
+.btn-start::before,
+.btn-controls::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: #8b0000;
   transform: translateX(-101%);
   transition: transform 0.25s ease;
   z-index: 0;
 }
-.btn-start:hover::before { transform: translateX(0); }
+
+.btn-start::before {
+  background: #8b0000;
+}
+.btn-controls::before {
+  background: #333;
+}
+
+.btn-start:hover::before,
+.btn-controls:hover::before {
+  transform: translateX(0);
+}
+
 .btn-start:hover {
   color: #fff;
   border-color: #cc0000;
   box-shadow: 0 0 30px rgba(200, 0, 0, 0.4);
 }
-.btn-text, .btn-arrow {
+.btn-controls:hover {
+  color: #fff;
+  border-color: #666;
+}
+
+.btn-text,
+.btn-arrow {
   position: relative;
   z-index: 1;
 }
@@ -283,47 +229,8 @@ function dropStyle(n) {
   font-size: 1rem;
   transition: transform 0.2s;
 }
-.btn-start:hover .btn-arrow { transform: translateX(4px); }
-
-/* ── HINTS DE CONTROLES ─────────────────────────────────────── */
-.controls-hint {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  animation: fadeIn 1.2s ease-out 1s both;
+.btn-start:hover .btn-arrow,
+.btn-controls:hover .btn-arrow {
+  transform: translateX(4px);
 }
-.hint-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-kbd {
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-bottom: 2px solid #444;
-  color: #aaa;
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 0.7rem;
-  padding: 3px 7px;
-  border-radius: 3px;
-}
-.hint-row span {
-  font-size: 0.72rem;
-  color: #555;
-  margin-right: 8px;
-}
-
-/* ── ESQUINAS DECORATIVAS ───────────────────────────────────── */
-.corner {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  opacity: 0.4;
-}
-.corner-tl { top: 20px; left: 20px; border-top: 2px solid #8b0000; border-left: 2px solid #8b0000; }
-.corner-tr { top: 20px; right: 20px; border-top: 2px solid #8b0000; border-right: 2px solid #8b0000; }
-.corner-bl { bottom: 20px; left: 20px; border-bottom: 2px solid #8b0000; border-left: 2px solid #8b0000; }
-.corner-br { bottom: 20px; right: 20px; border-bottom: 2px solid #8b0000; border-right: 2px solid #8b0000; }
 </style>

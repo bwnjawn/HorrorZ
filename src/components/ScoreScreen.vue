@@ -1,6 +1,5 @@
 <template>
   <div class="score-screen">
-
     <!-- Overlay oscuro animado -->
     <div class="bg-overlay"></div>
 
@@ -10,7 +9,6 @@
     </div>
 
     <div class="content">
-
       <!-- Título de muerte -->
       <div class="death-title-block">
         <p class="pre-label">— FIN DE LA INFECCIÓN —</p>
@@ -47,17 +45,17 @@
         <div class="stat-divider"></div>
 
         <div class="stat-item">
-          <div class="stat-icon">💀</div>
+          <img src="../assets/ui/craneo.png" alt="Pico máximo" class="stat-icon" />
           <div class="stat-data">
             <span class="stat-number">{{ store.maxHordeSize }}</span>
-            <span class="stat-desc">Pico máximo de horda</span>
+            <span class="stat-desc">Récord de horda</span>
           </div>
         </div>
 
         <div class="stat-divider"></div>
 
         <div class="stat-item">
-          <div class="stat-icon">🧟</div>
+          <img src="../assets/ui/zombie.png" alt="Zombies" class="stat-icon" />
           <div class="stat-data">
             <span class="stat-number">{{ store.zombieCount }}</span>
             <span class="stat-desc">Zombis al morir</span>
@@ -73,19 +71,12 @@
 
       <!-- Botones de acción -->
       <div class="action-buttons">
-        <button class="btn btn-retry" @click="retryGame()">
-          <span>↺</span> REINTENTAR
-        </button>
-        <button class="btn btn-menu" @click="goToMenu()">
-          <span>⌂</span> MENÚ PRINCIPAL
-        </button>
+        <button class="btn btn-retry" @click="retryGame()"><span>↺</span> REINTENTAR</button>
+        <button class="btn btn-menu" @click="goToMenu()"><span>⌂</span> MENÚ PRINCIPAL</button>
       </div>
 
       <!-- Fórmula de puntuación -->
-      <p class="score-formula">
-        Puntuación = infectados × 100 + segundos × 10 + pico_horda × 50
-      </p>
-
+      <p class="score-formula">Puntuación = infectados × 100 + segundos × 10 + pico_horda × 50</p>
     </div>
   </div>
 </template>
@@ -102,6 +93,7 @@ const finalScore = computed(() => {
 
 function retryGame() {
   const lastZombie = store.selectedZombie;
+
   store.resetGame();
   // Volver directamente a selección de personaje
   store.currentView = 'charSelect';
@@ -114,17 +106,21 @@ function goToMenu() {
 // Posiciones decorativas para las manchas de sangre
 function splatStyle(n) {
   const data = [
-    { top: '5%',  left: '3%',  size: '80px',  rot: '20deg'  },
-    { top: '2%',  left: '88%', size: '60px',  rot: '-15deg' },
-    { top: '15%', left: '95%', size: '45px',  rot: '45deg'  },
-    { top: '80%', left: '1%',  size: '70px',  rot: '-30deg' },
-    { top: '88%', left: '90%', size: '55px',  rot: '10deg'  },
-    { top: '70%', left: '96%', size: '40px',  rot: '60deg'  },
+    { top: '5%', left: '3%', size: '80px', rot: '20deg' },
+    { top: '2%', left: '88%', size: '60px', rot: '-15deg' },
+    { top: '15%', left: '95%', size: '45px', rot: '45deg' },
+    { top: '80%', left: '1%', size: '70px', rot: '-30deg' },
+    { top: '88%', left: '90%', size: '55px', rot: '10deg' },
+    { top: '70%', left: '96%', size: '40px', rot: '60deg' },
   ];
+
   const d = data[n - 1];
+
   return {
-    top: d.top, left: d.left,
-    width: d.size, height: d.size,
+    top: d.top,
+    left: d.left,
+    width: d.size,
+    height: d.size,
     transform: `rotate(${d.rot})`,
   };
 }
@@ -152,12 +148,20 @@ function splatStyle(n) {
   animation: overlayIn 0.6s ease-out forwards;
 }
 @keyframes overlayIn {
-  from { opacity: 0; }
-  to   { opacity: 0.94; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.94;
+  }
 }
 
 /* ── MANCHAS DECORATIVAS ────────────────────────────────────── */
-.splatter { position: absolute; inset: 0; pointer-events: none; }
+.splatter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 .splat {
   position: absolute;
   border-radius: 50% 40% 55% 45%;
@@ -166,8 +170,14 @@ function splatStyle(n) {
   animation: splatIn 0.4s ease-out 0.5s forwards;
 }
 @keyframes splatIn {
-  from { opacity: 0; transform: scale(0) rotate(var(--rot, 0deg)); }
-  to   { opacity: 0.35; transform: scale(1) rotate(var(--rot, 0deg)); }
+  from {
+    opacity: 0;
+    transform: scale(0) rotate(var(--rot, 0deg));
+  }
+  to {
+    opacity: 0.35;
+    transform: scale(1) rotate(var(--rot, 0deg));
+  }
 }
 
 /* ── CONTENIDO ──────────────────────────────────────────────── */
@@ -184,12 +194,20 @@ function splatStyle(n) {
   animation: contentIn 0.6s ease-out 0.3s both;
 }
 @keyframes contentIn {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── TÍTULO ─────────────────────────────────────────────────── */
-.death-title-block { text-align: center; }
+.death-title-block {
+  text-align: center;
+}
 .pre-label {
   font-size: 0.65rem;
   letter-spacing: 0.4em;
@@ -203,15 +221,27 @@ function splatStyle(n) {
   margin: 0;
   line-height: 1;
   color: #cc0000;
-  text-shadow: 0 0 40px rgba(200, 0, 0, 0.6), 3px 3px 0 #2d0000;
+  text-shadow:
+    0 0 40px rgba(200, 0, 0, 0.6),
+    3px 3px 0 #2d0000;
   animation: titleShake 0.5s ease-out 0.4s both;
 }
 @keyframes titleShake {
-  0%  { transform: translateX(-8px); }
-  25% { transform: translateX(6px); }
-  50% { transform: translateX(-4px); }
-  75% { transform: translateX(2px); }
-  100%{ transform: translateX(0); }
+  0% {
+    transform: translateX(-8px);
+  }
+  25% {
+    transform: translateX(6px);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 .death-subtitle {
   font-size: 0.8rem;
@@ -242,6 +272,23 @@ function splatStyle(n) {
 }
 
 /* ── PANEL DE STATS ─────────────────────────────────────────── */
+
+.stat-icon {
+  /* 1. Definir un tamaño cuadrado estricto para todos los íconos */
+  width: 40px;
+  height: 40px;
+
+  /* 2. Reglas para los símbolos de texto (div) */
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3a0202; /* Para que combinen con la temática */
+
+  /* 3. Reglas para las imágenes (img) */
+  object-fit: contain; /* Ajusta la imagen al cuadro de 40x40 sin deformarla */
+}
+
 .stats-panel {
   display: flex;
   align-items: stretch;
@@ -255,21 +302,33 @@ function splatStyle(n) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center; /* Alineación vertical */
+  gap: 12px;
   padding: 20px 16px;
   text-align: center;
   transition: background 0.2s;
+  min-height: 120px; /* Asegura que todos los paneles midan lo mismo */
 }
-.stat-item:hover { background: #0f0000; }
-.stat-icon  { font-size: 1.4rem; }
-.stat-data  { display: flex; flex-direction: column; gap: 4px; }
+.stat-item:hover {
+  background: #0f0000;
+}
+
+.stat-data {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .stat-number {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 2rem;
   color: #cc3333;
   line-height: 1;
 }
-.stat-desc  { font-size: 0.65rem; color: #555; letter-spacing: 0.05em; }
+.stat-desc {
+  font-size: 0.65rem;
+  color: #555;
+  letter-spacing: 0.05em;
+}
 .stat-divider {
   width: 1px;
   background: #1e1e1e;
@@ -298,8 +357,14 @@ function splatStyle(n) {
   animation: scoreCount 1s ease-out 0.8s both;
 }
 @keyframes scoreCount {
-  from { opacity: 0; transform: scale(0.5); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ── BOTONES ─────────────────────────────────────────────────── */
