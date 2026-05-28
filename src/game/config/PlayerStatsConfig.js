@@ -28,7 +28,7 @@ export const PLAYER_TYPES = {
     maxStamina: 100, // Se cansa muy rápido si corre
     baseDamage: 50,
     abilityCooldown: 6000,
-    spriteKey: 'zombie-walk', // Placeholder hasta que tengas su sprite real
+    spriteKey: 'zombie_walk_0', // Placeholder hasta que tengas su sprite real
     //animWalk: 'coloso-walk-anim',
     //animAttack: ,
     passiveDescription: 'Piel Blindada (-30% de daño recibido por proyectiles)',
@@ -42,7 +42,7 @@ export const PLAYER_TYPES = {
     maxStamina: 250, // Puede correr por mucho tiempo
     baseDamage: 20,
     abilityCooldown: 3000,
-    spriteKey: 'zombie-walk',
+    spriteKey: 'zombie_walk_0',
     //animWalk: 'atrofia-walk-anim',
     //animAttack: ,
     passiveDescription: 'Adrenalina (Recupera un 20% de estamina al infectar)',
@@ -56,7 +56,7 @@ export const PLAYER_TYPES = {
     maxStamina: 150,
     baseDamage: 15, // Débil cuerpo a cuerpo
     abilityCooldown: 12000,
-    spriteKey: 'zombie-walk',
+    spriteKey: 'zombie_walk_0',
     //animWalk: 'invocador-walk-anim',
     //animAttack: ,
     passiveDescription: 'Aura Infecciosa (Infecta civiles automáticamente al acercarse)',
@@ -70,7 +70,7 @@ export const PLAYER_TYPES = {
     maxStamina: 180,
     baseDamage: 30, // Daño por quemadura/veneno
     abilityCooldown: 100,
-    spriteKey: 'zombie-walk',
+    spriteKey: 'zombie_walk_0',
     //animWalk: 'lamento-walk-anim',
     //animAttack: ,
     passiveDescription: 'Sangre Corrosiva (Explota en una nube tóxica al recibir daño o morir)',

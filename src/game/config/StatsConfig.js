@@ -4,7 +4,7 @@ export const ENEMY_TYPES = {
     texture: 'soldier_move_0',
     hp: 100,
     speed: 120,
-    visionRange: 350, 
+    visionRange: 350,
     attackRange: 120,
     retreatRange: 90,
     fireRate: 800,
@@ -64,7 +64,7 @@ export const ENEMY_TYPES = {
     retreatRange: 0, // No huye
     fireRate: 0,
     damage: 80,
-    scale: 0.09,
+    scale: 0.3,
     colorTint: 0xffc347,
     healReward: 20,
   },

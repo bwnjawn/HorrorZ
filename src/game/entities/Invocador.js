@@ -11,16 +11,16 @@ export class Invocador extends Player {
     this.civilesExpuestos = new Map();
   }
 
- usarHabilidadEspecial() {
+  usarHabilidadEspecial() {
     // Verificamos isAttacking para que no grite mientras da un golpe básico
     if (this.isDead || this.isAttacking || !this.puedeUsarHabilidad()) return;
 
     console.log('¡El Invocador usa GRITO FRENÉTICO!');
-    
+
     // ==========================================
     // REPRODUCIR ANIMACIÓN DE GRITO
     // ==========================================
-    this.isAttacking = true; 
+    this.isAttacking = true;
     this.setVelocity(0, 0); // Se detiene para gritar
     this.play('invocador-scream-anim', true);
 
@@ -63,7 +63,7 @@ export class Invocador extends Player {
           zombi.maxSpeed = zombi.originalSpeed;
           zombi.baseDamage = zombi.originalDamage;
           // Corregido: para no quitar el tinte base del Invocador por error al limpiar a la horda
-          zombi.clearTint(); 
+          zombi.clearTint();
         });
       }
     });

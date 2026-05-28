@@ -35,17 +35,22 @@ export class Medic extends Enemy {
 
   curarAliado(time) {
     if (time > this.ultimaCuracion + this.cadenciaCuracion) {
+      const objetivo = this.aliadoHerido;
+
+      if (!objetivo || objetivo.isDead) return;
       this.play('soldier-shoot-anim', true); // Animación temporal de curar
 
       this.aliadoHerido.health += this.potenciaCuracion;
 
-      if (this.aliadoHerido.health > this.aliadoHerido.maxHealth) {
-        this.aliadoHerido.health = this.aliadoHerido.maxHealth;
+      if (objetivo.health > objetivo.maxHealth) {
+        objetivo.health = objetivo.maxHealth;
       }
 
       this.aliadoHerido.setTint(0x00ff00); // Feedback visual del aliado curado
       this.scene.time.delayedCall(150, () => {
-        if (!this.aliadoHerido.isDead) this.aliadoHerido.setTint(this.aliadoHerido.colorOriginal);
+        if (objetivo && !objetivo.isDead) {
+          objetivo.setTint(objetivo.colorOriginal);
+        }
       });
 
       this.ultimaCuracion = time;

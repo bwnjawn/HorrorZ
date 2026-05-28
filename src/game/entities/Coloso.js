@@ -22,7 +22,7 @@ export class Coloso extends Player {
 
     console.log('¡El Coloso usa EMBESTIDA!');
     this.isDashing = true;
-    
+
     // 1. REPRODUCIR LA ANIMACIÓN DE EMBESTIDA
     this.play('coloso-dash-anim', true);
 
@@ -30,9 +30,9 @@ export class Coloso extends Player {
 
     this.scene.time.delayedCall(500, () => {
       this.isDashing = false;
+
       if (!this.isDead) {
         this.setTexture('zombie_walk_0'); // Regresa a la pose normal
-        
       }
     });
   }

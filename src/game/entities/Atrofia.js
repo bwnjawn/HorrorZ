@@ -6,9 +6,9 @@ export class Atrofia extends Player {
   constructor(scene, x, y) {
     super(scene, x, y, PLAYER_TYPES.ATROFIA);
 
-    // Nota: Si configuraste la escala a 1 en Player.js, puedes borrar este setScale. 
+    // Nota: Si configuraste la escala a 1 en Player.js, puedes borrar este setScale.
     // Lo dejo en 0.4 tal como lo tenías por si tus sprites de Atrofia son más grandes.
-    this.setScale(0.4); 
+    this.setScale(0.4);
     this.setTint(0xaaaaff);
 
     this.originalBaseSpeed = this.baseSpeed;
@@ -45,7 +45,7 @@ export class Atrofia extends Player {
     console.log('¡La Atrofia usa SALTO DEPREDADOR!');
     this.isJumping = true;
     this.isAttacking = true; // Bloquea la caminata en Player.js
-    
+
     // Inicia la animación del salto en el aire
     this.play('atrofia-jump-anim', true);
 
@@ -62,11 +62,35 @@ export class Atrofia extends Player {
     let finalY = targetY;
 
     const dist = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
 
     if (dist > maxDist) {
-      const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
       finalX = this.x + Math.cos(angle) * maxDist;
       finalY = this.y + Math.sin(angle) * maxDist;
+    }
+
+    if (this.scene.obstaculos) {
+      const obstaculos = this.scene.obstaculos.getChildren();
+      let intersecta = true;
+      let intentos = 0;
+
+      // Si el punto de caída toca una pared, lo retrocedemos hacia Atrofia 15 píxeles a la vez
+      while (intersecta && intentos < 30) {
+        intersecta = false;
+
+        for (let i = 0; i < obstaculos.length; i++) {
+          if (obstaculos[i].getBounds().contains(finalX, finalY)) {
+            intersecta = true;
+            break;
+          }
+        }
+
+        if (intersecta) {
+          finalX -= Math.cos(angle) * 15;
+          finalY -= Math.sin(angle) * 15;
+        }
+        intentos++;
+      }
     }
 
     // CORRECCIÓN DE ROTACIÓN: Apunta hacia donde salta
@@ -87,8 +111,7 @@ export class Atrofia extends Player {
         this.isJumping = false;
         this.isAttacking = false; // Le devuelve el control a Player.js
         this.setTexture('zombie_walk_0'); // Regresa a la pose de pie
-        
-        
+
         if (this.baseSpeed === this.originalBaseSpeed && !this.isDead) this.setTint(0xaaaaff);
 
         // Llamamos a la función de impacto

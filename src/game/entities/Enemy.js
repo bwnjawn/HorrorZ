@@ -15,6 +15,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Propiedades de estado
     this.health = statsConfig.hp;
+    this.maxHealth = statsConfig.hp;
     this.estado = 'PATRULLANDO';
     this.isDead = false;
     this.healReward = statsConfig.healReward;
@@ -38,10 +39,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.esInvulnerable = true;
 
     if (tipoDaño !== 'veneno') {
-      this.esInvulnerable = true;
-      this.scene.time.delayedCall(1500, () => {
+      this.scene.time.delayedCall(200, () => {
         this.esInvulnerable = false;
       });
+    } else {
+      this.esInvulnerable = false; // El veneno hace daño constante
     }
     this.setTint(tipoDaño === 'veneno' ? 0x00ff00 : 0xffffff);
 
@@ -89,6 +91,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.colorOriginal = statsConfig.colorTint;
     this.healReward = statsConfig.healReward;
     this.health = statsConfig.hp;
+    this.maxHealth = statsConfig.hp;
     this.maxSpeed = statsConfig.speed;
 
     this.setScale(statsConfig.scale);
@@ -162,6 +165,58 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     return steer;
   }
+  //optimizacion del sistema de giro en obstaculos
+  applyObstacleAvoidance() {
+    const radioVisionObstaculos = 60;
+    let steer = new Phaser.Math.Vector2(0, 0);
+
+    // Si el enemigo está quieto, no calculamos evasión
+    if (this.velocity.lengthSq() === 0) return steer;
+
+    const dir = this.velocity.clone().normalize();
+    const anguloBase = dir.angle();
+
+    // Creamos 3 bigotes invisibles: Frente (0°), Izquierda (-45°), Derecha (+45°)
+    const angulosBigotes = [0, -Math.PI / 4, Math.PI / 4];
+
+    if (!this.scene.obstaculos) return steer;
+    const obstaculos = this.scene.obstaculos.getChildren();
+
+    for (let i = 0; i < angulosBigotes.length; i++) {
+      const anguloRayo = anguloBase + angulosBigotes[i];
+      const puntaRayoX = this.x + Math.cos(anguloRayo) * radioVisionObstaculos;
+      const puntaRayoY = this.y + Math.sin(anguloRayo) * radioVisionObstaculos;
+
+      let choca = false;
+
+      for (let j = 0; j < obstaculos.length; j++) {
+        if (obstaculos[j].getBounds().contains(puntaRayoX, puntaRayoY)) {
+          choca = true;
+          break;
+        }
+      }
+
+      if (choca) {
+        // Fuerza de repulsión: Si choca de frente o izquierda, gira a la derecha (+90°). Si choca a la derecha, gira a la izquierda (-90°).
+        let multiplicador = angulosBigotes[i] <= 0 ? Math.PI / 2.5 : -Math.PI / 2.5;
+        let anguloEscape = anguloRayo + multiplicador;
+
+        // Empujamos en esa nueva dirección de escape
+        const desired = new Phaser.Math.Vector2(Math.cos(anguloEscape) * this.maxSpeed, Math.sin(anguloEscape) * this.maxSpeed);
+
+        steer = desired.subtract(this.velocity);
+
+        // Al esquivar paredes le damos un poco más de fuerza de giro que a caminar normal
+        if (steer.length() > this.maxForce * 1.5) {
+          steer.normalize().scale(this.maxForce * 1.5);
+        }
+
+        break; // Reaccionamos al primer bigote que detecte choque para no volvernos locos
+      }
+    }
+
+    return steer;
+  }
   updateBase(time, delta, player) {
     if (this.isDead) return;
     this.acceleration.set(0, 0);
@@ -182,8 +237,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.calcularNuevoPuntoPatrulla(player);
     }
     const forceSeek = this.applySeek(this.puntoObjetivo);
+    const forceAvoid = this.applyObstacleAvoidance().scale(2.5); // 2.5 de peso para que no ignore la pared por perseguirte
 
     this.acceleration.add(forceSeek);
+    this.acceleration.add(forceAvoid);
     this.velocity.add(this.acceleration);
 
     if (this.velocity.length() > this.maxSpeed) {

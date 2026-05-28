@@ -69,7 +69,7 @@ export class Lamento extends Player {
     // INICIAR ANIMACIÓN DE ESCUPIR
     // ==========================================
     this.isAttacking = true; // Engaña al Player.js para que no intente hacerlo caminar
-    this.setVelocity(0, 0);  // Lo frenamos en seco
+    this.setVelocity(0, 0); // Lo frenamos en seco
     this.play('lamento-spitt-anim', true); // Reproduce los 20 frames del escupitajo
 
     // Cuando termina la animación, le devolvemos el control

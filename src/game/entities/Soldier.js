@@ -5,24 +5,13 @@ export class Soldier extends Enemy {
   constructor(scene, x, y, typeConfig) {
     super(scene, x, y, typeConfig.texture, typeConfig);
     this.setLighting(true);
-    
-    // 1. Escala (Ajústala si necesitas que el sprite se vea más grande o pequeño)
-    this.setScale(0.1); 
 
-    // ==========================================
-    // AJUSTE DE HITBOX DINÁMICA
-    // ==========================================
-    // Esperamos 50ms para que Phaser cargue bien el frame inicial de la textura
-    this.scene.time.delayedCall(50, () => {
-        const hitboxAncho = this.width * 0.4; 
-        const hitboxAlto = this.height * 0.4;
-        this.body.setSize(hitboxAncho, hitboxAlto);
+    this.setScale(0.1);
 
-        const offsetX = (this.width - hitboxAncho) / 2;
-        const offsetY = (this.height - hitboxAlto) / 2;
-        this.body.setOffset(offsetX, offsetY);
-    });
-    // ==========================================
+    const hitboxAncho = this.width * 0.4;
+    const hitboxAlto = this.height * 0.4;
+
+    this.body.setSize(hitboxAncho, hitboxAlto);
 
     // ASIGNACIÓN DE ESTADÍSTICAS DINÁMICAS
     this.role = typeConfig.type;
@@ -54,18 +43,10 @@ export class Soldier extends Enemy {
     this.ultimoDisparo = 0;
     this.objetivoActual = null;
 
-    // ==========================================
-    // RE-APLICAR HITBOX AL REVIVIR
-    // ==========================================
-    this.scene.time.delayedCall(50, () => {
-        const hitboxAncho = this.width * 0.4; 
-        const hitboxAlto = this.height * 0.4;
-        this.body.setSize(hitboxAncho, hitboxAlto);
-        this.body.setOffset((this.width - hitboxAncho) / 2, (this.height - hitboxAlto) / 2);
-    });
-    // ==========================================
+    const hitboxAncho = this.width * 0.4;
+    const hitboxAlto = this.height * 0.4;
 
-    // Reproducir animación inactiva/movimiento inicial según el rol
+    this.body.setSize(hitboxAncho, hitboxAlto);
     this.gestionarAnimacionCaminar();
   }
 
@@ -79,6 +60,7 @@ export class Soldier extends Enemy {
       if (player.active && !player.isDead && distJugador < distanciaMinima) {
         this.objetivoActual = player;
       }
+
       return;
     }
 
@@ -107,13 +89,12 @@ export class Soldier extends Enemy {
 
   ejecutarAccionCombate(time) {
     if (time > this.ultimoDisparo + this.cadenciaDisparo) {
-      
       // Lógica de ataque separada por roles
       if (this.role === 'RANGED') {
         this.play('soldier-shoot-anim', true);
         const anguloHaciaObjetivo = Phaser.Math.Angle.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
+
         this.scene.events.emit('disparo-enemigo', { x: this.x, y: this.y, angulo: anguloHaciaObjetivo, daño: this.dañoBala });
-      
       } else if (this.role === 'MELEE') {
         // Reproducir la nueva animación del cuchillo
         this.play('melee-attack', true);
@@ -123,17 +104,15 @@ export class Soldier extends Enemy {
         } else if (this.objetivoActual === this.scene.player) {
           this.scene.store.takeDamage(this.dañoBala);
         }
-      
       } else if (this.role === 'KAMIKAZE') {
-  
         this.play('kamikaze-walk-anim', true);
       } else {
         // Lógica de soldado estándar
-        if (forzar || this.anims.currentAnim?.key !== 'soldier-shoot-anim') {
+        if (this.anims.currentAnim?.key !== 'soldier-shoot-anim') {
           this.play('soldier-walk-anim', true);
         }
       }
-      
+
       this.ultimoDisparo = time;
 
       // Volver a la animación de caminar tras un breve retraso
@@ -147,16 +126,16 @@ export class Soldier extends Enemy {
 
   ejecutarExplosion() {
     this.isDead = true;
-    
+
     // CAMBIO: Aquí reproducimos la animación específica de explosión/ataque
     // Asegúrate de que este nombre coincida con el anims.create en MainScene
-    this.play('kamikaze-explosion-anim', true); 
+    this.play('kamikaze-explosion-anim', true);
 
     // Emitir el evento para MainScene
-    this.scene.events.emit('explosion-kamikaze', { 
-      x: this.x, 
-      y: this.y, 
-      daño: this.dañoBala 
+    this.scene.events.emit('explosion-kamikaze', {
+      x: this.x,
+      y: this.y,
+      daño: this.dañoBala,
     });
 
     // Desactivamos al enemigo después de un breve momento para que se vea la animación
@@ -167,6 +146,15 @@ export class Soldier extends Enemy {
 
   update(time, delta, player, horda) {
     if (this.isDead) return;
+
+    if (this.body) {
+      const centroX = this.width / 2;
+      const centroY = this.height / 2;
+      const mitadAncho = this.body.width / this.scaleX / 2;
+      const mitadAlto = this.body.height / this.scaleY / 2;
+
+      this.body.setOffset(centroX - mitadAncho, centroY - mitadAlto);
+    }
     let teniaObjetivo = this.objetivoActual !== null;
 
     this.buscarObjetivo(player, horda);
@@ -185,12 +173,14 @@ export class Soldier extends Enemy {
       if (distancia <= this.rangoDisparo) {
         if (this.rangoRetirada > 0 && distancia < this.rangoRetirada) {
           this.estado = 'RETIRADA';
-          this.gestionarAnimacionCaminar(true); 
+          this.gestionarAnimacionCaminar(true);
 
           this.acceleration.set(0, 0);
           const forceFlee = this.applyFlee(this.objetivoActual);
+          const forceAvoid = this.applyObstacleAvoidance().scale(2.5);
 
           this.acceleration.add(forceFlee);
+          this.acceleration.add(forceAvoid);
           this.velocity.add(this.acceleration);
 
           if (this.velocity.length() > this.maxSpeed) this.velocity.normalize().scale(this.maxSpeed);
@@ -202,7 +192,7 @@ export class Soldier extends Enemy {
         this.ejecutarAccionCombate(time);
       } else {
         this.estado = 'PERSIGUIENDO';
-        this.gestionarAnimacionCaminar(); 
+        this.gestionarAnimacionCaminar();
 
         this.puntoObjetivo.x = this.objetivoActual.x;
         this.puntoObjetivo.y = this.objetivoActual.y;
@@ -210,7 +200,7 @@ export class Soldier extends Enemy {
       }
     } else {
       this.estado = 'PATRULLANDO';
-      this.gestionarAnimacionCaminar(); 
+      this.gestionarAnimacionCaminar();
       super.updateBase(time, delta, player);
     }
   }

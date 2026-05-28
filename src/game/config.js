@@ -14,7 +14,7 @@ export const gameConfig = {
     default: 'arcade',
     arcade: {
       gravity: { y: 0 },
-      debug: false,
+      debug: true,
     },
   },
   audio: {
