@@ -3,7 +3,7 @@ import { Coloso } from '../entities/Coloso';
 import { Invocador } from '../entities/Invocador';
 import { Lamento } from '../entities/Lamento';
 import { Atrofia } from '../entities/Atrofia';
-import { Civilian } from '../entities/Civilian';
+import { Civilian } from '../entities/Civilians';
 import { Soldier } from '../entities/Soldier';
 import { Medic } from '../entities/Medic';
 import { useGameStore } from '../../stores/gameStore';
@@ -16,19 +16,88 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet('zombie-walk', 'src/assets/sprites/zombie-walking.png', { frameWidth: 313, frameHeight: 374 });
-    this.load.spritesheet('zombie-attack', 'src/assets/sprites/zombie-attacking.png', { frameWidth: 313, frameHeight: 374 });
-    this.load.spritesheet('civil-walking', 'src/assets/sprites/civil-walking.png', { frameWidth: 313, frameHeight: 374 });
-    this.load.spritesheet('soldier-walking', 'src/assets/sprites/soldier-walking.png', { frameWidth: 313, frameHeight: 374 });
-    this.load.spritesheet('soldier-shooting', 'src/assets/sprites/soldier-shooting.png', { frameWidth: 313, frameHeight: 374 });
-
     this.load.tilemapTiledJSON('Map_HorrorZ', 'src/assets/maps/Map_HorrorZ.json');
     this.load.image('Tileset_Fondo', 'src/assets/tilesets/Background_Dark-Green_TileSet.png');
     this.load.image('Tileset_Casa_Negra', 'src/assets/tilesets/Buildings_dark_TileSet.png');
     this.load.image('Tileset_Casa_Gris', 'src/assets/tilesets/Buildings_gray_TileSet.png');
     this.load.image('Tileset_Fondo_Casa_Blanca', 'src/assets/tilesets/Buildings_white_TileSet.png');
-  }
 
+    this.load.spritesheet('civil-walking', 'src/assets/sprites/civil-walking.png', { frameWidth: 313, frameHeight: 374 });
+    this.load.image('kamikaze_standing', 'src/assets/sprites/kamikaze/Hacker_Standing.png');
+    this.load.image('kamikaze_walk_1',   'src/assets/sprites/kamikaze/Hacker_Walking1.png');
+    this.load.image('kamikaze_walk_2',   'src/assets/sprites/kamikaze/Hacker_Walking2.png');
+    this.load.image('kamikaze_walk_3',   'src/assets/sprites/kamikaze/Hacker_Walking3.png');
+    this.load.image('kamikaze_walk_4',   'src/assets/sprites/kamikaze/Hacker_Walking4.png');
+
+    for (let i = 1; i <= 6; i++) {
+    this.load.image(`civil_walk_${i}`, `src/assets/sprites/civilians/WalkCiv${i}.png`);
+    }
+    // CARGA DE SPRITES: ZOMBIES (Caminata y Ataque Básico Compartido)
+    for (let i = 0; i <= 31; i++) {
+      let num = i.toString().padStart(4, '0'); // Convierte 1 a "0001"
+      this.load.image(`zombie_walk_${i}`, `src/assets/sprites/zombie_walk/walk${num}.png`);
+    }
+
+    // Ataque básico genérico (Atrofia Attack 1 al 10)
+    for (let i = 1; i <= 10; i++) {
+      this.load.image(`zombie_attack_${i}`, `src/assets/sprites/atrofia_atack/atrofiaatack${i}.png`);
+    }
+
+
+    // CARGA DE SPRITES: HABILIDADES ESPECIALES
+    
+    // COLOSO
+    for (let i = 0; i <= 19; i++) {
+      let num = i.toString().padStart(4, '0');
+      this.load.image(`coloso_attack_${i}`, `src/assets/sprites/coloso/coloso_atack/attack02_${num}.png`);
+    }
+    for (let i = 0; i <= 2; i++) {
+      let num = i.toString().padStart(4, '0');
+      this.load.image(`coloso_dash_${i}`, `src/assets/sprites/coloso/coloso_embestida/dash${num}.png`);
+    }
+
+    // ATROFIA
+    for (let i = 0; i <= 19; i++) {
+      let num = i.toString().padStart(4, '0');
+      this.load.image(`atrofia_jump_${i}`, `src/assets/sprites/atrofia/atrofia_jump/attack03_${num}.png`);
+    }
+
+    // LAMENTO: Spitt/Escupitajo (0000 a 0031)
+      for (let i = 0; i <= 19; i++) {
+      let num = i.toString().padStart(4, '0');
+      this.load.image(`lamento_spitt_${i}`, `src/assets/sprites/lamento/lamento_spitt/attack01_${num}.png`);
+    }
+
+    // INVOCADOR: Scream/Grito (0000 a 0003) - Se cargan normal, se invierten al crear la animación
+    for (let i = 0; i <= 3; i++) {
+      let num = i.toString().padStart(4, '0');
+      this.load.image(`invocador_scream_${i}`, `src/assets/sprites/invocador/invocador_scream/death02_${num}.png`);
+    }
+
+    // Carga sprites soldier (CORREGIDO CON LAS CLAVES)
+    for (let i = 0; i <= 1; i++) {
+      this.load.image( 
+        `soldier_move_${i}`,
+        `src/assets/sprites/soldier/soldiermove/survivor-move_rifle_${i}.png`
+      );
+    }
+
+    for (let i = 0; i <= 2; i++) {
+      this.load.image( 
+        `soldier_shoot_${i}`,
+        `src/assets/sprites/soldier/soldiershoot/survivor-shoot_rifle_${i}.png`
+      );
+    }
+
+    // Carga sprites Melee
+    for (let i = 0; i <= 19; i++) {
+      this.load.image(`move_knife_${i}`, `src/assets/sprites/melee/meleemove/survivor-move_knife_${i}.png`);
+    }
+    for (let i = 0; i <= 14; i++) {
+      this.load.image(`attack_knife_${i}`, `src/assets/sprites/melee/meleeattack/survivor-meleeattack_knife_${i}.png`);
+    }
+  }
+  
   // Ahora nuestro create es un índice limpio y ordenado
   create() {
     this.iniciarStore();
@@ -58,35 +127,164 @@ export class MainScene extends Phaser.Scene {
   }
 
   crearAnimaciones() {
+    const framesMoveKnife = [];
+    for (let i = 0; i <= 19; i++) {
+      framesMoveKnife.push({ key: `move_knife_${i}` });
+    }
+
+    this.anims.create({
+      key: 'melee-move',
+      frames: framesMoveKnife,
+      frameRate: 20, // Velocidad a la que corre la animación
+      repeat: -1     // -1 significa que se repite para siempre
+    });
+
+    // Crear Array de frames para el Ataque
+    const framesAttackKnife = [];
+    for (let i = 0; i <= 14; i++) {
+      framesAttackKnife.push({ key: `attack_knife_${i}` });
+    }
+
+    this.anims.create({
+      key: 'melee-attack',
+      frames: framesAttackKnife,
+      frameRate: 24, // El ataque suele ser más rápido
+      repeat: 0      // 0 significa que solo se reproduce una vez por cuchillada
+    });
+
+    const framesZombieWalk = [];
+    for (let i = 0; i <= 31; i++) {
+      framesZombieWalk.push({ key: `zombie_walk_${i}` });
+    }
     this.anims.create({
       key: 'zombie-walk-anim',
-      frames: this.anims.generateFrameNumbers('zombie-walk', { start: 0, end: 10 }),
-      frameRate: 12,
-      repeat: -1,
+      frames: framesZombieWalk,
+      frameRate: 20, // Ajusta la velocidad de la caminata
+      repeat: -1
     });
+
+    const framesZombieAttack = [];
+    for (let i = 1; i <= 10; i++) {
+      framesZombieAttack.push({ key: `zombie_attack_${i}` });
+    }
     this.anims.create({
       key: 'zombie-attack-anim',
-      frames: this.anims.generateFrameNumbers('zombie-attack', { start: 0, end: 16 }),
-      frameRate: 12,
-      repeat: 0,
+      frames: framesZombieAttack,
+      frameRate: 15, // Ajusta la velocidad del ataque
+      repeat: 0
     });
+
+
+    // ANIMACIONES DE HABILIDADES ESPECIALES
+    // Coloso: Ataque Especial
+    const framesColosoAttack = [];
+    for (let i = 0; i <= 19; i++) {
+      framesColosoAttack.push({ key: `coloso_attack_${i}` });
+    }
+    this.anims.create({
+      key: 'coloso-attack-special',
+      frames: framesColosoAttack,
+      frameRate: 20,
+      repeat: 0
+    });
+
+    // Coloso: Embestida
+    const framesColosoDash = [];
+    for (let i = 0; i <= 2; i++) {
+      framesColosoDash.push({ key: `coloso_dash_${i}` });
+    }
+    this.anims.create({
+      key: 'coloso-dash-anim',
+      frames: framesColosoDash,
+      frameRate: 10,
+      repeat: 0
+    });
+
+    // Atrofia: Salto
+    const framesAtrofiaJump = [];
+    for (let i = 0; i <= 19; i++) {
+      framesAtrofiaJump.push({ key: `atrofia_jump_${i}` });
+    }
+    this.anims.create({
+      key: 'atrofia-jump-anim',
+      frames: framesAtrofiaJump,
+      frameRate: 20,
+      repeat: 0
+    });
+
+    // Lamento: Escupir
+    const framesLamentoSpitt = [];
+    for (let i = 0; i <= 19; i++) {
+      framesLamentoSpitt.push({ key: `lamento_spitt_${i}` });
+    }
+    this.anims.create({
+      key: 'lamento-spitt-anim',
+      frames: framesLamentoSpitt,
+      frameRate: 24, // Animación larga, puede requerir mayor velocidad
+      repeat: 0
+    });
+
+    // Invocador: Grito (ESTA SE ENSAMBLA EN REVERSA: del 3 al 0)
+    const framesInvocadorScream = [];
+    for (let i = 3; i >= 0; i--) { // Fíjate en el bucle inverso (i--)
+      framesInvocadorScream.push({ key: `invocador_scream_${i}` });
+    }
+    this.anims.create({
+      key: 'invocador-scream-anim',
+      frames: framesInvocadorScream,
+      frameRate: 10,
+      repeat: 0
+    });
+   
+    const framesCivilWalk = [];
+    for (let i = 1; i <= 6; i++) {
+      framesCivilWalk.push({ key: `civil_walk_${i}` });
+    }
+
     this.anims.create({
       key: 'civil-walk-anim',
-      frames: this.anims.generateFrameNumbers('civil-walking', { start: 0, end: 10 }),
-      frameRate: 12,
-      repeat: -1,
+      frames: framesCivilWalk,
+      frameRate: 8, // Ajusta la velocidad si caminan muy rápido o lento
+      repeat: -1
     });
+    const framesSoldierMove = [];
+    for (let i = 0; i <= 1; i++) {
+      framesSoldierMove.push({ key: `soldier_move_${i}` });
+    }
+
+    // Reemplazamos la antigua animación por la nueva
     this.anims.create({
       key: 'soldier-walk-anim',
-      frames: this.anims.generateFrameNumbers('soldier-walking', { start: 0, end: 10 }),
-      frameRate: 12,
-      repeat: -1,
+      frames: framesSoldierMove,
+      frameRate: 8, // Velocidad de los pasos (ajústalo a tu gusto)
+      repeat: -1    // Bucle infinito
     });
+
+    // ==========================================
+    // ANIMACIÓN: SOLDADO DISPARANDO (RIFLE)
+    // ==========================================
+    const framesSoldierShoot = [];
+    for (let i = 0; i <= 2; i++) {
+      framesSoldierShoot.push({ key: `soldier_shoot_${i}` });
+    }
+
+    // Reemplazamos la antigua animación de disparo
     this.anims.create({
       key: 'soldier-shoot-anim',
-      frames: this.anims.generateFrameNumbers('soldier-shooting', { start: 0, end: 16 }),
-      frameRate: 12,
-      repeat: 0,
+      frames: framesSoldierShoot,
+      frameRate: 15, // Disparo rápido
+      repeat: 0      // Solo se reproduce una vez por balazo
+    });
+
+    const framesKamikazeWalk = [];
+    for (let i = 1; i <= 4; i++) {
+      framesKamikazeWalk.push({ key: `kamikaze_walk_${i}` });
+    }
+    this.anims.create({
+      key: 'kamikaze-walk-anim',
+      frames: framesKamikazeWalk,
+      frameRate: 10,
+      repeat: -1,
     });
   }
 

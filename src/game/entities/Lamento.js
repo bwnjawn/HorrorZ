@@ -6,7 +6,7 @@ export class Lamento extends Player {
   constructor(scene, x, y) {
     super(scene, x, y, PLAYER_TYPES.LAMENTO);
 
-    this.setScale(0.12);
+    this.setScale(0.4);
     this.setTint(0x99ff99);
   }
 
@@ -60,9 +60,24 @@ export class Lamento extends Player {
   }
 
   usarHabilidadEspecial() {
-    if (this.isDead || !this.puedeUsarHabilidad()) return;
+    // Añadimos this.isAttacking a la validación para que no interrumpa otro ataque
+    if (this.isDead || this.isAttacking || !this.puedeUsarHabilidad()) return;
 
     console.log('¡El Lamento escupe CHARCO DE ÁCIDO!');
+
+    // ==========================================
+    // INICIAR ANIMACIÓN DE ESCUPIR
+    // ==========================================
+    this.isAttacking = true; // Engaña al Player.js para que no intente hacerlo caminar
+    this.setVelocity(0, 0);  // Lo frenamos en seco
+    this.play('lamento-spitt-anim', true); // Reproduce los 20 frames del escupitajo
+
+    // Cuando termina la animación, le devolvemos el control
+    this.once('animationcomplete-lamento-spitt-anim', () => {
+      this.isAttacking = false;
+      if (!this.isDead) this.setTexture('zombie_walk_0'); // Vuelve a la pose estática
+    });
+    // ==========================================
 
     // Brillo temporal
     this.setTint(0x00ff00);
@@ -89,8 +104,9 @@ export class Lamento extends Player {
     const charcoX = this.x + Math.cos(anguloAlMouse) * distancia;
     const charcoY = this.y + Math.sin(anguloAlMouse) * distancia;
 
-    // Opcional: hacer que el zombi se gire hacia donde escupe el ácido
-    this.setRotation(anguloAlMouse + Math.PI / 2);
+    // ¡CORRECCIÓN DE ROTACIÓN!
+    // Quitamos el "+ Math.PI / 2" para que la cara del zombie apunte exacto al mouse
+    this.setRotation(anguloAlMouse);
 
     // 5. Efecto visual del charco en el suelo
     let charco = this.scene.add.circle(charcoX, charcoY, 70, 0x00aa00, 0.6);

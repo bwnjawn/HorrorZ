@@ -5,8 +5,26 @@ export class Soldier extends Enemy {
   constructor(scene, x, y, typeConfig) {
     super(scene, x, y, typeConfig.texture, typeConfig);
     this.setLighting(true);
+    
+    // 1. Escala (Ajústala si necesitas que el sprite se vea más grande o pequeño)
+    this.setScale(0.1); 
 
-    // 1. ASIGNACIÓN DE ESTADÍSTICAS DINÁMICAS
+    // ==========================================
+    // AJUSTE DE HITBOX DINÁMICA
+    // ==========================================
+    // Esperamos 50ms para que Phaser cargue bien el frame inicial de la textura
+    this.scene.time.delayedCall(50, () => {
+        const hitboxAncho = this.width * 0.4; 
+        const hitboxAlto = this.height * 0.4;
+        this.body.setSize(hitboxAncho, hitboxAlto);
+
+        const offsetX = (this.width - hitboxAncho) / 2;
+        const offsetY = (this.height - hitboxAlto) / 2;
+        this.body.setOffset(offsetX, offsetY);
+    });
+    // ==========================================
+
+    // ASIGNACIÓN DE ESTADÍSTICAS DINÁMICAS
     this.role = typeConfig.type;
     this.rangoVision = typeConfig.visionRange;
     this.rangoDisparo = typeConfig.attackRange;
@@ -17,7 +35,11 @@ export class Soldier extends Enemy {
 
     this.ultimoDisparo = 0;
     this.objetivoActual = null;
+
+    // Reproducir animación inactiva/movimiento inicial según el rol
+    this.gestionarAnimacionCaminar();
   }
+
   respawn(x, y, typeConfig) {
     super.respawnBase(x, y, typeConfig);
 
@@ -32,7 +54,19 @@ export class Soldier extends Enemy {
     this.ultimoDisparo = 0;
     this.objetivoActual = null;
 
-    this.play('soldier-walk-anim', true);
+    // ==========================================
+    // RE-APLICAR HITBOX AL REVIVIR
+    // ==========================================
+    this.scene.time.delayedCall(50, () => {
+        const hitboxAncho = this.width * 0.4; 
+        const hitboxAlto = this.height * 0.4;
+        this.body.setSize(hitboxAncho, hitboxAlto);
+        this.body.setOffset((this.width - hitboxAncho) / 2, (this.height - hitboxAlto) / 2);
+    });
+    // ==========================================
+
+    // Reproducir animación inactiva/movimiento inicial según el rol
+    this.gestionarAnimacionCaminar();
   }
 
   buscarObjetivo(player, horda) {
@@ -45,7 +79,6 @@ export class Soldier extends Enemy {
       if (player.active && !player.isDead && distJugador < distanciaMinima) {
         this.objetivoActual = player;
       }
-
       return;
     }
 
@@ -71,31 +104,42 @@ export class Soldier extends Enemy {
     }
     this.objetivoActual = objetivoMasCercano;
   }
+
   ejecutarAccionCombate(time) {
     if (time > this.ultimoDisparo + this.cadenciaDisparo) {
+      
+      // Lógica de ataque separada por roles
       if (this.role === 'RANGED') {
         this.play('soldier-shoot-anim', true);
         const anguloHaciaObjetivo = Phaser.Math.Angle.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
-
         this.scene.events.emit('disparo-enemigo', { x: this.x, y: this.y, angulo: anguloHaciaObjetivo, daño: this.dañoBala });
+      
       } else if (this.role === 'MELEE') {
-        this.play('soldier-shoot-anim', true);
+        // Reproducir la nueva animación del cuchillo
+        this.play('melee-attack', true);
 
         if (this.objetivoActual.recibirDaño) {
           this.objetivoActual.recibirDaño(this.dañoBala);
         } else if (this.objetivoActual === this.scene.player) {
           this.scene.store.takeDamage(this.dañoBala);
         }
+      
       } else if (this.role === 'KAMIKAZE') {
-        this.ejecutarExplosion();
-
-        return;
+  
+        this.play('kamikaze-walk-anim', true);
+      } else {
+        // Lógica de soldado estándar
+        if (forzar || this.anims.currentAnim?.key !== 'soldier-shoot-anim') {
+          this.play('soldier-walk-anim', true);
+        }
       }
+      
       this.ultimoDisparo = time;
 
-      this.scene.time.delayedCall(200, () => {
+      // Volver a la animación de caminar tras un breve retraso
+      this.scene.time.delayedCall(300, () => {
         if (!this.isDead && this.estado !== 'ATACANDO') {
-          this.play('soldier-walk-anim', true);
+          this.gestionarAnimacionCaminar();
         }
       });
     }
@@ -103,11 +147,22 @@ export class Soldier extends Enemy {
 
   ejecutarExplosion() {
     this.isDead = true;
-    this.play('soldier-shoot-anim', true); // Sprite temporal
+    
+    // CAMBIO: Aquí reproducimos la animación específica de explosión/ataque
+    // Asegúrate de que este nombre coincida con el anims.create en MainScene
+    this.play('kamikaze-explosion-anim', true); 
 
-    // Emitir un evento especial de explosión para que MainScene cree efectos visuales
-    this.scene.events.emit('explosion-kamikaze', { x: this.x, y: this.y, daño: this.dañoBala });
-    this.desactivar();
+    // Emitir el evento para MainScene
+    this.scene.events.emit('explosion-kamikaze', { 
+      x: this.x, 
+      y: this.y, 
+      daño: this.dañoBala 
+    });
+
+    // Desactivamos al enemigo después de un breve momento para que se vea la animación
+    this.scene.time.delayedCall(500, () => {
+      this.desactivar();
+    });
   }
 
   update(time, delta, player, horda) {
@@ -124,12 +179,13 @@ export class Soldier extends Enemy {
       const distancia = Phaser.Math.Distance.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
       const anguloHaciaObjetivo = Phaser.Math.Angle.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
 
-      this.setRotation(anguloHaciaObjetivo + Math.PI / 2);
+      // CORRECCIÓN DE ROTACIÓN: Sin + Math.PI/2 para que miren de frente
+      this.setRotation(anguloHaciaObjetivo);
 
       if (distancia <= this.rangoDisparo) {
         if (this.rangoRetirada > 0 && distancia < this.rangoRetirada) {
           this.estado = 'RETIRADA';
-          this.play('soldier-walk-anim', true);
+          this.gestionarAnimacionCaminar(true); 
 
           this.acceleration.set(0, 0);
           const forceFlee = this.applyFlee(this.objetivoActual);
@@ -146,7 +202,7 @@ export class Soldier extends Enemy {
         this.ejecutarAccionCombate(time);
       } else {
         this.estado = 'PERSIGUIENDO';
-        this.play('soldier-walk-anim', true);
+        this.gestionarAnimacionCaminar(); 
 
         this.puntoObjetivo.x = this.objetivoActual.x;
         this.puntoObjetivo.y = this.objetivoActual.y;
@@ -154,8 +210,20 @@ export class Soldier extends Enemy {
       }
     } else {
       this.estado = 'PATRULLANDO';
-      this.play('soldier-walk-anim', true);
+      this.gestionarAnimacionCaminar(); 
       super.updateBase(time, delta, player);
+    }
+  }
+
+  gestionarAnimacionCaminar(forzar = false) {
+    if (this.role === 'MELEE') {
+      if (forzar || this.anims.currentAnim?.key !== 'melee-attack') {
+        this.play('melee-move', true);
+      }
+    } else {
+      if (forzar || this.anims.currentAnim?.key !== 'soldier-shoot-anim') {
+        this.play('soldier-walk-anim', true);
+      }
     }
   }
 }

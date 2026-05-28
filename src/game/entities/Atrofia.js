@@ -1,18 +1,21 @@
+import Phaser from 'phaser';
 import { Player } from './Player';
 import { PLAYER_TYPES } from '../config/PlayerStatsConfig';
-import Phaser from 'phaser';
 
 export class Atrofia extends Player {
   constructor(scene, x, y) {
     super(scene, x, y, PLAYER_TYPES.ATROFIA);
 
-    this.setScale(0.09);
+    // Nota: Si configuraste la escala a 1 en Player.js, puedes borrar este setScale. 
+    // Lo dejo en 0.4 tal como lo tenías por si tus sprites de Atrofia son más grandes.
+    this.setScale(0.4); 
     this.setTint(0xaaaaff);
 
     this.originalBaseSpeed = this.baseSpeed;
     this.isJumping = false;
     this.boostTimer = null;
   }
+
   onInfectarCivil() {
     console.log('¡Adrenalina Zombi activada!');
 
@@ -41,6 +44,11 @@ export class Atrofia extends Player {
 
     console.log('¡La Atrofia usa SALTO DEPREDADOR!');
     this.isJumping = true;
+    this.isAttacking = true; // Bloquea la caminata en Player.js
+    
+    // Inicia la animación del salto en el aire
+    this.play('atrofia-jump-anim', true);
+
     this.setTint(0x0000ff); // Se oscurece mientras salta
 
     // 1. Obtener la posición del cursor en el mundo
@@ -48,7 +56,7 @@ export class Atrofia extends Player {
     const targetX = pointer.worldX;
     const targetY = pointer.worldY;
 
-    // 2. Limitar la distancia máxima (para que no salte de punta a punta del mapa)
+    // 2. Limitar la distancia máxima
     const maxDist = 450;
     let finalX = targetX;
     let finalY = targetY;
@@ -56,14 +64,13 @@ export class Atrofia extends Player {
     const dist = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
 
     if (dist > maxDist) {
-      // Si el cursor está muy lejos, calculamos el punto máximo en esa dirección
       const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
-
       finalX = this.x + Math.cos(angle) * maxDist;
       finalY = this.y + Math.sin(angle) * maxDist;
     }
 
-    this.setRotation(Phaser.Math.Angle.Between(this.x, this.y, finalX, finalY) + Math.PI / 2);
+    // CORRECCIÓN DE ROTACIÓN: Apunta hacia donde salta
+    this.setRotation(Phaser.Math.Angle.Between(this.x, this.y, finalX, finalY));
 
     this.body.checkCollision.none = true;
 
@@ -73,19 +80,28 @@ export class Atrofia extends Player {
       x: finalX,
       y: finalY,
       duration: 350,
-      ease: 'Sine.easeOut', // Empieza rápido y frena un poco al aterrizar
+      ease: 'Sine.easeOut',
       onComplete: () => {
         // Al aterrizar
         this.body.checkCollision.none = false;
         this.isJumping = false;
+        this.isAttacking = false; // Le devuelve el control a Player.js
+        this.setTexture('zombie_walk_0'); // Regresa a la pose de pie
+        
+        
         if (this.baseSpeed === this.originalBaseSpeed && !this.isDead) this.setTint(0xaaaaff);
 
+        // Llamamos a la función de impacto
         this.impactoAlCaer();
       },
     });
   }
+
+  // ==============================================================
+  // ESTA ES LA FUNCIÓN QUE FALTABA (El daño al tocar el suelo)
+  // ==============================================================
   impactoAlCaer() {
-    const radioImpacto = 70; // Área de efecto al caer (un pequeño círculo a su alrededor)
+    const radioImpacto = 70; // Área de efecto al caer
 
     // Matar militares aplastados
     this.scene.enemiesGroup.getChildren().forEach((enemigo) => {
@@ -113,7 +129,6 @@ export class Atrofia extends Player {
   update(time, delta) {
     if (this.isDead) return;
 
-    // Mientras vuela, ignoramos el control por teclado para que no interrumpa el Tween
     if (this.isJumping) {
       return;
     }

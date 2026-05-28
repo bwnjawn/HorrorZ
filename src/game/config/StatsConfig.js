@@ -1,21 +1,20 @@
 export const ENEMY_TYPES = {
   NORMAL: {
     type: 'RANGED',
-    texture: 'soldier-walking',
+    texture: 'soldier_move_0',
     hp: 100,
     speed: 120,
-    visionRange: 350,
+    visionRange: 350, 
     attackRange: 120,
     retreatRange: 90,
     fireRate: 800,
     damage: 10,
     scale: 0.1,
-    colorTint: 0x75b36b,
     healReward: 15,
   },
   SNIPER: {
     type: 'RANGED',
-    texture: 'soldier-walking',
+    texture: 'soldier_move_0',
     hp: 50,
     speed: 150,
     visionRange: 600,
@@ -29,7 +28,7 @@ export const ENEMY_TYPES = {
   },
   TANK: {
     type: 'RANGED',
-    texture: 'soldier-walking',
+    texture: 'soldier_move_0',
     hp: 350,
     speed: 60,
     visionRange: 250,
@@ -43,7 +42,7 @@ export const ENEMY_TYPES = {
   },
   MILITAR: {
     type: 'RANGED',
-    texture: 'soldier-walking',
+    texture: 'soldier_move_0',
     hp: 180,
     speed: 150,
     visionRange: 400,
@@ -57,7 +56,7 @@ export const ENEMY_TYPES = {
   },
   KAMIKAZE: {
     type: 'KAMIKAZE',
-    texture: 'soldier-walking',
+    texture: 'soldier_move_0',
     hp: 60,
     speed: 190,
     visionRange: 500,
@@ -71,7 +70,7 @@ export const ENEMY_TYPES = {
   },
   MELEE: {
     type: 'MELEE',
-    texture: 'soldier-walking',
+    texture: 'move_knife_0',
     hp: 130,
     speed: 150,
     visionRange: 350,
@@ -85,7 +84,7 @@ export const ENEMY_TYPES = {
   },
   MEDIC: {
     type: 'MEDIC',
-    texture: 'soldier-walking',
+    texture: 'soldier_move_0',
     hp: 90,
     speed: 140,
     visionRange: 400,

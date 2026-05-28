@@ -1,5 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import GameView from '../App.vue';
+import Phaser from 'phaser';
+
+export const gameConfig = {
+    type: Phaser.AUTO,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    parent: 'game-container',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: true, // <--- ESTO ES LO QUE NECESITAMOS
+            gravity: { y: 0 }
+        }
+    },
+  }
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,3 +28,5 @@ const router = createRouter({
 });
 
 export default router;
+
+

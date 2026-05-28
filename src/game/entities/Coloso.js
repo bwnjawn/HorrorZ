@@ -5,7 +5,7 @@ export class Coloso extends Player {
   constructor(scene, x, y) {
     super(scene, x, y, PLAYER_TYPES.COLOSO);
 
-    this.setScale(0.15);
+    this.setScale(0.75);
     this.setTint(0xff9999);
     this.isDashing = false;
   }
@@ -22,15 +22,18 @@ export class Coloso extends Player {
 
     console.log('¡El Coloso usa EMBESTIDA!');
     this.isDashing = true;
-    this.setTint(0xff0000);
+    
+    // 1. REPRODUCIR LA ANIMACIÓN DE EMBESTIDA
+    this.play('coloso-dash-anim', true);
 
-    const anguloReal = this.rotation - Math.PI / 2;
-
-    this.scene.physics.velocityFromRotation(anguloReal, 800, this.body.velocity);
+    this.scene.physics.velocityFromRotation(this.rotation, 800, this.body.velocity);
 
     this.scene.time.delayedCall(500, () => {
       this.isDashing = false;
-      if (!this.isDead) this.setTint(0xff9999);
+      if (!this.isDead) {
+        this.setTexture('zombie_walk_0'); // Regresa a la pose normal
+        
+      }
     });
   }
 

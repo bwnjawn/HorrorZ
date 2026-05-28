@@ -2,20 +2,26 @@ import Phaser from 'phaser';
 
 export class Civilian extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
-    super(scene, x, y, 'civil-walking');
+  // Cambiamos el 'civil-walking' antiguo por la primera textura de la animación
+  super(scene, x, y, 'civil_walk_1'); 
 
-    scene.add.existing(this);
-    this.setScale(0.1);
+  scene.add.existing(this);
+  scene.physics.add.existing(this);
 
-    scene.physics.add.existing(this);
+  // Ajusta esta escala según tus sprites. Si siguen viéndose gigantes, baja este valor (ej: 0.2)
+  this.setScale(0.15); 
 
-    // Estos valores recortan el espacio vacío alrededor de tu PNG
-    this.body.setSize(150, 250);
-    this.body.setOffset(80, 60);
+  // Ajuste de Hitbox para que no choquen con el aire
+  const hitboxAncho = this.width * 0.3; 
+  const hitboxAlto = this.height * 0.3;
+  this.body.setSize(hitboxAncho, hitboxAlto);
+  this.body.setOffset((this.width - hitboxAncho) / 2, (this.height - hitboxAlto) / 2);
 
-    this.setCollideWorldBounds(true); //Hay q desactivar esto cuando agrandemos el mapa
-    this.setBounce(1, 1);
-    this.play('civil-walk-anim');
+  this.setCollideWorldBounds(true);
+  this.setBounce(1, 1);
+  
+  // Aquí activamos la nueva animación
+  this.play('civil-walk-anim');
 
     // Propiedades de vida
     this.health = 30;
@@ -96,6 +102,20 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     if (this.isDead || this.isInfected) return;
     this.isInfected = true;
     this.health = 50;
+
+    // Cuando se infecta, debemos recalcular la hitbox porque el sprite del zombie 
+    // tiene un tamaño diferente al del civil.
+    this.setScale(0.3); // O la escala que uses para los zombies (ej: 1)
+    
+    // Forzamos el cambio de textura de inmediato para recalcular la caja
+    this.setTexture('zombie_walk_0');
+    
+    
+    const hitboxAncho = this.width * 0.4; 
+    const hitboxAlto = this.height * 0.4;
+    this.body.setSize(hitboxAncho, hitboxAlto);
+    this.body.setOffset((this.width - hitboxAncho) / 2, (this.height - hitboxAlto) / 2);
+
     this.ejecutarAtaque();
   }
 
@@ -104,14 +124,17 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
     this.isAttacking = true;
     this.setTint(0x550000);
-    this.setTexture('zombie-attack');
+    
+    // CORRECCIÓN: Usar las nuevas texturas individuales de ataque
+    this.setTexture('zombie_attack_1');
     this.play('zombie-attack-anim', true);
 
     // Cuando la animación termine, vuelve a caminar
     this.once('animationcomplete-zombie-attack-anim', () => {
       if (this.isDead || !this.active) return;
       this.isAttacking = false;
-      this.setTexture('zombie-walk');
+      // CORRECCIÓN: Usar la nueva textura base del zombie
+      this.setTexture('zombie_walk_0');
       this.play('zombie-walk-anim', true);
     });
   }
@@ -122,7 +145,6 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
     civiles.forEach((civil) => {
       if (!civil.isInfected && civil.active && !civil.isDead) {
-        // Solo detectar a los sanos
         const dist = Phaser.Math.Distance.Between(this.x, this.y, civil.x, civil.y);
 
         if (dist < minDistance) {
@@ -139,19 +161,15 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     if (!target || !target.active || target.isDead) return new Phaser.Math.Vector2(0, 0);
     const desired = new Phaser.Math.Vector2(target.x, target.y).subtract(new Phaser.Math.Vector2(this.x, this.y));
 
-    // Si estamos cerca, bajamos la velocidad para no dar vueltas
     const distance = desired.length();
-
     desired.normalize();
 
     if (distance < 50) {
       const speed = Phaser.Math.Interpolation.Linear([0, this.maxSpeed], distance / 50);
-
       desired.scale(speed);
     } else {
       desired.scale(this.maxSpeed);
     }
-    //Fuerza de correccion
     const steer = desired.subtract(this.velocity);
 
     if (steer.length() > this.maxForce) steer.normalize().scale(this.maxForce);
@@ -159,9 +177,8 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     return steer;
   }
 
-  // Fuerza de Separación: Evita que los zombies se solapen
   applySeparate(horda) {
-    const radius = 50; // Radio de "espacio personal"
+    const radius = 50; 
     let steer = new Phaser.Math.Vector2(0, 0);
     let count = 0;
 
@@ -173,7 +190,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
         const diff = new Phaser.Math.Vector2(this.x, this.y)
           .subtract(new Phaser.Math.Vector2(neighbor.x, neighbor.y))
           .normalize()
-          .divide({ x: d, y: d }); // Mientras más cerca, más fuerte el empujón
+          .divide({ x: d, y: d });
 
         steer.add(diff);
         count++;
@@ -197,8 +214,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
         this.acceleration.set(0, 0);
         this.velocity.set(0, 0);
         this.setVelocity(0, 0);
-
-        return; // Detiene la ejecución del update aquí mismo
+        return; 
       }
       this.acceleration.set(0, 0);
 
@@ -206,19 +222,15 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
       let pesoAtraccion = 1.0;
       let pesoSeparacion = 1.5;
 
-      // MÁQUINA DE ESTADOS
       if (this.estadoHorda === 'REAGRUPANDO') {
-        // Ignora civiles, va hacia el jugador
         pesoAtraccion = 3.0;
         pesoSeparacion = 0.2;
         this.maxSpeed = 450;
       } else {
-        // Estado LIBRE: Puede buscar presa
         this.maxSpeed = 280;
 
         if (civiles && civiles.length > 0) {
           const presaCercana = this.getClosestCivilian(civiles);
-
           if (presaCercana) {
             target = presaCercana;
             pesoAtraccion = 1.8;
@@ -226,14 +238,12 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
           }
         }
       }
-      // Sumar fuerzas
       const forceSeek = this.applySeek(target).scale(pesoAtraccion);
       const forceSeparate = this.applySeparate(horda).scale(pesoSeparacion);
 
       this.acceleration.add(forceSeek);
       this.acceleration.add(forceSeparate);
 
-      // Mover el cuerpo
       this.velocity.add(this.acceleration);
       this.setVelocity(this.velocity.x, this.velocity.y);
 
@@ -241,15 +251,14 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
         this.velocity.normalize().scale(this.maxSpeed);
       }
 
-      // Girar el sprite hacia donde camina
-      this.setRotation(this.velocity.angle() + Math.PI / 2);
-      this.acceleration.scale(0); // Resetear aceleración para el próximo frame
+      // CORRECCIÓN DE ROTACIÓN ZOMBIE: Sin + Math.PI/2
+      this.setRotation(this.velocity.angle());
+      this.acceleration.scale(0); 
 
       if (this.anims && this.anims.currentAnim && this.anims.currentAnim.key !== 'zombie-attack-anim') {
         this.play('zombie-walk-anim', true);
       }
     } else {
-      // Lógica de escape de los civiles
       let amenazaCercana = player;
       let distAmenaza = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
 
@@ -274,13 +283,17 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
           angle += Phaser.Math.FloatBetween(-Math.PI / 4, Math.PI / 4);
         }
         this.scene.physics.velocityFromRotation(angle, this.escapeSpeed, this.body.velocity);
-        this.setRotation(angle + Math.PI / 2);
+        
+        // CORRECCIÓN DE ROTACIÓN CIVIL (Huyendo)
+        this.setRotation(angle);
         this.play('civil-walk-anim', true);
       } else if (this.body.velocity.length() === 0) {
         const startAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
 
         this.scene.physics.velocityFromRotation(startAngle, this.wanderSpeed, this.body.velocity);
-        this.setRotation(startAngle + Math.PI / 2);
+        
+        // CORRECCIÓN DE ROTACIÓN CIVIL (Patrullando)
+        this.setRotation(startAngle);
       }
     }
   }

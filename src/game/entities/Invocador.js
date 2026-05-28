@@ -6,15 +6,29 @@ export class Invocador extends Player {
   constructor(scene, x, y) {
     super(scene, x, y, PLAYER_TYPES.INVOCADOR);
 
-    this.setScale(0.1);
+    this.setScale(0.45);
     this.setTint(0xcc66ff);
     this.civilesExpuestos = new Map();
   }
 
-  usarHabilidadEspecial() {
-    if (this.isDead || !this.puedeUsarHabilidad()) return;
+ usarHabilidadEspecial() {
+    // Verificamos isAttacking para que no grite mientras da un golpe básico
+    if (this.isDead || this.isAttacking || !this.puedeUsarHabilidad()) return;
 
     console.log('¡El Invocador usa GRITO FRENÉTICO!');
+    
+    // ==========================================
+    // REPRODUCIR ANIMACIÓN DE GRITO
+    // ==========================================
+    this.isAttacking = true; 
+    this.setVelocity(0, 0); // Se detiene para gritar
+    this.play('invocador-scream-anim', true);
+
+    this.once('animationcomplete-invocador-scream-anim', () => {
+      this.isAttacking = false;
+      if (!this.isDead) this.setTexture('zombie_walk_0');
+    });
+    // ==========================================
 
     const radioGrito = 250;
 
@@ -48,7 +62,8 @@ export class Invocador extends Player {
           zombi.isFrenzied = false;
           zombi.maxSpeed = zombi.originalSpeed;
           zombi.baseDamage = zombi.originalDamage;
-          this.setTint(0xcc66ff);
+          // Corregido: para no quitar el tinte base del Invocador por error al limpiar a la horda
+          zombi.clearTint(); 
         });
       }
     });
