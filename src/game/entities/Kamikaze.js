@@ -84,6 +84,11 @@ export class Kamikaze extends Enemy {
           daño: this.dañoExplosion,
           rango: 150,
         });
+        this.scene.events.emit('visual-custom-explosion', {
+          x: this.x,
+          y: this.y,
+          scale: 2.8,
+        });
 
         // El Kamikaze muere tras explotar
         this.morirEInfectarse();

@@ -132,7 +132,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.clearTint();
 
     // Ajustamos la escala para la animación de levantamiento
-    this.setScale(0.3);
+    this.setScale(0.35);
 
     // 1. REPRODUCIR LA RESURRECCIÓN PRIMERO Visualmente
     this.play('zombie-resurrection-anim', true);

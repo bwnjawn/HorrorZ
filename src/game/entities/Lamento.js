@@ -24,14 +24,14 @@ export class Lamento extends Player {
   }
 
   crearNubeToxica(radio, daño) {
-    // Efecto visual de la nube de gas
-    let nube = this.scene.add.circle(this.x, this.y, radio, 0x00ff00, 0.4);
+    let escalaVisual = (radio / 80) * 2;
 
-    this.scene.tweens.add({
-      targets: nube,
-      alpha: 0,
-      duration: 800,
-      onComplete: () => nube.destroy(),
+    this.scene.events.emit('visual-custom-explosion', {
+      x: this.x,
+      y: this.y,
+      colorTint: 0x00ff00,
+      alpha: 1,
+      scale: escalaVisual,
     });
 
     if (this.scene.enemiesGroup) {
@@ -39,9 +39,7 @@ export class Lamento extends Player {
         if (!enemigo.isDead) {
           const dist = Phaser.Math.Distance.Between(this.x, this.y, enemigo.x, enemigo.y);
 
-          if (dist <= radio) {
-            enemigo.recibirDaño(daño, 'veneno');
-          }
+          if (dist <= radio) enemigo.recibirDaño(daño, 'veneno');
         }
       });
     }
@@ -51,14 +49,11 @@ export class Lamento extends Player {
         if (!civilian.isDead) {
           const dist = Phaser.Math.Distance.Between(this.x, this.y, civilian.x, civilian.y);
 
-          if (dist <= radio) {
-            civilian.recibirDaño(daño, 'veneno');
-          }
+          if (dist <= radio) civilian.recibirDaño(daño, 'veneno');
         }
       });
     }
   }
-
   usarHabilidadEspecial() {
     // Añadimos this.isAttacking a la validación para que no interrumpa otro ataque
     if (this.isDead || this.isAttacking || !this.puedeUsarHabilidad()) return;
@@ -104,12 +99,18 @@ export class Lamento extends Player {
     const charcoX = this.x + Math.cos(anguloAlMouse) * distancia;
     const charcoY = this.y + Math.sin(anguloAlMouse) * distancia;
 
-    // ¡CORRECCIÓN DE ROTACIÓN!
-    // Quitamos el "+ Math.PI / 2" para que la cara del zombie apunte exacto al mouse
     this.setRotation(anguloAlMouse);
 
     // 5. Efecto visual del charco en el suelo
-    let charco = this.scene.add.circle(charcoX, charcoY, 70, 0x00aa00, 0.6);
+    let charco = this.scene.add.circle(charcoX, charcoY, 30, 0x00aa00, 0.16);
+
+    this.scene.events.emit('visual-custom-explosion', {
+      x: charcoX,
+      y: charcoY,
+      colorTint: 0x00ff00,
+      alpha: 1,
+      scale: 4,
+    });
 
     // 6. Daño en el tiempo (DoT) a los enemigos que pisen el charco
     let timerDaño = this.scene.time.addEvent({

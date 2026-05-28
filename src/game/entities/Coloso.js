@@ -5,7 +5,7 @@ export class Coloso extends Player {
   constructor(scene, x, y) {
     super(scene, x, y, PLAYER_TYPES.COLOSO);
 
-    this.setScale(0.75);
+    this.setScale(0.7);
     this.setTint(0xff9999);
     this.isDashing = false;
   }

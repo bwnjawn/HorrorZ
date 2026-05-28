@@ -23,7 +23,7 @@ function resumeGame() {
 }
 
 function quitMenu() {
-  store.quitToMenu();
+  store.resetGame();
 }
 </script>
 

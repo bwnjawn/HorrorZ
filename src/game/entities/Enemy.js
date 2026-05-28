@@ -74,14 +74,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     if (this.isDead || (this.healthBarAlpha <= 0 && !this.alwaysShowHealth)) return;
 
-    // Calculamos la posición relativa al tamaño del sprite
     const anchoBarra = 40;
     const altoBarra = 6;
-    const offsetX = this.x - anchoBarra / 2;
-    const offsetY = this.y - (this.height * this.scaleY) / 2 - 15; // Arriba de su cabeza
+
+    // Sincronizamos la posición del objeto gráfico entero con el enemigo
+    const offsetY = -(this.height * this.scaleY) / 2 - 15;
+
+    this.healthBar.setPosition(this.x, this.y + offsetY);
 
     this.healthBar.fillStyle(0x000000, this.healthBarAlpha);
-    this.healthBar.fillRect(offsetX, offsetY, anchoBarra, altoBarra);
+    this.healthBar.fillRect(-anchoBarra / 2, 0, anchoBarra, altoBarra);
+
     const porcentaje = Math.max(0, this.health / this.maxHealth);
 
     let colorVida = 0x00ff00; // Verde
@@ -89,9 +92,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (porcentaje <= 0.5) colorVida = 0xffff00; // Amarillo
     if (porcentaje <= 0.25) colorVida = 0xff0000; // Rojo
 
-    // Dibujamos la vida actual
+    // Vida actual (dibujada desde 0,0 relativo a la nueva posición)
     this.healthBar.fillStyle(colorVida, this.healthBarAlpha);
-    this.healthBar.fillRect(offsetX + 1, offsetY + 1, (anchoBarra - 2) * porcentaje, altoBarra - 2);
+    this.healthBar.fillRect(-anchoBarra / 2 + 1, 1, (anchoBarra - 2) * porcentaje, altoBarra - 2);
   }
 
   recibirDaño(cantidad, tipoDaño = 'normal') {
@@ -155,7 +158,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.body.enable = false;
-    if (this.healthBar) this.healthBar.clear();
+
+    if (this.healthBar) {
+      this.healthBar.clear();
+      this.healthBar.setPosition(0, 0);
+    }
   }
 
   respawnBase(x, y, statsConfig) {
@@ -303,6 +310,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     return steer;
   }
+  preUpdate(time, delta) {
+    super.preUpdate(time, delta); // VITAL: Mantiene las animaciones y físicas funcionando
+
+    // Sincronización obligatoria de la barra de vida en cada frame
+    if (this.healthBarAlpha > 0 || this.alwaysShowHealth) {
+      this.dibujarBarraVida();
+    } else if (this.healthBar) {
+      this.healthBar.clear();
+    }
+  }
   updateBase(time, delta, player) {
     if (this.isDead) return;
     this.acceleration.set(0, 0);
@@ -333,10 +350,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.velocity.normalize().scale(this.maxSpeed);
     }
     this.setVelocity(this.velocity.x, this.velocity.y);
-    this.setRotation(this.velocity.angle() + Math.PI / 2);
-
-    if (this.healthBarAlpha > 0 || this.alwaysShowHealth) {
-      this.dibujarBarraVida();
-    }
+    this.setRotation(this.velocity.angle());
   }
 }

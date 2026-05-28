@@ -54,7 +54,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     for (let i = 1; i <= 10; i++) {
-      this.load.image(`zombie_attack_${i}`, `src/assets/sprites/atrofia_atack/atrofiaatack${i}.png`);
+      this.load.image(`zombie_attack_${i}`, `src/assets/sprites/atrofia/atrofia_atack/atrofiaatack${i}.png`);
     }
 
     // COLOSO
@@ -111,6 +111,7 @@ export class MainScene extends Phaser.Scene {
   }
 
   create() {
+    this.player = null;
     this.iniciarStore();
     this.crearAnimaciones();
     this.crearEntorno();
@@ -131,12 +132,20 @@ export class MainScene extends Phaser.Scene {
       },
       loop: true,
     });
-    const unsubscribe = this.store.$subscribe((mutation, state) => {
-      if (!state.isGameOver && this.player && this.player.isDead) {
-        unsubscribe(); // Destruimos este listener para no crear duplicados al reiniciar
 
+    const unsubscribe = this.store.$subscribe((mutation, state) => {
+      // CASO 1: Reinicio desde la pantalla de Game Over (El jugador estaba muerto)
+      if (!state.isGameOver && this.player && this.player.isDead) {
+        unsubscribe();
         this.scene.resume();
         this.scene.restart();
+      }
+
+      // CASO 2: Reinicio desde el menú de Pausa (El jugador está vivo y salimos al menú principal)
+      if (state.currentView === 'title' && !state.isGameStarted && this.player && !this.player.isDead) {
+        unsubscribe();
+        this.scene.resume(); // Quitamos la pausa forzada
+        this.scene.restart(); // Reiniciamos el mapa para que quede limpio
       }
     });
   }
@@ -481,10 +490,13 @@ export class MainScene extends Phaser.Scene {
       });
     });
 
-    this.events.on('visual-explosion', (data) => {
+    this.events.on('visual-custom-explosion', (data) => {
       const efectoExplosion = this.add.sprite(data.x, data.y, 'explosion_1');
 
-      efectoExplosion.setScale(1.5);
+      efectoExplosion.setScale(data.scale || 1.5);
+      efectoExplosion.setTint(data.colorTint || 0xffffff);
+      efectoExplosion.setAlpha(data.alpha !== undefined ? data.alpha : 1);
+
       efectoExplosion.play('kamikaze-explosion-anim');
 
       efectoExplosion.once('animationcomplete', () => {
@@ -514,14 +526,7 @@ export class MainScene extends Phaser.Scene {
       this.physics.add.collider(this.player, this.obstaculos);
 
       this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
-        if (this.player.isAttacking && !civilObj.isInfected) {
-          civilObj.infectar();
-          this.civiliansGroup.remove(civilObj);
-          this.hordeGroup.add(civilObj);
-          this.store.infectCivilian();
-          if (playerObj.onInfectarCivil) playerObj.onInfectarCivil();
-          if (playerObj.curar) playerObj.curar(15);
-        } else if (this.player.isDashing && !civilObj.isInfected) {
+        if (this.player.isDashing && !civilObj.isInfected) {
           civilObj.recibirDaño(400);
         }
       });
@@ -531,12 +536,9 @@ export class MainScene extends Phaser.Scene {
         if (jugador.recibirDaño) jugador.recibirDaño(10, 'bala');
       });
 
-      this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
-        if (jugador.isAttacking && !enemigo.isDead) {
-          enemigo.recibirDaño(jugador.currentDamage);
-        } else if (jugador.isDashing && !enemigo.isDead) {
-          enemigo.recibirDaño(400);
-        }
+      this.physics.add.overlap(this.player, this.bulletsGroup, (jugador, bala) => {
+        bala.destroy();
+        if (jugador.recibirDaño) jugador.recibirDaño(10, 'bala');
       });
     };
 

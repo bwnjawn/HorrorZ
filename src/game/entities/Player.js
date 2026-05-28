@@ -26,7 +26,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // ESTADÍSTICAS BASE
     this.baseSpeed = config?.baseSpeed || 300;
-    this.maxHealth = config?.baseHealth || 200;
+    this.maxHealth = config.baseHealth;
     this.health = this.maxHealth;
     this.baseDamage = config?.baseDamage || 20;
     this.currentDamage = this.baseDamage;
@@ -217,6 +217,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.currentDamage = this.baseDamage;
       }
       this.play(this.animAttack, true);
+
+      const rangoAtaque = 80; // Distancia máxima del golpe (ajústalo si coloso necesita más)
+      const conoDeVision = 60; // 60 grados hacia arriba y abajo (120° de arco frontal)
+
+      // Dañar enemigos
+      if (this.scene.enemiesGroup) {
+        this.scene.enemiesGroup.getChildren().forEach((enemigo) => {
+          if (!enemigo.isDead) {
+            const dist = Phaser.Math.Distance.Between(this.x, this.y, enemigo.x, enemigo.y);
+
+            if (dist <= rangoAtaque) {
+              const anguloAlEnemigo = Phaser.Math.Angle.Between(this.x, this.y, enemigo.x, enemigo.y);
+              const diferenciaAngulo = Phaser.Math.Angle.ShortestBetween(Phaser.Math.RadToDeg(this.rotation), Phaser.Math.RadToDeg(anguloAlEnemigo));
+
+              if (Math.abs(diferenciaAngulo) <= conoDeVision) {
+                enemigo.recibirDaño(this.currentDamage);
+              }
+            }
+          }
+        });
+      }
+
+      // Dañar/Infectar civiles
+      if (this.scene.civiliansGroup) {
+        this.scene.civiliansGroup.getChildren().forEach((civilObj) => {
+          if (!civilObj.isInfected && !civilObj.isDying) {
+            const dist = Phaser.Math.Distance.Between(this.x, this.y, civilObj.x, civilObj.y);
+
+            if (dist <= rangoAtaque) {
+              const anguloAlCivil = Phaser.Math.Angle.Between(this.x, this.y, civilObj.x, civilObj.y);
+              const diferenciaAngulo = Phaser.Math.Angle.ShortestBetween(Phaser.Math.RadToDeg(this.rotation), Phaser.Math.RadToDeg(anguloAlCivil));
+
+              if (Math.abs(diferenciaAngulo) <= conoDeVision) {
+                civilObj.infectar();
+                this.scene.civiliansGroup.remove(civilObj);
+                this.scene.hordeGroup.add(civilObj);
+                useGameStore().infectCivilian();
+                if (this.onInfectarCivil) this.onInfectarCivil();
+                if (this.curar) this.curar(15);
+              }
+            }
+          }
+        });
+      }
     }
   }
 

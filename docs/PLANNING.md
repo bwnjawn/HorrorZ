@@ -45,13 +45,13 @@
 **Tareas Planificadas:**
 
 - [x] Configurar GitHub Actions para automatización.
-- [ ] Diseñar sprites de civiles, policías y militares.
-- [ ] Diseñar efectos visuales de combate y peligro.
+- [x] Diseñar sprites de civiles, policías y militares.
+- [x] Diseñar efectos visuales de combate y peligro.
 - [x] Crear el seguimiento y crecimiento de la horda.
 - [x] Crear comportamientos básicos de civiles.
 - [x] Crear comportamientos básicos de enemigos.
 - [x] Crear la interfaz HUD del jugador.
-- [ ] Verificar interacción entre entidades y colisiones.
+- [x] Verificar interacción entre entidades y colisiones.
 
 ## **Seguimiento de la Semana**
 
@@ -74,7 +74,7 @@
 - [x] Implementar comportamiento avanzado de policías y militares.
 - [x] Implementar sistema de spawn de entidades
 - [ ] Balancear combate entre zombis y enemigos.
-- [ ] Implementar indicadores visuales de daño y peligro.
+- [x] Implementar indicadores visuales de daño y peligro.
 - [x] Crear sistema de cooldown de habilidades.
 - [x] Crear menus iniciales.
 - [ ] Verificar estabilidad de las mecánicas principales.
@@ -95,9 +95,9 @@
 
 ## **Tareas Planificadas:**
 
-- [ ] Crear las pantallas finales del juego.
+- [x] Crear las pantallas finales del juego.
 - [ ] Optimizar rendimiento general del juego.
-- [ ] Corregir errores visuales y de jugabilidad.
+- [x] Corregir errores visuales y de jugabilidad.
 - [ ] Implementar pruebas unitarias con Vitest y GitHub Actions.
 - [ ] Configurar Docker para el proyecto.
 - [ ] Redactar el README con instrucciones de ejecución.

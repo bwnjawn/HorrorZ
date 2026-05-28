@@ -434,7 +434,8 @@ function seleccionarPersonaje() {
 
 .portrait-container {
   width: 100%;
-  height: 150px; /* Tamaño del cuadro de la imagen */
+  flex-grow: 1;
+  min-height: 260px;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -448,15 +449,14 @@ function seleccionarPersonaje() {
 .zombie-portrait {
   width: 100%;
   height: 100%;
-  /* IMPORTANTE: Verifica que este nombre de archivo sea exactamente igual (mayúsculas/minúsculas) */
-  background-image: url('../assets/ui/Personajes.png');
-  background-size: 400% 100%;
+  background-size: contain; /* 'contain' ajusta la imagen sin cortarla, puedes usar 'cover' si prefieres que llene todo */
+  background-position: center;
   background-repeat: no-repeat;
   transition: transform 0.3s ease;
   animation: pulseRotate 4s ease-in-out infinite;
 }
 
-/* Animación de dilatación o respiración */
+/* Animación de dilatación o respiración (se mantiene igual) */
 @keyframes pulseRotate {
   0%,
   100% {
@@ -467,25 +467,29 @@ function seleccionarPersonaje() {
   }
 }
 
-/* Efecto al pasar el mouse o seleccionar */
+/* Efecto al pasar el mouse o seleccionar (se mantiene igual) */
 .zombie-card:hover .zombie-portrait,
 .zombie-card.selected .zombie-portrait {
   animation-duration: 1.5s;
   filter: drop-shadow(0 0 10px rgba(200, 0, 0, 0.6));
 }
 
-/* ── RECORTE PARA CADA ZOMBIE ───────────────────────────────── */
-/* Basado en los IDs reales de tu PlayerStatsConfig.js */
+/* ── IMÁGENES INDIVIDUALES PARA CADA ZOMBIE ─────────────────── */
+/* Asegúrate de que las mayúsculas coincidan con los nombres reales de tus archivos */
+
 .portrait-coloso {
-  background-position: 0% center;
+  background-image: url('../assets/ui/Coloso.png');
 }
+
 .portrait-atrofia {
-  background-position: 33.33% center;
+  background-image: url('../assets/ui/Atrofia.png');
 }
+
 .portrait-invocador {
-  background-position: 66.66% center;
+  background-image: url('../assets/ui/Invocador.png');
 }
+
 .portrait-lamento {
-  background-position: 100% center;
+  background-image: url('../assets/ui/Lamento.png');
 }
 </style>
