@@ -62,6 +62,7 @@ watch(
       if (oldView === 'paused' && newView === 'title') {
         gameInstance.scene.stop('MainScene');
       }
+
       if (oldView === 'gameOver' && (newView === 'title' || newView === 'charSelect')) {
         gameInstance.scene.stop('MainScene');
         gameInstance.scene.start('MainScene');
@@ -85,3 +86,41 @@ watch(
     <ScoreScreen v-if="store.currentView === 'gameOver'" />
   </div>
 </template>
+<style>
+/* 1. Resetear la página completa para evitar barras de scroll y bordes */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* Esto mata cualquier barra de scroll */
+  background-color: #080808; /* Un fondo oscuro por si acaso */
+}
+
+/* 2. El contenedor principal de Vue debe ocupar toda la pantalla */
+#app {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 3. El contenedor del juego debe estar pegado al fondo absoluto */
+#game-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block; /* Regla clave */
+  z-index: 0; /* Lo mantenemos al fondo para que la UI se dibuje encima */
+}
+
+/* 4. ELIMINAR EL BUCLE INFINITO DEL CANVAS */
+#game-container canvas {
+  display: block; /* Transforma el canvas de 'inline' a 'block', eliminando el margen inferior fantasma */
+  width: 100% !important;
+  height: 100% !important;
+}
+</style>

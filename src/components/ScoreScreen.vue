@@ -74,9 +74,6 @@
         <button class="btn btn-retry" @click="retryGame()"><span>↺</span> REINTENTAR</button>
         <button class="btn btn-menu" @click="goToMenu()"><span>⌂</span> MENÚ PRINCIPAL</button>
       </div>
-
-      <!-- Fórmula de puntuación -->
-      <p class="score-formula">Puntuación = infectados × 100 + segundos × 10 + pico_horda × 50</p>
     </div>
   </div>
 </template>

@@ -57,7 +57,7 @@ export const ENEMY_TYPES = {
   KAMIKAZE: {
     type: 'KAMIKAZE',
     texture: 'soldier_move_0',
-    hp: 60,
+    hp: 10000,
     speed: 190,
     visionRange: 500,
     attackRange: 40,

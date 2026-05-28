@@ -6,6 +6,7 @@ import { Atrofia } from '../entities/Atrofia';
 import { Civilian } from '../entities/Civilians';
 import { Soldier } from '../entities/Soldier';
 import { Medic } from '../entities/Medic';
+import { Kamikaze } from '../entities/Kamikaze';
 import { useGameStore } from '../../stores/gameStore';
 import { ENEMY_TYPES } from '../config/StatsConfig';
 import { PLAYER_TYPES } from '../config/PlayerStatsConfig';
@@ -31,8 +32,10 @@ export class MainScene extends Phaser.Scene {
     for (let i = 1; i <= 7; i++) {
       this.load.image(`explosion_${i}`, `src/assets/sprites/explosion/explosion${i}.png`);
     }
+
     for (let i = 0; i <= 16; i++) {
-      let num = i.toString().padStart(4, '0'); // Convierte 0 a "0000", 16 a "0016"
+      let num = i.toString().padStart(4, '0');
+
       this.load.image(`zombie_death_${i}`, `src/assets/sprites/zombie_death/death01_${num}.png`);
     }
 
@@ -43,48 +46,52 @@ export class MainScene extends Phaser.Scene {
     for (let i = 1; i <= 6; i++) {
       this.load.image(`civil_walk_${i}`, `src/assets/sprites/civilians/WalkCiv${i}.png`);
     }
-    // CARGA DE SPRITES: ZOMBIES (Caminata y Ataque Básico Compartido)
+
     for (let i = 0; i <= 31; i++) {
-      let num = i.toString().padStart(4, '0'); // Convierte 1 a "0001"
+      let num = i.toString().padStart(4, '0');
+
       this.load.image(`zombie_walk_${i}`, `src/assets/sprites/zombie_walk/walk${num}.png`);
     }
 
-    // Ataque básico genérico (Atrofia Attack 1 al 10)
     for (let i = 1; i <= 10; i++) {
       this.load.image(`zombie_attack_${i}`, `src/assets/sprites/atrofia_atack/atrofiaatack${i}.png`);
     }
 
-    // CARGA DE SPRITES: HABILIDADES ESPECIALES
-
     // COLOSO
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
+
       this.load.image(`coloso_attack_${i}`, `src/assets/sprites/coloso/coloso_atack/attack02_${num}.png`);
     }
+
     for (let i = 0; i <= 2; i++) {
       let num = i.toString().padStart(4, '0');
+
       this.load.image(`coloso_dash_${i}`, `src/assets/sprites/coloso/coloso_embestida/dash${num}.png`);
     }
 
     // ATROFIA
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
+
       this.load.image(`atrofia_jump_${i}`, `src/assets/sprites/atrofia/atrofia_jump/attack03_${num}.png`);
     }
 
-    // LAMENTO: Spitt/Escupitajo (0000 a 0031)
+    // LAMENTO
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
+
       this.load.image(`lamento_spitt_${i}`, `src/assets/sprites/lamento/lamento_spitt/attack01_${num}.png`);
     }
 
-    // INVOCADOR: Scream/Grito (0000 a 0003) - Se cargan normal, se invierten al crear la animación
+    // INVOCADOR
     for (let i = 0; i <= 3; i++) {
       let num = i.toString().padStart(4, '0');
+
       this.load.image(`invocador_scream_${i}`, `src/assets/sprites/invocador/invocador_scream/death02_${num}.png`);
     }
 
-    // Carga sprites soldier (CORREGIDO CON LAS CLAVES)
+    // SOLDIER
     for (let i = 0; i <= 1; i++) {
       this.load.image(`soldier_move_${i}`, `src/assets/sprites/soldier/soldiermove/survivor-move_rifle_${i}.png`);
     }
@@ -93,16 +100,16 @@ export class MainScene extends Phaser.Scene {
       this.load.image(`soldier_shoot_${i}`, `src/assets/sprites/soldier/soldiershoot/survivor-shoot_rifle_${i}.png`);
     }
 
-    // Carga sprites Melee
+    // MELEE
     for (let i = 0; i <= 19; i++) {
       this.load.image(`move_knife_${i}`, `src/assets/sprites/melee/meleemove/survivor-move_knife_${i}.png`);
     }
+
     for (let i = 0; i <= 14; i++) {
       this.load.image(`attack_knife_${i}`, `src/assets/sprites/melee/meleeattack/survivor-meleeattack_knife_${i}.png`);
     }
   }
 
-  // Ahora nuestro create es un índice limpio y ordenado
   create() {
     this.iniciarStore();
     this.crearAnimaciones();
@@ -111,16 +118,12 @@ export class MainScene extends Phaser.Scene {
     this.crearObstaculos();
     this.configurarColisionesGrupales();
     this.configurarEventos();
-
     this.configurarJugador();
   }
 
-  // ==========================================
-  // FUNCIONES DE INICIALIZACIÓN (REFACTOR)
-  // ==========================================
-
   iniciarStore() {
     this.store = useGameStore();
+
     this.time.addEvent({
       delay: 1000,
       callback: () => {
@@ -128,59 +131,68 @@ export class MainScene extends Phaser.Scene {
       },
       loop: true,
     });
+    const unsubscribe = this.store.$subscribe((mutation, state) => {
+      if (!state.isGameOver && this.player && this.player.isDead) {
+        unsubscribe(); // Destruimos este listener para no crear duplicados al reiniciar
+
+        this.scene.resume();
+        this.scene.restart();
+      }
+    });
   }
 
   crearAnimaciones() {
+    if (this.anims.exists('melee-move')) return;
     const framesMoveKnife = [];
+
     for (let i = 0; i <= 19; i++) {
       framesMoveKnife.push({ key: `move_knife_${i}` });
     }
-
     this.anims.create({
       key: 'melee-move',
       frames: framesMoveKnife,
-      frameRate: 20, // Velocidad a la que corre la animación
-      repeat: -1, // -1 significa que se repite para siempre
+      frameRate: 20,
+      repeat: -1,
     });
 
-    // Crear Array de frames para el Ataque
     const framesAttackKnife = [];
+
     for (let i = 0; i <= 14; i++) {
       framesAttackKnife.push({ key: `attack_knife_${i}` });
     }
-
     this.anims.create({
       key: 'melee-attack',
       frames: framesAttackKnife,
-      frameRate: 24, // El ataque suele ser más rápido
-      repeat: 0, // 0 significa que solo se reproduce una vez por cuchillada
+      frameRate: 24,
+      repeat: 0,
     });
 
     const framesZombieWalk = [];
+
     for (let i = 0; i <= 31; i++) {
       framesZombieWalk.push({ key: `zombie_walk_${i}` });
     }
     this.anims.create({
       key: 'zombie-walk-anim',
       frames: framesZombieWalk,
-      frameRate: 20, // Ajusta la velocidad de la caminata
+      frameRate: 20,
       repeat: -1,
     });
 
     const framesZombieAttack = [];
+
     for (let i = 1; i <= 10; i++) {
       framesZombieAttack.push({ key: `zombie_attack_${i}` });
     }
     this.anims.create({
       key: 'zombie-attack-anim',
       frames: framesZombieAttack,
-      frameRate: 15, // Ajusta la velocidad del ataque
+      frameRate: 15,
       repeat: 0,
     });
 
-    // ANIMACIONES DE HABILIDADES ESPECIALES
-    // Coloso: Ataque Especial
     const framesColosoAttack = [];
+
     for (let i = 0; i <= 19; i++) {
       framesColosoAttack.push({ key: `coloso_attack_${i}` });
     }
@@ -191,8 +203,8 @@ export class MainScene extends Phaser.Scene {
       repeat: 0,
     });
 
-    // Coloso: Embestida
     const framesColosoDash = [];
+
     for (let i = 0; i <= 2; i++) {
       framesColosoDash.push({ key: `coloso_dash_${i}` });
     }
@@ -203,8 +215,8 @@ export class MainScene extends Phaser.Scene {
       repeat: 0,
     });
 
-    // Atrofia: Salto
     const framesAtrofiaJump = [];
+
     for (let i = 0; i <= 19; i++) {
       framesAtrofiaJump.push({ key: `atrofia_jump_${i}` });
     }
@@ -215,22 +227,21 @@ export class MainScene extends Phaser.Scene {
       repeat: 0,
     });
 
-    // Lamento: Escupir
     const framesLamentoSpitt = [];
+
     for (let i = 0; i <= 19; i++) {
       framesLamentoSpitt.push({ key: `lamento_spitt_${i}` });
     }
     this.anims.create({
       key: 'lamento-spitt-anim',
       frames: framesLamentoSpitt,
-      frameRate: 24, // Animación larga, puede requerir mayor velocidad
+      frameRate: 24,
       repeat: 0,
     });
 
-    // Invocador: Grito (ESTA SE ENSAMBLA EN REVERSA: del 3 al 0)
     const framesInvocadorScream = [];
+
     for (let i = 3; i >= 0; i--) {
-      // Fíjate en el bucle inverso (i--)
       framesInvocadorScream.push({ key: `invocador_scream_${i}` });
     }
     this.anims.create({
@@ -241,46 +252,43 @@ export class MainScene extends Phaser.Scene {
     });
 
     const framesCivilWalk = [];
+
     for (let i = 1; i <= 6; i++) {
       framesCivilWalk.push({ key: `civil_walk_${i}` });
     }
-
     this.anims.create({
       key: 'civil-walk-anim',
       frames: framesCivilWalk,
-      frameRate: 8, // Ajusta la velocidad si caminan muy rápido o lento
+      frameRate: 8,
       repeat: -1,
     });
+
     const framesSoldierMove = [];
+
     for (let i = 0; i <= 1; i++) {
       framesSoldierMove.push({ key: `soldier_move_${i}` });
     }
-
-    // Reemplazamos la antigua animación por la nueva
     this.anims.create({
       key: 'soldier-walk-anim',
       frames: framesSoldierMove,
-      frameRate: 8, // Velocidad de los pasos (ajústalo a tu gusto)
-      repeat: -1, // Bucle infinito
+      frameRate: 8,
+      repeat: -1,
     });
 
-    // ==========================================
-    // ANIMACIÓN: SOLDADO DISPARANDO (RIFLE)
-    // ==========================================
     const framesSoldierShoot = [];
+
     for (let i = 0; i <= 2; i++) {
       framesSoldierShoot.push({ key: `soldier_shoot_${i}` });
     }
-
-    // Reemplazamos la antigua animación de disparo
     this.anims.create({
       key: 'soldier-shoot-anim',
       frames: framesSoldierShoot,
-      frameRate: 15, // Disparo rápido
-      repeat: 0, // Solo se reproduce una vez por balazo
+      frameRate: 15,
+      repeat: 0,
     });
 
     const framesKamikazeWalk = [];
+
     for (let i = 1; i <= 4; i++) {
       framesKamikazeWalk.push({ key: `kamikaze_walk_${i}` });
     }
@@ -292,50 +300,48 @@ export class MainScene extends Phaser.Scene {
     });
 
     const framesExplosion = [];
+
     for (let i = 1; i <= 7; i++) {
       framesExplosion.push({ key: `explosion_${i}` });
     }
-
     this.anims.create({
       key: 'kamikaze-explosion-anim',
       frames: framesExplosion,
-      frameRate: 14, // Al ser 7 imágenes, a 14fps la explosión durará exactamente 0.5 segundos
+      frameRate: 14,
       repeat: 0,
-      hideOnComplete: true, // Hace que el sprite se oculte automáticamente al terminar
+      hideOnComplete: true,
     });
 
-    // ── CREAR ANIMACIÓN DE RESURRECCIÓN ──────────────────────────────
     const framesResurection = [];
+
     for (let i = 0; i <= 16; i++) {
       framesResurection.push({ key: `resurection_${i}` });
     }
-
     this.anims.create({
       key: 'zombie-resurrection-anim',
       frames: framesResurection,
-      frameRate: 14, // Velocidad de la animación (17 frames a 14fps son ~1.2 segundos)
-      repeat: 0, // 0 para que se reproduzca solo una vez por resurrección
+      frameRate: 14,
+      repeat: 0,
     });
 
     const framesZombieDeath = [];
+
     for (let i = 0; i <= 16; i++) {
       framesZombieDeath.push({ key: `zombie_death_${i}` });
     }
-
     this.anims.create({
       key: 'zombie-death-anim',
       frames: framesZombieDeath,
-      frameRate: 16, // A 16fps los 17 frames durarán poco más de 1 segundo
-      repeat: 0, // 0 para que solo ocurra una vez al morir
+      frameRate: 16,
+      repeat: 0,
     });
   }
 
   crearEntorno() {
     this.input.mouse.disableContextMenu();
     this.lights.enable();
-    this.lights.setAmbientColor(0x131329);
+    this.lights.setAmbientColor(0x333333);
 
-    // Guardamos el mapa como propiedad de la clase
     this.map = this.make.tilemap({ key: 'Map_HorrorZ' });
 
     const tsFondo = this.map.addTilesetImage('Background_Dark-Green_TileSet', 'Tileset_Fondo');
@@ -354,7 +360,6 @@ export class MainScene extends Phaser.Scene {
     _capaCasas.setLighting(true);
     capaSuelo.setPosition(0, 0);
 
-    // Guardamos las dimensiones
     this.anchoMapa = this.map.widthInPixels;
     this.altoMapa = this.map.heightInPixels;
 
@@ -370,20 +375,12 @@ export class MainScene extends Phaser.Scene {
     this.bulletsGroup = this.physics.add.group();
     this.allCivilians = [];
 
-    // Timer de spawn dinámico
-    this.time.addEvent({
-      delay: 2000,
-      callback: () => {
-        this.ejecutarSpawnDinamico();
-      },
-      loop: true,
-    });
+    this.programarProximoSpawn();
   }
 
   crearObstaculos() {
     this.obstaculos = this.physics.add.staticGroup();
 
-    // Usamos el mapa que guardamos en crearEntorno()
     const capaObjetos = this.map.getObjectLayer('Capa de Objetos 1');
 
     if (capaObjetos) {
@@ -399,18 +396,15 @@ export class MainScene extends Phaser.Scene {
   }
 
   configurarColisionesGrupales() {
-    // Colisiones estáticas
     this.physics.add.collider(this.civiliansGroup, this.obstaculos);
     this.physics.add.collider(this.hordeGroup, this.obstaculos);
     this.physics.add.collider(this.enemiesGroup, this.obstaculos);
     this.physics.add.collider(this.bulletsGroup, this.obstaculos, (bala, _obstaculo) => bala.destroy());
 
-    // Colisiones entre entidades de los mismos bandos
     this.physics.add.collider(this.civiliansGroup, this.civiliansGroup);
     this.physics.add.collider(this.hordeGroup, this.hordeGroup);
     this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
 
-    // Interacciones (Overlaps)
     this.physics.add.overlap(this.hordeGroup, this.civiliansGroup, (zombieObj, civilObj) => {
       const dist = Phaser.Math.Distance.Between(zombieObj.x, zombieObj.y, civilObj.x, civilObj.y);
 
@@ -425,7 +419,6 @@ export class MainScene extends Phaser.Scene {
           this.hordeGroup.add(civilObj);
           this.store.infectCivilian();
           if (this.player && this.player.curar) this.player.curar(15);
-          this.store.healPlayer(15);
         });
       }
     });
@@ -456,7 +449,6 @@ export class MainScene extends Phaser.Scene {
 
       if (data.healReward) {
         if (this.player && this.player.curar) this.player.curar(data.healReward);
-        this.store.healPlayer(data.healReward);
       }
     });
 
@@ -473,33 +465,28 @@ export class MainScene extends Phaser.Scene {
     });
 
     this.events.on('explosion-kamikaze', (data) => {
+      let radioExplosion = data.rango || 120;
       let distAlPlayer = Phaser.Math.Distance.Between(data.x, data.y, this.player.x, this.player.y);
 
-      if (distAlPlayer < 80) {
+      if (distAlPlayer < radioExplosion) {
         this.player.recibirDaño(data.daño, 'explosion');
-        this.store.takeDamage(data.daño);
       }
 
       this.hordeGroup.getChildren().forEach((zombi) => {
         let distAlZombi = Phaser.Math.Distance.Between(data.x, data.y, zombi.x, zombi.y);
 
-        if (distAlZombi < 80 && zombi.recibirDaño) {
+        if (distAlZombi < radioExplosion && zombi.recibirDaño) {
           zombi.recibirDaño(data.daño);
         }
       });
     });
 
     this.events.on('visual-explosion', (data) => {
-      // Inicializamos el sprite con la primera textura de la secuencia
       const efectoExplosion = this.add.sprite(data.x, data.y, 'explosion_1');
 
-      // Si necesitas que la explosión se vea más grande o chica en el mapa, ajusta la escala aquí
       efectoExplosion.setScale(1.5);
-
-      // Reproducir la animación secuencial
       efectoExplosion.play('kamikaze-explosion-anim');
 
-      // Destruir por completo el objeto de la memoria al terminar
       efectoExplosion.once('animationcomplete', () => {
         efectoExplosion.destroy();
       });
@@ -510,58 +497,62 @@ export class MainScene extends Phaser.Scene {
     let spawnX = Phaser.Math.Between(10, this.anchoMapa - 10);
     let spawnY = Phaser.Math.Between(10, this.altoMapa - 10);
 
-    this.scene.pause();
-
-    const unsubscribe = this.store.$subscribe((mutation, state) => {
-      if (state.isGameStarted && !this.player) {
-        if (state.selectedZombie === PLAYER_TYPES.COLOSO.id) {
-          this.player = new Coloso(this, spawnX, spawnY);
-        } else if (state.selectedZombie === PLAYER_TYPES.ATROFIA.id) {
-          this.player = new Atrofia(this, spawnX, spawnY, PLAYER_TYPES.ATROFIA);
-        } else if (state.selectedZombie === PLAYER_TYPES.INVOCADOR.id) {
-          this.player = new Invocador(this, spawnX, spawnY, PLAYER_TYPES.INVOCADOR);
-        } else if (state.selectedZombie === PLAYER_TYPES.LAMENTO.id) {
-          this.player = new Lamento(this, spawnX, spawnY, PLAYER_TYPES.LAMENTO);
-        }
-
-        this.playerLight = this.lights.addLight(spawnX, spawnY, 500, 0xffffff, 0.3);
-        this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-
-        // Colisiones exclusivas del jugador
-        this.physics.add.collider(this.player, this.obstaculos);
-
-        this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
-          if (this.player.isAttacking && !civilObj.isInfected) {
-            civilObj.infectar();
-            this.civiliansGroup.remove(civilObj);
-            this.hordeGroup.add(civilObj);
-            this.store.infectCivilian();
-            if (playerObj.onInfectarCivil) playerObj.onInfectarCivil();
-            if (playerObj.curar) playerObj.curar(15);
-            this.store.healPlayer(15);
-          } else if (this.player.isDashing && !civilObj.isInfected) {
-            civilObj.recibirDaño(400);
-          }
-        });
-
-        this.physics.add.overlap(this.player, this.bulletsGroup, (jugador, bala) => {
-          bala.destroy();
-          if (jugador.recibirDaño) jugador.recibirDaño(10, 'bala');
-          this.store.takeDamage(10);
-        });
-
-        this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
-          if (jugador.isAttacking && !enemigo.isDead) {
-            enemigo.recibirDaño(100);
-          } else if (jugador.isDashing && !enemigo.isDead) {
-            enemigo.recibirDaño(400);
-          }
-        });
-
-        this.scene.resume();
-        unsubscribe();
+    const instanciarJugador = (zombieSeleccionado) => {
+      if (zombieSeleccionado === PLAYER_TYPES.COLOSO.id) {
+        this.player = new Coloso(this, spawnX, spawnY);
+      } else if (zombieSeleccionado === PLAYER_TYPES.ATROFIA.id) {
+        this.player = new Atrofia(this, spawnX, spawnY, PLAYER_TYPES.ATROFIA);
+      } else if (zombieSeleccionado === PLAYER_TYPES.INVOCADOR.id) {
+        this.player = new Invocador(this, spawnX, spawnY, PLAYER_TYPES.INVOCADOR);
+      } else if (zombieSeleccionado === PLAYER_TYPES.LAMENTO.id) {
+        this.player = new Lamento(this, spawnX, spawnY, PLAYER_TYPES.LAMENTO);
       }
-    });
+
+      this.playerLight = this.lights.addLight(spawnX, spawnY, 500, 0xffffff, 0.5);
+      this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
+
+      this.physics.add.collider(this.player, this.obstaculos);
+
+      this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
+        if (this.player.isAttacking && !civilObj.isInfected) {
+          civilObj.infectar();
+          this.civiliansGroup.remove(civilObj);
+          this.hordeGroup.add(civilObj);
+          this.store.infectCivilian();
+          if (playerObj.onInfectarCivil) playerObj.onInfectarCivil();
+          if (playerObj.curar) playerObj.curar(15);
+        } else if (this.player.isDashing && !civilObj.isInfected) {
+          civilObj.recibirDaño(400);
+        }
+      });
+
+      this.physics.add.overlap(this.player, this.bulletsGroup, (jugador, bala) => {
+        bala.destroy();
+        if (jugador.recibirDaño) jugador.recibirDaño(10, 'bala');
+      });
+
+      this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
+        if (jugador.isAttacking && !enemigo.isDead) {
+          enemigo.recibirDaño(jugador.currentDamage);
+        } else if (jugador.isDashing && !enemigo.isDead) {
+          enemigo.recibirDaño(400);
+        }
+      });
+    };
+
+    if (this.store.isGameStarted) {
+      instanciarJugador(this.store.selectedZombie);
+      this.scene.resume();
+    } else {
+      this.scene.pause();
+      const unsubscribe = this.store.$subscribe((mutation, state) => {
+        if (state.isGameStarted && !this.player) {
+          instanciarJugador(state.selectedZombie);
+          this.scene.resume();
+          unsubscribe();
+        }
+      });
+    }
   }
 
   update(time, delta) {
@@ -599,28 +590,65 @@ export class MainScene extends Phaser.Scene {
     let spawnY = 0;
     let intentos = 0;
 
-    while (!posicionValida && intentos < 10) {
+    while (!posicionValida && intentos < 15) {
       const angulo = Phaser.Math.FloatBetween(0, Math.PI * 2);
       const radio = Phaser.Math.FloatBetween(radioMinimo, radioMaximo);
 
       spawnX = cam.midPoint.x + Math.cos(angulo) * radio;
       spawnY = cam.midPoint.y + Math.sin(angulo) * radio;
 
-      // Usamos el anchoMapa y altoMapa guardados previamente
       if (spawnX > 50 && spawnX < this.anchoMapa - 50 && spawnY > 50 && spawnY < this.altoMapa - 50) {
         posicionValida = true;
       }
       intentos++;
     }
 
-    return posicionValida ? { x: spawnX, y: spawnY } : null;
+    if (!posicionValida) {
+      spawnX = Phaser.Math.Clamp(spawnX, 50, this.anchoMapa - 50);
+      spawnY = Phaser.Math.Clamp(spawnY, 50, this.altoMapa - 50);
+    }
+
+    return { x: spawnX, y: spawnY };
+  }
+
+  programarProximoSpawn() {
+    const minutosJugados = this.time.now;
+    let delayDinamico = 2000;
+
+    if (minutosJugados > 1) delayDinamico = 2000;
+    if (minutosJugados > 3) delayDinamico = 1500;
+    if (minutosJugados > 5) delayDinamico = 800;
+    if (minutosJugados > 8) delayDinamico = 400;
+
+    const porcentajeVida = this.store.playerHealth / this.store.playerMaxHealth;
+    const hordaActiva = this.hordeGroup.getChildren().length;
+
+    if (hordaActiva > 30) {
+      delayDinamico *= 0.5;
+    } else if (hordaActiva > 20) {
+      delayDinamico *= 0.75;
+    }
+
+    if (porcentajeVida < 0.3) {
+      delayDinamico *= 1.6;
+    }
+    delayDinamico = Math.max(delayDinamico, 350);
+
+    this.time.addEvent({
+      delay: delayDinamico,
+      callback: () => {
+        this.ejecutarSpawnDinamico();
+
+        if (!this.store.isGameOver) {
+          this.programarProximoSpawn();
+        }
+      },
+      loop: false,
+    });
   }
 
   ejecutarSpawnDinamico() {
     const posicion = this.obtenerPosicionAnillo();
-
-    if (!posicion) return;
-
     const director = this.obtenerPesosDelDirector();
     const dado = Phaser.Math.Between(1, 100);
 
@@ -645,6 +673,8 @@ export class MainScene extends Phaser.Scene {
     let enemigoReciclado = enemigosMuertos.find((enemigo) => {
       if (tipoElegido.type === 'MEDIC') {
         return enemigo.constructor.name === 'Medic';
+      } else if (tipoElegido.type === 'KAMIKAZE') {
+        return enemigo.constructor.name === 'Kamikaze';
       } else {
         return enemigo.constructor.name === 'Soldier';
       }
@@ -652,6 +682,8 @@ export class MainScene extends Phaser.Scene {
 
     if (enemigoReciclado) {
       if (tipoElegido.type === 'MEDIC') {
+        enemigoReciclado.respawnBase(posicion.x, posicion.y, tipoElegido);
+      } else if (tipoElegido.type === 'KAMIKAZE') {
         enemigoReciclado.respawnBase(posicion.x, posicion.y, tipoElegido);
       } else {
         enemigoReciclado.respawn(posicion.x, posicion.y, tipoElegido);
@@ -661,6 +693,10 @@ export class MainScene extends Phaser.Scene {
         let nuevoMedic = new Medic(this, posicion.x, posicion.y, tipoElegido);
 
         this.enemiesGroup.add(nuevoMedic);
+      } else if (tipoElegido.type === 'KAMIKAZE') {
+        let nuevoKamikaze = new Kamikaze(this, posicion.x, posicion.y, tipoElegido);
+
+        this.enemiesGroup.add(nuevoKamikaze);
       } else {
         let nuevoSoldado = new Soldier(this, posicion.x, posicion.y, tipoElegido);
 
@@ -670,22 +706,36 @@ export class MainScene extends Phaser.Scene {
   }
 
   obtenerPesosDelDirector() {
-    const minutosJugados = this.time.now / 60000;
+    const minutosJugados = this.store.timeAlive / 60;
+    const hordaActiva = this.hordeGroup.getChildren().length;
+
     let probabilidadCivil;
     let poolMilitares;
+    let limiteHordaAceptable = 15;
+
+    if (minutosJugados > 1) limiteHordaAceptable = 25;
+    if (minutosJugados > 3) limiteHordaAceptable = 40;
+    if (minutosJugados > 5) limiteHordaAceptable = 60;
+
+    if (hordaActiva > limiteHordaAceptable) {
+      probabilidadCivil = minutosJugados < 2 ? 20 : 5;
+      poolMilitares = [ENEMY_TYPES.SNIPER, ENEMY_TYPES.KAMIKAZE, ENEMY_TYPES.TANK];
+
+      return { probabilidadCivil, poolMilitares };
+    }
 
     if (minutosJugados < 1) {
-      probabilidadCivil = 80;
+      probabilidadCivil = 85;
       poolMilitares = [ENEMY_TYPES.NORMAL];
-    } else if (minutosJugados < 3) {
-      probabilidadCivil = 60;
-      poolMilitares = [ENEMY_TYPES.NORMAL, ENEMY_TYPES.NORMAL, ENEMY_TYPES.MELEE, ENEMY_TYPES.MEDIC];
+    } else if (minutosJugados < 2.5) {
+      probabilidadCivil = 55;
+      poolMilitares = [ENEMY_TYPES.NORMAL, ENEMY_TYPES.NORMAL, ENEMY_TYPES.MELEE];
     } else if (minutosJugados < 5) {
-      probabilidadCivil = 40;
-      poolMilitares = [ENEMY_TYPES.NORMAL, ENEMY_TYPES.MILITAR, ENEMY_TYPES.MILITAR, ENEMY_TYPES.SNIPER, ENEMY_TYPES.MELEE, ENEMY_TYPES.MEDIC];
+      probabilidadCivil = 25;
+      poolMilitares = [ENEMY_TYPES.MILITAR, ENEMY_TYPES.SNIPER, ENEMY_TYPES.MELEE, ENEMY_TYPES.MEDIC];
     } else {
-      probabilidadCivil = 15;
-      poolMilitares = [ENEMY_TYPES.MILITAR, ENEMY_TYPES.SNIPER, ENEMY_TYPES.KAMIKAZE, ENEMY_TYPES.KAMIKAZE, ENEMY_TYPES.TANK, ENEMY_TYPES.MEDIC];
+      probabilidadCivil = 5;
+      poolMilitares = [ENEMY_TYPES.MILITAR, ENEMY_TYPES.SNIPER, ENEMY_TYPES.KAMIKAZE, ENEMY_TYPES.TANK, ENEMY_TYPES.MEDIC];
     }
 
     return { probabilidadCivil, poolMilitares };

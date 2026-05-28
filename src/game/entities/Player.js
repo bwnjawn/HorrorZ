@@ -47,6 +47,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.animWalk = config?.animWalk || 'zombie-walk-anim';
     this.animAttack = config?.animAttack || 'zombie-attack-anim';
 
+    const store = useGameStore();
+
+    store.playerMaxHealth = this.maxHealth;
+    store.setPlayerHealth(this.health);
+    store.setPlayerMaxStamina(this.maxStamina);
+    store.setPlayerStamina(this.stamina);
+
     // CONTROLES
     this.keys = scene.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -114,9 +121,40 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.body.setCircle(this._hitboxRadio, this._hitboxOffsetX, this._hitboxOffsetY);
   }
 
+  mostrarNumeroFlotante(cantidad, tipo = 'daño') {
+    const isCura = tipo === 'cura';
+    const colorTexto = isCura ? '#00ff00' : '#ff0000';
+    const prefijo = isCura ? '+' : '-';
+
+    const textoFlotante = this.scene.add
+      .text(this.x, this.y - 30, `${prefijo}${cantidad}`, {
+        fontSize: '22px', // Un poco más grande para el jugador
+        color: colorTexto,
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(25);
+
+    this.scene.tweens.add({
+      targets: textoFlotante,
+      y: this.y - 70,
+      alpha: 0,
+      duration: 1000,
+      ease: 'Power1',
+      onComplete: () => {
+        textoFlotante.destroy();
+      },
+    });
+  }
+
   recibirDaño(cantidad) {
     if (this.isDead) return;
     this.health -= cantidad;
+    if (this.health < 0) this.health = 0;
+    useGameStore().setPlayerHealth(this.health);
+    this.mostrarNumeroFlotante(cantidad, 'daño');
     this.setTint(0xff0000);
     this.scene.time.delayedCall(150, () => {
       if (!this.isDead) this.clearTint();
@@ -140,9 +178,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   curar(cantidad) {
-    if (this.isDead) return;
-    this.health += cantidad;
-    if (this.health > this.maxHealth) this.health = this.maxHealth;
+    if (this.isDead || this.health >= this.maxHealth) return;
+
+    const curacionReal = Math.min(cantidad, this.maxHealth - this.health);
+
+    this.health += curacionReal;
+    useGameStore().setPlayerHealth(this.health);
+    this.mostrarNumeroFlotante(curacionReal, 'cura');
+
     this.setTint(0x00ff00);
     this.scene.time.delayedCall(200, () => {
       if (!this.isDead) this.clearTint();
@@ -271,5 +314,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.anims.currentAnim) this.anims.stop();
       }
     }
+    useGameStore().setPlayerStamina(this.stamina);
   }
 }

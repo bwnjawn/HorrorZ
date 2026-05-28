@@ -29,6 +29,69 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Propiedades de patrulla
     this.puntoObjetivo = new Phaser.Math.Vector2(x, y);
     this.tiempoAtascado = 0;
+
+    this.healthBar = scene.add.graphics();
+    this.healthBar.setDepth(10); // Sobre los sprites, pero debajo de los números
+    this.healthBarAlpha = 0; // 0 = Invisible por defecto
+    this.healthBarTimer = null;
+
+    // Si tiene más de 300 de vida (Jefes/Tanques), la barra siempre se ve
+    this.alwaysShowHealth = this.maxHealth >= 300;
+    if (this.alwaysShowHealth) this.healthBarAlpha = 1;
+  }
+
+  mostrarNumeroDaño(cantidad, tipoDaño) {
+    const isCrit = cantidad >= 50;
+    const colorTexto = tipoDaño === 'veneno' ? '#00ff00' : isCrit ? '#ffaa00' : '#ffffff';
+    const sizeTexto = isCrit ? '22px' : '14px';
+
+    const textoDaño = this.scene.add
+      .text(this.x, this.y - 20, `-${cantidad}`, {
+        fontSize: sizeTexto,
+        color: colorTexto,
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 3,
+      })
+      .setOrigin(0.5)
+      .setDepth(15);
+
+    this.scene.tweens.add({
+      targets: textoDaño,
+      y: this.y - 60,
+      alpha: 0,
+      duration: 800,
+      ease: 'Power1',
+      onComplete: () => {
+        textoDaño.destroy();
+      },
+    });
+  }
+
+  dibujarBarraVida() {
+    if (!this.healthBar) return;
+    this.healthBar.clear();
+
+    if (this.isDead || (this.healthBarAlpha <= 0 && !this.alwaysShowHealth)) return;
+
+    // Calculamos la posición relativa al tamaño del sprite
+    const anchoBarra = 40;
+    const altoBarra = 6;
+    const offsetX = this.x - anchoBarra / 2;
+    const offsetY = this.y - (this.height * this.scaleY) / 2 - 15; // Arriba de su cabeza
+
+    this.healthBar.fillStyle(0x000000, this.healthBarAlpha);
+    this.healthBar.fillRect(offsetX, offsetY, anchoBarra, altoBarra);
+    const porcentaje = Math.max(0, this.health / this.maxHealth);
+
+    let colorVida = 0x00ff00; // Verde
+
+    if (porcentaje <= 0.5) colorVida = 0xffff00; // Amarillo
+    if (porcentaje <= 0.25) colorVida = 0xff0000; // Rojo
+
+    // Dibujamos la vida actual
+    this.healthBar.fillStyle(colorVida, this.healthBarAlpha);
+    this.healthBar.fillRect(offsetX + 1, offsetY + 1, (anchoBarra - 2) * porcentaje, altoBarra - 2);
   }
 
   recibirDaño(cantidad, tipoDaño = 'normal') {
@@ -37,6 +100,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.isDead || this.esInvulnerable) return;
     this.health -= cantidad;
     this.esInvulnerable = true;
+    this.mostrarNumeroDaño(cantidad, tipoDaño);
+
+    this.healthBarAlpha = 1;
+    this.dibujarBarraVida();
+
+    if (!this.alwaysShowHealth) {
+      if (this.healthBarTimer) this.healthBarTimer.remove();
+
+      this.healthBarTimer = this.scene.time.delayedCall(2000, () => {
+        // Tween para que la barra se apague suavemente en lugar de desaparecer de golpe
+        this.scene.tweens.add({
+          targets: this,
+          healthBarAlpha: 0,
+          duration: 300,
+          onUpdate: () => this.dibujarBarraVida(),
+        });
+      });
+    }
 
     if (tipoDaño !== 'veneno') {
       this.scene.time.delayedCall(200, () => {
@@ -74,6 +155,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.body.enable = false;
+    if (this.healthBar) this.healthBar.clear();
   }
 
   respawnBase(x, y, statsConfig) {
@@ -93,6 +175,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.health = statsConfig.hp;
     this.maxHealth = statsConfig.hp;
     this.maxSpeed = statsConfig.speed;
+
+    this.alwaysShowHealth = this.maxHealth >= 300;
+    this.healthBarAlpha = this.alwaysShowHealth ? 1 : 0;
+    if (this.healthBar) this.healthBar.clear();
 
     this.setScale(statsConfig.scale);
     this.setTint(this.colorOriginal);
@@ -248,5 +334,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
     this.setVelocity(this.velocity.x, this.velocity.y);
     this.setRotation(this.velocity.angle() + Math.PI / 2);
+
+    if (this.healthBarAlpha > 0 || this.alwaysShowHealth) {
+      this.dibujarBarraVida();
+    }
   }
 }

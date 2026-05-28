@@ -9,14 +9,15 @@ export const useGameStore = defineStore('game', {
     isGameStarted: false,
     isPaused: false,
 
-    // ── COMPATIBILIDAD (los usa MainScene y Player directamente) ────────
-    isGameStarted: false,
+    // ── COMPATIBILIDAD (los usa MainScene y Player directamente) ───────
     isGameOver: false,
     selectedZombie: null,
 
     // ── STATS DEL JUGADOR ──────────────────────────────────────────────
     playerHealth: 200,
     playerMaxHealth: 200,
+    playerStamina: 100,
+    playerMaxStamina: 100,
 
     // ── STATS DE LA HORDA / CIVILES ────────────────────────────────────
     zombieCount: 0, // zombis actuales en la horda
@@ -118,6 +119,17 @@ export const useGameStore = defineStore('game', {
 
     healPlayer(amount) {
       this.playerHealth = Math.min(this.playerMaxHealth, this.playerHealth + amount);
+    },
+    setPlayerHealth(health) {
+      this.playerHealth = health;
+    },
+
+    setPlayerStamina(stamina) {
+      this.playerStamina = stamina;
+    },
+
+    setPlayerMaxStamina(maxStamina) {
+      this.playerMaxStamina = maxStamina;
     },
 
     infectCivilian() {

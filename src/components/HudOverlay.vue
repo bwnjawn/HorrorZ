@@ -1,27 +1,32 @@
 <template>
   <div class="hud-container">
     <div class="hud-top-left">
-      <div class="health-bar-container">
-        <div class="health-bg"></div>
-        <div class="health-fill" :style="{ width: healthPercentage + '%' }"></div>
-        <div class="health-pulse-pattern"></div>
+      <div class="bar-container health-bar">
+        <div class="bar-bg"></div>
+        <div class="bar-fill health-fill" :style="{ width: healthPercentage + '%' }"></div>
+        <div class="pulse-pattern"></div>
+      </div>
+
+      <div class="bar-container stamina-bar">
+        <div class="bar-bg"></div>
+        <div class="bar-fill stamina-fill" :style="{ width: staminaPercentage + '%' }"></div>
       </div>
     </div>
 
-    <div class="hud-top-right">
-      <div class="timer">
-        <img src="../assets/ui/clock.png" alt="Reloj" class="icon" />
-        <span class="blood-text">{{ formattedTime }}</span>
+    <div class="hud-top-right tactical-panel">
+      <div class="info-row">
+        <img src="../assets/ui/clock.png" alt="Reloj" class="icon icon-inverted" />
+        <span class="modern-text">{{ formattedTime }}</span>
       </div>
-      <div class="horde-counter">
-        <img src="../assets/ui/craneo.png" alt="Calavera" class="icon" />
-        <span class="blood-text">{{ store.zombieCount }} / {{ store.civilianCount }}</span>
+      <div class="info-row">
+        <img src="../assets/ui/craneo.png" alt="Calavera" class="icon icon-inverted" />
+        <span class="modern-text">{{ store.zombieCount }} / {{ store.civilianCount }}</span>
       </div>
     </div>
 
     <div class="hud-bottom-right">
-      <div class="skill-indicator" :class="{ active: store.isRegrouping, cooldown: store.regroupCooldown > 0 }">
-        <span class="blood-text">
+      <div class="skill-indicator tactical-panel" :class="{ active: store.isRegrouping, cooldown: store.regroupCooldown > 0 }">
+        <span class="modern-text">
           {{ skillStatusText }}
         </span>
       </div>
@@ -40,9 +45,18 @@ import { useGameStore } from '../stores/gameStore';
 
 const store = useGameStore();
 
-// Cálculo del porcentaje para achicar la barra roja de vida
+// Porcentaje Vida
 const healthPercentage = computed(() => {
+  if (store.playerMaxHealth <= 0) return 0;
+
   return (store.playerHealth / store.playerMaxHealth) * 100;
+});
+
+// Porcentaje Estamina
+const staminaPercentage = computed(() => {
+  if (store.playerMaxStamina <= 0) return 0;
+
+  return (store.playerStamina / store.playerMaxStamina) * 100;
 });
 
 // Formateo del tiempo
@@ -53,7 +67,7 @@ const formattedTime = computed(() => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 });
 
-// Lógica para mostrar el texto adecuado de la habilidad
+// Textos de habilidad
 const skillStatusText = computed(() => {
   if (store.isRegrouping) return '¡REAGRUPANDO!';
   if (store.regroupCooldown > 0) return `ESPERA: ${store.regroupCooldown}s`;
@@ -63,6 +77,7 @@ const skillStatusText = computed(() => {
 </script>
 
 <style scoped>
+/* --- TIPOGRAFÍA MODERNA --- */
 .hud-container {
   position: absolute;
   top: 0;
@@ -71,95 +86,157 @@ const skillStatusText = computed(() => {
   height: 100vh;
   pointer-events: none;
   z-index: 10;
-  font-family: 'Courier New', Courier, monospace;
+  /* Fuente limpia y sin serifas */
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   user-select: none;
 }
 
-/* --- POSICIONES DE LAS ESQUINAS --- */
+/* --- POSICIONES --- */
 .hud-top-left {
   position: absolute;
-  top: 25px;
-  left: 25px;
+  top: 30px;
+  left: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Separación muy sutil entre las barras */
 }
 
 .hud-top-right {
   position: absolute;
-  top: 25px;
-  right: 25px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 15px;
+  top: 30px;
+  right: 30px;
 }
 
 .hud-bottom-right {
   position: absolute;
-  bottom: 25px;
-  right: 25px;
+  bottom: 30px;
+  right: 30px;
 }
 
-/* --- ESTILOS DE LA BARRA DE VIDA --- */
-.health-bar-container {
-  width: 250px;
-  height: 30px;
-  background-color: #333;
-  border: 1px solid #111;
+/* --- BARRAS FLAT --- */
+.bar-container {
+  background-color: rgba(0, 0, 0, 0.4); /* Fondo translúcido */
+  border-radius: 4px; /* Bordes ligeramente redondeados */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
   display: block;
 }
 
-.health-fill {
-  height: 100%;
-  background-color: #8b0000;
-  transition: width 0.3s ease-out;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
+.health-bar {
+  width: 240px;
+  height: 16px; /* Barra de vida elegante */
 }
 
-.health-pulse-pattern {
+.stamina-bar {
+  width: 180px; /* Un poco más corta para dar jerarquía visual */
+  height: 10px; /* Muy delgada */
+}
+
+.bar-bg {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
+}
 
+.bar-fill {
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1; /* El fondo de la vida está detrás del pulso */
+}
+
+/* Colores planos pero vibrantes */
+.health-fill {
+  background-color: #a50000; /* Color sangre */
+  transition: width 0.2s ease-out;
+  z-index: 2;
+}
+
+.pulse-pattern {
+  position: absolute;
+  top: 0;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
   background-image: url('../assets/ui/pulsos.png');
   background-repeat: repeat-x;
-  background-size: contain;
-
+  /* LA CORRECCIÓN: 'auto' mantiene la proporción original, '100%' lo ajusta al alto de la barra */
+  background-size: auto 400%;
+  background-position: center;
   filter: brightness(0) invert(1);
-  opacity: 0.5;
+  opacity: 0.6; /* Ajustado para que sea legible pero integrado */
+  animation: ekg-scroll 5s linear infinite; /* Velocidad suavizada */
 }
 
-/* --- TEXTOS E ICONOS --- */
-.blood-text {
-  color: #f2f2f2;
-  font-size: 1.6rem;
-  font-weight: bold;
-  margin-left: 12px;
+/* Animación ajustada */
+@keyframes ekg-scroll {
+  0% {
+    background-position-x: 0;
+  }
+  100% {
+    background-position-x: 100px;
+  } /* Ajusta este valor según el ancho real de tu imagen pulsos.png para un loop perfecto */
 }
-.horde-counter,
-.timer {
+
+.stamina-fill {
+  background-color: #00ccff;
+  transition: width 0.01s linear;
+}
+
+/* --- PANEL MODERNO (DERECHA Y ABAJO) --- */
+.tactical-panel {
+  background-color: rgba(10, 10, 10, 0.6); /* Fondo semitransparente más limpio */
+  backdrop-filter: blur(5px); /* Efecto de vidrio moderno */
+  border-radius: 8px;
+  padding: 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.info-row {
   display: flex;
   align-items: center;
-}
-.icon {
-  width: 45px;
-  height: 45px;
-  filter: drop-shadow(1px 12px 12px rgba(0, 0, 0, 0.445));
+  justify-content: flex-end;
 }
 
+.icon {
+  width: 28px;
+  height: 28px;
+}
+
+.icon-inverted {
+  filter: invert(1) opacity(0.9); /* Blanco limpio */
+}
+
+.modern-text {
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-left: 10px;
+}
+
+/* Indicador de habilidad inferior */
+.skill-indicator.active .modern-text {
+  color: #ffaa00;
+}
+.skill-indicator.cooldown .modern-text {
+  color: #888888;
+}
+
+/* --- GAME OVER --- */
 .game-over-screen {
   position: absolute;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.85);
+  background-color: rgba(0, 0, 0, 0.9);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -169,18 +246,32 @@ const skillStatusText = computed(() => {
 }
 
 .game-over-screen h1 {
-  color: #8b0000;
-  font-family: 'Impact', sans-serif;
-  font-size: 5rem;
-  margin-bottom: 20px;
+  color: #ff3333;
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 4rem;
+  letter-spacing: 4px;
+  margin-bottom: 30px;
+  text-transform: uppercase;
 }
 
 .game-over-screen button {
-  padding: 15px 30px;
-  background: #333;
+  padding: 12px 36px;
+  background: transparent;
   color: white;
-  border: 2px solid #8b0000;
-  font-size: 1.5rem;
+  border: 2px solid #ff3333;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  font-weight: bold;
+  font-size: 1.2rem;
   cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.2s ease;
+}
+
+.game-over-screen button:hover {
+  background: #ff3333;
+  color: #000;
+  transform: scale(1.05);
 }
 </style>

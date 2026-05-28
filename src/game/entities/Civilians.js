@@ -124,6 +124,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
     // Frenamos por completo el cuerpo físico inmediatamente
     this.setVelocity(0, 0);
+
     if (this.body) {
       this.body.reset(this.x, this.y);
     }
@@ -146,6 +147,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
       // Recalculamos la hitbox física exacta que usará la Horda
       const hitboxAncho = this.width * 0.4;
       const hitboxAlto = this.height * 0.4;
+
       this.body.setSize(hitboxAncho, hitboxAlto);
       this.body.setOffset((this.width - hitboxAncho) / 2, (this.height - hitboxAlto) / 2);
 
@@ -297,6 +299,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     // Si está resucitando, congelamos la física por completo y salimos de la IA
     if (this.isResurrecting) {
       this.setVelocity(0, 0);
+
       return;
     }
 
@@ -305,6 +308,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
         this.acceleration.set(0, 0);
         this.velocity.set(0, 0);
         this.setVelocity(0, 0);
+
         return;
       }
       this.acceleration.set(0, 0);

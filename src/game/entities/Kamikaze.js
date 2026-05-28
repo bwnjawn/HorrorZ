@@ -14,10 +14,26 @@ export class Kamikaze extends Enemy {
     this.textoTimer = null;
   }
 
+  respawnBase(x, y, typeConfig) {
+    super.respawnBase(x, y, typeConfig);
+
+    // Reiniciamos sus estados explosivos
+    this.isExploding = false;
+    this.clearTint();
+
+    if (this.textoTimer) {
+      this.textoTimer.destroy();
+      this.textoTimer = null;
+    }
+
+    if (this.parpadeoEvento) {
+      this.parpadeoEvento.remove();
+      this.parpadeoEvento = null;
+    }
+  }
+
   iniciarDetonacion() {
     this.isExploding = true;
-    this.setVelocity(0, 0);
-    this.anims.stop();
 
     // Efecto visual: parpadeo rápido rojo y blanco
     this.parpadeoEvento = this.scene.time.addEvent({
