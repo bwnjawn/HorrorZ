@@ -6,6 +6,8 @@ export const useGameStore = defineStore('game', {
     // ── FLUJO DE PANTALLAS ─────────────────────────────────────────────
     // 'title' → 'charSelect' → 'playing' → 'gameOver'
     currentView: 'title',
+    isGameStarted: false,
+    isPaused: false,
 
     // ── COMPATIBILIDAD (los usa MainScene y Player directamente) ────────
     isGameStarted: false,
@@ -66,6 +68,21 @@ export const useGameStore = defineStore('game', {
 
       this.isGameStarted = true;
       this.currentView = 'playing';
+    },
+
+    togglePause() {
+      if (this.currentView === 'playing') {
+        this.isPaused = true;
+        this.currentView = 'paused';
+      } else if (this.currentView === 'paused') {
+        this.isPaused = false;
+        this.currentView = 'playing';
+      }
+    },
+    quitToMenu() {
+      this.isPaused = false;
+      this.isGameStarted = false;
+      this.currentView = 'title'; // Te manda de vuelta a la pantalla de título
     },
 
     setGameOver() {

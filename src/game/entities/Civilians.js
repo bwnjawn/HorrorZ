@@ -2,16 +2,13 @@ import Phaser from 'phaser';
 
 export class Civilian extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
-    // Cambiamos el 'civil-walking' antiguo por la primera textura de la animación
     super(scene, x, y, 'civil_walk_1');
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    // Ajusta esta escala según tus sprites. Si siguen viéndose gigantes, baja este valor (ej: 0.2)
     this.setScale(0.15);
 
-    // Ajuste de Hitbox para que no choquen con el aire
     const hitboxAncho = this.width * 0.3;
     const hitboxAlto = this.height * 0.3;
 
@@ -21,20 +18,16 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
     this.setBounce(1, 1);
 
-    // Aquí activamos la nueva animación
     this.play('civil-walk-anim');
 
-    // Propiedades de vida
     this.health = 30;
     this.isDead = false;
 
-    // propiedades de estado
     this.isInfected = false;
     this.panicDistance = 250;
     this.escapeSpeed = 150;
     this.wanderSpeed = 50;
 
-    // propiedades de movimiento
     this.maxSpeed = 280;
     this.maxForce = 15;
     this.acceleration = new Phaser.Math.Vector2(0, 0);
@@ -42,6 +35,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.estadoHorda = 'LIBRE';
     this.isAttacking = false;
     this.setLighting(true);
+    this.isResurrecting = false;
 
     scene.events.on('comandante-reagrupar', () => {
       if (this.isInfected && !this.isDead) this.estadoHorda = 'REAGRUPANDO';
@@ -63,9 +57,10 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.body.enable = true;
     this.setPosition(x, y);
 
-    // Resetear estados críticos
     this.isDying = false;
     this.isInfected = false;
+    this.isResurrecting = false;
+    this.isAttacking = false;
 
     this.clearTint();
     this.play('civil-walk-anim', true);
@@ -94,47 +89,87 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
   }
 
   morirDefinitivamente() {
+    if (this.isDead) return;
     this.isDead = true;
+
+    // 1. Frenamos por completo el movimiento e inercias del cuerpo
     this.setVelocity(0, 0);
-    this.destroy();
+    this.acceleration.set(0, 0);
+    this.velocity.set(0, 0);
+
+    // 2. DESACTIVAR HITBOX INMEDIATAMENTE:
+    // Esto es crítico para que las balas de los soldados lo atraviesen
+    // y otros zombies no choquen contra él mientras cae al suelo.
+    if (this.body) {
+      this.body.enable = false;
+    }
+
+    // 3. Limpiamos cualquier tinte rojo de daño previo para que se vea limpio
+    this.clearTint();
+
+    // 4. Reproducir la secuencia de muerte que creamos en la escena
+    this.play('zombie-death-anim', true);
+
+    // 5. ESCUCHADOR: Cuando la animación termine por completo, removemos el objeto del juego
+    this.once('animationcomplete-zombie-death-anim', () => {
+      this.destroy();
+    });
   }
 
   infectar() {
     if (this.isDead || this.isInfected) return;
     this.isInfected = true;
+    this.isResurrecting = true;
     this.health = 50;
 
-    // Cuando se infecta, debemos recalcular la hitbox porque el sprite del zombie
-    // tiene un tamaño diferente al del civil.
-    this.setScale(0.3); // O la escala que uses para los zombies (ej: 1)
+    // Frenamos por completo el cuerpo físico inmediatamente
+    this.setVelocity(0, 0);
+    if (this.body) {
+      this.body.reset(this.x, this.y);
+    }
 
-    // Forzamos el cambio de textura de inmediato para recalcular la caja
-    this.setTexture('zombie_walk_0');
+    this.clearTint();
 
-    const hitboxAncho = this.width * 0.4;
-    const hitboxAlto = this.height * 0.4;
+    // Ajustamos la escala para la animación de levantamiento
+    this.setScale(0.3);
 
-    this.body.setSize(hitboxAncho, hitboxAlto);
-    this.body.setOffset((this.width - hitboxAncho) / 2, (this.height - hitboxAlto) / 2);
+    // 1. REPRODUCIR LA RESURRECCIÓN PRIMERO Visualmente
+    this.play('zombie-resurrection-anim', true);
 
-    this.ejecutarAtaque();
+    // 2. ESCUCHADOR: Cuando termine de levantarse, pasa a convertirse en un Zombie activo
+    this.once('animationcomplete-zombie-resurrection-anim', () => {
+      this.isResurrecting = false;
+
+      // Ponemos la textura base oficial de caminar
+      this.setTexture('zombie_walk_0');
+
+      // Recalculamos la hitbox física exacta que usará la Horda
+      const hitboxAncho = this.width * 0.4;
+      const hitboxAlto = this.height * 0.4;
+      this.body.setSize(hitboxAncho, hitboxAlto);
+      this.body.setOffset((this.width - hitboxAncho) / 2, (this.height - hitboxAlto) / 2);
+
+      // Activamos de inmediato su animación normal de caminar como zombie y empieza a moverse
+      this.play('zombie-walk-anim', true);
+    });
+
+    // CORRECCIÓN CRÍTICA: Eliminamos "this.ejecutarAtaque()" de aquí para evitar que rompa el ciclo.
   }
 
   ejecutarAtaque() {
-    if (this.isAttacking || this.isDead) return;
+    // Si está muerto, ya atacando o levantándose del suelo, bloqueamos nuevos ataques
+    if (this.isAttacking || this.isDead || this.isResurrecting) return;
 
     this.isAttacking = true;
     this.setTint(0x550000);
 
-    // CORRECCIÓN: Usar las nuevas texturas individuales de ataque
     this.setTexture('zombie_attack_1');
     this.play('zombie-attack-anim', true);
 
-    // Cuando la animación termine, vuelve a caminar
     this.once('animationcomplete-zombie-attack-anim', () => {
       if (this.isDead || !this.active) return;
       this.isAttacking = false;
-      // CORRECCIÓN: Usar la nueva textura base del zombie
+      this.clearTint();
       this.setTexture('zombie_walk_0');
       this.play('zombie-walk-anim', true);
     });
@@ -208,11 +243,11 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
     return steer;
   }
+
   applyObstacleAvoidance() {
     const radioVisionObstaculos = 60;
     let steer = new Phaser.Math.Vector2(0, 0);
 
-    // Si está quieto, no necesita esquivar
     if (this.velocity.lengthSq() === 0 && this.body.velocity.lengthSq() === 0) return steer;
 
     const velActual = this.velocity.lengthSq() > 0 ? this.velocity : this.body.velocity;
@@ -255,15 +290,21 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
     return steer;
   }
+
   update(player, horda, civiles) {
     if (this.isDead || !this.active) return;
+
+    // Si está resucitando, congelamos la física por completo y salimos de la IA
+    if (this.isResurrecting) {
+      this.setVelocity(0, 0);
+      return;
+    }
 
     if (this.isInfected) {
       if (this.isAttacking) {
         this.acceleration.set(0, 0);
         this.velocity.set(0, 0);
         this.setVelocity(0, 0);
-
         return;
       }
       this.acceleration.set(0, 0);
@@ -290,7 +331,6 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
         }
       }
 
-      // FUERZAS DE LA HORDA
       const forceSeek = this.applySeek(target).scale(pesoAtraccion);
       const forceSeparate = this.applySeparate(horda).scale(pesoSeparacion);
       const forceAvoid = this.applyObstacleAvoidance().scale(2.5);
@@ -300,12 +340,12 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
       this.acceleration.add(forceAvoid);
 
       this.velocity.add(this.acceleration);
-      this.setVelocity(this.velocity.x, this.velocity.y);
 
       if (this.velocity.length() > this.maxSpeed) {
         this.velocity.normalize().scale(this.maxSpeed);
       }
 
+      this.setVelocity(this.velocity.x, this.velocity.y);
       this.setRotation(this.velocity.angle());
       this.acceleration.scale(0);
 
@@ -313,7 +353,6 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
         this.play('zombie-walk-anim', true);
       }
     } else {
-      // LÓGICA DE CIVILES (NO INFECTADOS)
       let amenazaCercana = player;
       let distAmenaza = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
 

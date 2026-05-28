@@ -6,7 +6,6 @@ import { Atrofia } from '../entities/Atrofia';
 import { Civilian } from '../entities/Civilians';
 import { Soldier } from '../entities/Soldier';
 import { Medic } from '../entities/Medic';
-import { Kamikaze } from '../entities/Kamikaze';
 import { useGameStore } from '../../stores/gameStore';
 import { ENEMY_TYPES } from '../config/StatsConfig';
 import { PLAYER_TYPES } from '../config/PlayerStatsConfig';
@@ -23,21 +22,30 @@ export class MainScene extends Phaser.Scene {
     this.load.image('Tileset_Casa_Gris', 'src/assets/tilesets/Buildings_gray_TileSet.png');
     this.load.image('Tileset_Fondo_Casa_Blanca', 'src/assets/tilesets/Buildings_white_TileSet.png');
 
-    this.load.spritesheet('civil-walking', 'src/assets/sprites/civil-walking.png', { frameWidth: 313, frameHeight: 374 });
     this.load.image('kamikaze_standing', 'src/assets/sprites/kamikaze/Hacker_Standing.png');
     this.load.image('kamikaze_walk_1', 'src/assets/sprites/kamikaze/Hacker_Walking1.png');
     this.load.image('kamikaze_walk_2', 'src/assets/sprites/kamikaze/Hacker_Walking2.png');
     this.load.image('kamikaze_walk_3', 'src/assets/sprites/kamikaze/Hacker_Walking3.png');
     this.load.image('kamikaze_walk_4', 'src/assets/sprites/kamikaze/Hacker_Walking4.png');
 
+    for (let i = 1; i <= 7; i++) {
+      this.load.image(`explosion_${i}`, `src/assets/sprites/explosion/explosion${i}.png`);
+    }
+    for (let i = 0; i <= 16; i++) {
+      let num = i.toString().padStart(4, '0'); // Convierte 0 a "0000", 16 a "0016"
+      this.load.image(`zombie_death_${i}`, `src/assets/sprites/zombie_death/death01_${num}.png`);
+    }
+
+    for (let i = 0; i <= 16; i++) {
+      this.load.image(`resurection_${i}`, `src/assets/sprites/resurection/resurection${i}.png`);
+    }
+
     for (let i = 1; i <= 6; i++) {
       this.load.image(`civil_walk_${i}`, `src/assets/sprites/civilians/WalkCiv${i}.png`);
     }
-
     // CARGA DE SPRITES: ZOMBIES (Caminata y Ataque Básico Compartido)
     for (let i = 0; i <= 31; i++) {
       let num = i.toString().padStart(4, '0'); // Convierte 1 a "0001"
-
       this.load.image(`zombie_walk_${i}`, `src/assets/sprites/zombie_walk/walk${num}.png`);
     }
 
@@ -51,34 +59,28 @@ export class MainScene extends Phaser.Scene {
     // COLOSO
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
-
       this.load.image(`coloso_attack_${i}`, `src/assets/sprites/coloso/coloso_atack/attack02_${num}.png`);
     }
-
     for (let i = 0; i <= 2; i++) {
       let num = i.toString().padStart(4, '0');
-
       this.load.image(`coloso_dash_${i}`, `src/assets/sprites/coloso/coloso_embestida/dash${num}.png`);
     }
 
     // ATROFIA
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
-
       this.load.image(`atrofia_jump_${i}`, `src/assets/sprites/atrofia/atrofia_jump/attack03_${num}.png`);
     }
 
     // LAMENTO: Spitt/Escupitajo (0000 a 0031)
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
-
       this.load.image(`lamento_spitt_${i}`, `src/assets/sprites/lamento/lamento_spitt/attack01_${num}.png`);
     }
 
     // INVOCADOR: Scream/Grito (0000 a 0003) - Se cargan normal, se invierten al crear la animación
     for (let i = 0; i <= 3; i++) {
       let num = i.toString().padStart(4, '0');
-
       this.load.image(`invocador_scream_${i}`, `src/assets/sprites/invocador/invocador_scream/death02_${num}.png`);
     }
 
@@ -95,7 +97,6 @@ export class MainScene extends Phaser.Scene {
     for (let i = 0; i <= 19; i++) {
       this.load.image(`move_knife_${i}`, `src/assets/sprites/melee/meleemove/survivor-move_knife_${i}.png`);
     }
-
     for (let i = 0; i <= 14; i++) {
       this.load.image(`attack_knife_${i}`, `src/assets/sprites/melee/meleeattack/survivor-meleeattack_knife_${i}.png`);
     }
@@ -131,7 +132,6 @@ export class MainScene extends Phaser.Scene {
 
   crearAnimaciones() {
     const framesMoveKnife = [];
-
     for (let i = 0; i <= 19; i++) {
       framesMoveKnife.push({ key: `move_knife_${i}` });
     }
@@ -145,7 +145,6 @@ export class MainScene extends Phaser.Scene {
 
     // Crear Array de frames para el Ataque
     const framesAttackKnife = [];
-
     for (let i = 0; i <= 14; i++) {
       framesAttackKnife.push({ key: `attack_knife_${i}` });
     }
@@ -158,7 +157,6 @@ export class MainScene extends Phaser.Scene {
     });
 
     const framesZombieWalk = [];
-
     for (let i = 0; i <= 31; i++) {
       framesZombieWalk.push({ key: `zombie_walk_${i}` });
     }
@@ -170,7 +168,6 @@ export class MainScene extends Phaser.Scene {
     });
 
     const framesZombieAttack = [];
-
     for (let i = 1; i <= 10; i++) {
       framesZombieAttack.push({ key: `zombie_attack_${i}` });
     }
@@ -184,7 +181,6 @@ export class MainScene extends Phaser.Scene {
     // ANIMACIONES DE HABILIDADES ESPECIALES
     // Coloso: Ataque Especial
     const framesColosoAttack = [];
-
     for (let i = 0; i <= 19; i++) {
       framesColosoAttack.push({ key: `coloso_attack_${i}` });
     }
@@ -197,7 +193,6 @@ export class MainScene extends Phaser.Scene {
 
     // Coloso: Embestida
     const framesColosoDash = [];
-
     for (let i = 0; i <= 2; i++) {
       framesColosoDash.push({ key: `coloso_dash_${i}` });
     }
@@ -210,7 +205,6 @@ export class MainScene extends Phaser.Scene {
 
     // Atrofia: Salto
     const framesAtrofiaJump = [];
-
     for (let i = 0; i <= 19; i++) {
       framesAtrofiaJump.push({ key: `atrofia_jump_${i}` });
     }
@@ -223,7 +217,6 @@ export class MainScene extends Phaser.Scene {
 
     // Lamento: Escupir
     const framesLamentoSpitt = [];
-
     for (let i = 0; i <= 19; i++) {
       framesLamentoSpitt.push({ key: `lamento_spitt_${i}` });
     }
@@ -236,7 +229,6 @@ export class MainScene extends Phaser.Scene {
 
     // Invocador: Grito (ESTA SE ENSAMBLA EN REVERSA: del 3 al 0)
     const framesInvocadorScream = [];
-
     for (let i = 3; i >= 0; i--) {
       // Fíjate en el bucle inverso (i--)
       framesInvocadorScream.push({ key: `invocador_scream_${i}` });
@@ -249,7 +241,6 @@ export class MainScene extends Phaser.Scene {
     });
 
     const framesCivilWalk = [];
-
     for (let i = 1; i <= 6; i++) {
       framesCivilWalk.push({ key: `civil_walk_${i}` });
     }
@@ -261,7 +252,6 @@ export class MainScene extends Phaser.Scene {
       repeat: -1,
     });
     const framesSoldierMove = [];
-
     for (let i = 0; i <= 1; i++) {
       framesSoldierMove.push({ key: `soldier_move_${i}` });
     }
@@ -278,7 +268,6 @@ export class MainScene extends Phaser.Scene {
     // ANIMACIÓN: SOLDADO DISPARANDO (RIFLE)
     // ==========================================
     const framesSoldierShoot = [];
-
     for (let i = 0; i <= 2; i++) {
       framesSoldierShoot.push({ key: `soldier_shoot_${i}` });
     }
@@ -292,7 +281,6 @@ export class MainScene extends Phaser.Scene {
     });
 
     const framesKamikazeWalk = [];
-
     for (let i = 1; i <= 4; i++) {
       framesKamikazeWalk.push({ key: `kamikaze_walk_${i}` });
     }
@@ -302,13 +290,50 @@ export class MainScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1,
     });
+
+    const framesExplosion = [];
+    for (let i = 1; i <= 7; i++) {
+      framesExplosion.push({ key: `explosion_${i}` });
+    }
+
+    this.anims.create({
+      key: 'kamikaze-explosion-anim',
+      frames: framesExplosion,
+      frameRate: 14, // Al ser 7 imágenes, a 14fps la explosión durará exactamente 0.5 segundos
+      repeat: 0,
+      hideOnComplete: true, // Hace que el sprite se oculte automáticamente al terminar
+    });
+
+    // ── CREAR ANIMACIÓN DE RESURRECCIÓN ──────────────────────────────
+    const framesResurection = [];
+    for (let i = 0; i <= 16; i++) {
+      framesResurection.push({ key: `resurection_${i}` });
+    }
+
+    this.anims.create({
+      key: 'zombie-resurrection-anim',
+      frames: framesResurection,
+      frameRate: 14, // Velocidad de la animación (17 frames a 14fps son ~1.2 segundos)
+      repeat: 0, // 0 para que se reproduzca solo una vez por resurrección
+    });
+
+    const framesZombieDeath = [];
+    for (let i = 0; i <= 16; i++) {
+      framesZombieDeath.push({ key: `zombie_death_${i}` });
+    }
+
+    this.anims.create({
+      key: 'zombie-death-anim',
+      frames: framesZombieDeath,
+      frameRate: 16, // A 16fps los 17 frames durarán poco más de 1 segundo
+      repeat: 0, // 0 para que solo ocurra una vez al morir
+    });
   }
 
   crearEntorno() {
     this.input.mouse.disableContextMenu();
     this.lights.enable();
     this.lights.setAmbientColor(0x131329);
-    this.cameras.main.setBackgroundColor('#131329');
 
     // Guardamos el mapa como propiedad de la clase
     this.map = this.make.tilemap({ key: 'Map_HorrorZ' });
@@ -332,9 +357,8 @@ export class MainScene extends Phaser.Scene {
     // Guardamos las dimensiones
     this.anchoMapa = this.map.widthInPixels;
     this.altoMapa = this.map.heightInPixels;
-    this.cameras.main.roundPixels = true;
 
-    this.cameras.main.setBounds(3, 3, this.anchoMapa - 6, this.altoMapa - 6);
+    this.cameras.main.setBounds(0, 0, this.anchoMapa, this.altoMapa);
     this.physics.world.setBounds(0, 0, this.anchoMapa, this.altoMapa);
     this.cameras.main.setZoom(2);
   }
@@ -359,17 +383,16 @@ export class MainScene extends Phaser.Scene {
   crearObstaculos() {
     this.obstaculos = this.physics.add.staticGroup();
 
+    // Usamos el mapa que guardamos en crearEntorno()
     const capaObjetos = this.map.getObjectLayer('Capa de Objetos 1');
 
     if (capaObjetos) {
       capaObjetos.objects.forEach((obj) => {
-        const zona = this.add.zone(obj.x, obj.y, obj.width, obj.height).setOrigin(0, 0);
+        const x = obj.x + obj.width / 2;
+        const y = obj.y + obj.height / 2;
+        const zona = this.add.zone(x, y, obj.width, obj.height);
 
         this.physics.add.existing(zona, true);
-
-        zona.body.setSize(obj.width, obj.height);
-        zona.body.setOffset(0, 0);
-
         this.obstaculos.add(zona);
       });
     }
@@ -450,10 +473,9 @@ export class MainScene extends Phaser.Scene {
     });
 
     this.events.on('explosion-kamikaze', (data) => {
-      let radioExplosion = data.rango || 120;
       let distAlPlayer = Phaser.Math.Distance.Between(data.x, data.y, this.player.x, this.player.y);
 
-      if (distAlPlayer < radioExplosion) {
+      if (distAlPlayer < 80) {
         this.player.recibirDaño(data.daño, 'explosion');
         this.store.takeDamage(data.daño);
       }
@@ -461,9 +483,25 @@ export class MainScene extends Phaser.Scene {
       this.hordeGroup.getChildren().forEach((zombi) => {
         let distAlZombi = Phaser.Math.Distance.Between(data.x, data.y, zombi.x, zombi.y);
 
-        if (distAlZombi < radioExplosion && zombi.recibirDaño) {
+        if (distAlZombi < 80 && zombi.recibirDaño) {
           zombi.recibirDaño(data.daño);
         }
+      });
+    });
+
+    this.events.on('visual-explosion', (data) => {
+      // Inicializamos el sprite con la primera textura de la secuencia
+      const efectoExplosion = this.add.sprite(data.x, data.y, 'explosion_1');
+
+      // Si necesitas que la explosión se vea más grande o chica en el mapa, ajusta la escala aquí
+      efectoExplosion.setScale(1.5);
+
+      // Reproducir la animación secuencial
+      efectoExplosion.play('kamikaze-explosion-anim');
+
+      // Destruir por completo el objeto de la memoria al terminar
+      efectoExplosion.once('animationcomplete', () => {
+        efectoExplosion.destroy();
       });
     });
   }
@@ -514,7 +552,7 @@ export class MainScene extends Phaser.Scene {
 
         this.physics.add.overlap(this.player, this.enemiesGroup, (jugador, enemigo) => {
           if (jugador.isAttacking && !enemigo.isDead) {
-            enemigo.recibirDaño(jugador.currentDamage);
+            enemigo.recibirDaño(100);
           } else if (jugador.isDashing && !enemigo.isDead) {
             enemigo.recibirDaño(400);
           }
@@ -607,8 +645,6 @@ export class MainScene extends Phaser.Scene {
     let enemigoReciclado = enemigosMuertos.find((enemigo) => {
       if (tipoElegido.type === 'MEDIC') {
         return enemigo.constructor.name === 'Medic';
-      } else if (tipoElegido.type === 'KAMIKAZE') {
-        return enemigo.constructor.name === 'Kamikaze';
       } else {
         return enemigo.constructor.name === 'Soldier';
       }
@@ -617,9 +653,6 @@ export class MainScene extends Phaser.Scene {
     if (enemigoReciclado) {
       if (tipoElegido.type === 'MEDIC') {
         enemigoReciclado.respawnBase(posicion.x, posicion.y, tipoElegido);
-      } else if (tipoElegido.type === 'KAMIKAZE') {
-        enemigoReciclado.respawnBase(posicion.x, posicion.y, tipoElegido);
-        enemigoReciclado.isExploding = false;
       } else {
         enemigoReciclado.respawn(posicion.x, posicion.y, tipoElegido);
       }
@@ -628,10 +661,6 @@ export class MainScene extends Phaser.Scene {
         let nuevoMedic = new Medic(this, posicion.x, posicion.y, tipoElegido);
 
         this.enemiesGroup.add(nuevoMedic);
-      } else if (tipoElegido.type === 'KAMIKAZE') {
-        let nuevoKamikaze = new Kamikaze(this, posicion.x, posicion.y, tipoElegido);
-
-        this.enemiesGroup.add(nuevoKamikaze);
       } else {
         let nuevoSoldado = new Soldier(this, posicion.x, posicion.y, tipoElegido);
 
