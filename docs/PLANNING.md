@@ -98,8 +98,8 @@
 - [x] Crear las pantallas finales del juego.
 - [ ] Optimizar rendimiento general del juego.
 - [x] Corregir errores visuales y de jugabilidad.
-- [ ] Implementar pruebas unitarias con Vitest y GitHub Actions.
-- [ ] Configurar Docker para el proyecto.
+- [x] Implementar pruebas unitarias con Vitest y GitHub Actions.
+- [x] Configurar Docker para el proyecto.
 - [ ] Redactar el README con instrucciones de ejecución.
 - [ ] Verificar funcionamiento en distintos navegadores.
 

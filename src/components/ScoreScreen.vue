@@ -45,7 +45,7 @@
         <div class="stat-divider"></div>
 
         <div class="stat-item">
-          <img src="../assets/ui/craneo.png" alt="Pico máximo" class="stat-icon" />
+          <img :src="'/assets/ui/craneo.png'" alt="Pico máximo" class="stat-icon" />
           <div class="stat-data">
             <span class="stat-number">{{ store.maxHordeSize }}</span>
             <span class="stat-desc">Récord de horda</span>
@@ -55,7 +55,7 @@
         <div class="stat-divider"></div>
 
         <div class="stat-item">
-          <img src="../assets/ui/zombie.png" alt="Zombies" class="stat-icon" />
+          <img :src="'/assets/ui/zombie.png'" alt="Zombies" class="stat-icon" />
           <div class="stat-data">
             <span class="stat-number">{{ store.zombieCount }}</span>
             <span class="stat-desc">Zombis al morir</span>

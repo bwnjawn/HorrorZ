@@ -15,11 +15,11 @@
 
     <div class="hud-top-right tactical-panel">
       <div class="info-row">
-        <img src="../assets/ui/clock.png" alt="Reloj" class="icon icon-inverted" />
+        <img src="/assets/ui/clock.png" alt="Reloj" class="icon icon-inverted" />
         <span class="modern-text">{{ formattedTime }}</span>
       </div>
       <div class="info-row">
-        <img src="../assets/ui/craneo.png" alt="Calavera" class="icon icon-inverted" />
+        <img src="/assets/ui/craneo.png" alt="Calavera" class="icon icon-inverted" />
         <span class="modern-text">{{ store.zombieCount }} / {{ store.civilianCount }}</span>
       </div>
     </div>
@@ -161,7 +161,7 @@ const skillStatusText = computed(() => {
   width: 100%;
   height: 100%;
   z-index: 1;
-  background-image: url('../assets/ui/pulsos.png');
+  background-image: url('/assets/ui/pulsos.png');
   background-repeat: repeat-x;
   /* LA CORRECCIÓN: 'auto' mantiene la proporción original, '100%' lo ajusta al alto de la barra */
   background-size: auto 400%;

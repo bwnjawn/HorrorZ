@@ -12,7 +12,7 @@
 
     <!-- Imagen de zombie/mano -->
     <div class="zombie-bg-container">
-      <img src="../assets/ui/hand.png" alt="Zombie" class="zombie-bg" />
+      <img src="/assets/ui/hand.png" alt="Zombie" class="zombie-bg" />
     </div>
 
     <!-- AQUÍ SE RENDERIZARÁ EL CONTENIDO DE CADA PANTALLA -->

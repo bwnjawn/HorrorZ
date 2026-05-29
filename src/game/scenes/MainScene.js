@@ -17,96 +17,96 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.tilemapTiledJSON('Map_HorrorZ', 'src/assets/maps/Map_HorrorZ.json');
-    this.load.image('Tileset_Fondo', 'src/assets/tilesets/Background_Dark-Green_TileSet.png');
-    this.load.image('Tileset_Casa_Negra', 'src/assets/tilesets/Buildings_dark_TileSet.png');
-    this.load.image('Tileset_Casa_Gris', 'src/assets/tilesets/Buildings_gray_TileSet.png');
-    this.load.image('Tileset_Fondo_Casa_Blanca', 'src/assets/tilesets/Buildings_white_TileSet.png');
+    this.load.tilemapTiledJSON('Map_HorrorZ', 'assets/maps/Map_HorrorZ.json');
+    this.load.image('Tileset_Fondo', 'assets/tilesets/Background_Dark-Green_TileSet.png');
+    this.load.image('Tileset_Casa_Negra', 'assets/tilesets/Buildings_dark_TileSet.png');
+    this.load.image('Tileset_Casa_Gris', 'assets/tilesets/Buildings_gray_TileSet.png');
+    this.load.image('Tileset_Fondo_Casa_Blanca', 'assets/tilesets/Buildings_white_TileSet.png');
 
-    this.load.image('kamikaze_standing', 'src/assets/sprites/kamikaze/Hacker_Standing.png');
-    this.load.image('kamikaze_walk_1', 'src/assets/sprites/kamikaze/Hacker_Walking1.png');
-    this.load.image('kamikaze_walk_2', 'src/assets/sprites/kamikaze/Hacker_Walking2.png');
-    this.load.image('kamikaze_walk_3', 'src/assets/sprites/kamikaze/Hacker_Walking3.png');
-    this.load.image('kamikaze_walk_4', 'src/assets/sprites/kamikaze/Hacker_Walking4.png');
+    this.load.image('kamikaze_standing', 'assets/sprites/kamikaze/Hacker_Standing.png');
+    this.load.image('kamikaze_walk_1', 'assets/sprites/kamikaze/Hacker_Walking1.png');
+    this.load.image('kamikaze_walk_2', 'assets/sprites/kamikaze/Hacker_Walking2.png');
+    this.load.image('kamikaze_walk_3', 'assets/sprites/kamikaze/Hacker_Walking3.png');
+    this.load.image('kamikaze_walk_4', 'assets/sprites/kamikaze/Hacker_Walking4.png');
 
     for (let i = 1; i <= 7; i++) {
-      this.load.image(`explosion_${i}`, `src/assets/sprites/explosion/explosion${i}.png`);
+      this.load.image(`explosion_${i}`, `assets/sprites/explosion/explosion${i}.png`);
     }
 
     for (let i = 0; i <= 16; i++) {
       let num = i.toString().padStart(4, '0');
 
-      this.load.image(`zombie_death_${i}`, `src/assets/sprites/zombie_death/death01_${num}.png`);
+      this.load.image(`zombie_death_${i}`, `assets/sprites/zombie_death/death01_${num}.png`);
     }
 
     for (let i = 0; i <= 16; i++) {
-      this.load.image(`resurection_${i}`, `src/assets/sprites/resurection/resurection${i}.png`);
+      this.load.image(`resurection_${i}`, `assets/sprites/resurection/resurection${i}.png`);
     }
 
     for (let i = 1; i <= 6; i++) {
-      this.load.image(`civil_walk_${i}`, `src/assets/sprites/civilians/WalkCiv${i}.png`);
+      this.load.image(`civil_walk_${i}`, `assets/sprites/civilians/WalkCiv${i}.png`);
     }
 
     for (let i = 0; i <= 31; i++) {
       let num = i.toString().padStart(4, '0');
 
-      this.load.image(`zombie_walk_${i}`, `src/assets/sprites/zombie_walk/walk${num}.png`);
+      this.load.image(`zombie_walk_${i}`, `assets/sprites/zombie_walk/walk${num}.png`);
     }
 
     for (let i = 1; i <= 10; i++) {
-      this.load.image(`zombie_attack_${i}`, `src/assets/sprites/atrofia/atrofia_atack/atrofiaatack${i}.png`);
+      this.load.image(`zombie_attack_${i}`, `assets/sprites/atrofia/atrofia_atack/atrofiaatack${i}.png`);
     }
 
     // COLOSO
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
 
-      this.load.image(`coloso_attack_${i}`, `src/assets/sprites/coloso/coloso_atack/attack02_${num}.png`);
+      this.load.image(`coloso_attack_${i}`, `assets/sprites/coloso/coloso_atack/attack02_${num}.png`);
     }
 
     for (let i = 0; i <= 2; i++) {
       let num = i.toString().padStart(4, '0');
 
-      this.load.image(`coloso_dash_${i}`, `src/assets/sprites/coloso/coloso_embestida/dash${num}.png`);
+      this.load.image(`coloso_dash_${i}`, `assets/sprites/coloso/coloso_embestida/dash${num}.png`);
     }
 
     // ATROFIA
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
 
-      this.load.image(`atrofia_jump_${i}`, `src/assets/sprites/atrofia/atrofia_jump/attack03_${num}.png`);
+      this.load.image(`atrofia_jump_${i}`, `assets/sprites/atrofia/atrofia_jump/attack03_${num}.png`);
     }
 
     // LAMENTO
     for (let i = 0; i <= 19; i++) {
       let num = i.toString().padStart(4, '0');
 
-      this.load.image(`lamento_spitt_${i}`, `src/assets/sprites/lamento/lamento_spitt/attack01_${num}.png`);
+      this.load.image(`lamento_spitt_${i}`, `assets/sprites/lamento/lamento_spitt/attack01_${num}.png`);
     }
 
     // INVOCADOR
     for (let i = 0; i <= 3; i++) {
       let num = i.toString().padStart(4, '0');
 
-      this.load.image(`invocador_scream_${i}`, `src/assets/sprites/invocador/invocador_scream/death02_${num}.png`);
+      this.load.image(`invocador_scream_${i}`, `assets/sprites/invocador/invocador_scream/death02_${num}.png`);
     }
 
     // SOLDIER
     for (let i = 0; i <= 1; i++) {
-      this.load.image(`soldier_move_${i}`, `src/assets/sprites/soldier/soldiermove/survivor-move_rifle_${i}.png`);
+      this.load.image(`soldier_move_${i}`, `assets/sprites/soldier/soldiermove/survivor-move_rifle_${i}.png`);
     }
 
     for (let i = 0; i <= 2; i++) {
-      this.load.image(`soldier_shoot_${i}`, `src/assets/sprites/soldier/soldiershoot/survivor-shoot_rifle_${i}.png`);
+      this.load.image(`soldier_shoot_${i}`, `assets/sprites/soldier/soldiershoot/survivor-shoot_rifle_${i}.png`);
     }
 
     // MELEE
     for (let i = 0; i <= 19; i++) {
-      this.load.image(`move_knife_${i}`, `src/assets/sprites/melee/meleemove/survivor-move_knife_${i}.png`);
+      this.load.image(`move_knife_${i}`, `assets/sprites/melee/meleemove/survivor-move_knife_${i}.png`);
     }
 
     for (let i = 0; i <= 14; i++) {
-      this.load.image(`attack_knife_${i}`, `src/assets/sprites/melee/meleeattack/survivor-meleeattack_knife_${i}.png`);
+      this.load.image(`attack_knife_${i}`, `assets/sprites/melee/meleeattack/survivor-meleeattack_knife_${i}.png`);
     }
   }
 

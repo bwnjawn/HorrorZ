@@ -478,18 +478,18 @@ function seleccionarPersonaje() {
 /* Asegúrate de que las mayúsculas coincidan con los nombres reales de tus archivos */
 
 .portrait-coloso {
-  background-image: url('../assets/ui/Coloso.png');
+  background-image: url('/assets/ui/Coloso.png');
 }
 
 .portrait-atrofia {
-  background-image: url('../assets/ui/Atrofia.png');
+  background-image: url('/assets/ui/Atrofia.png');
 }
 
 .portrait-invocador {
-  background-image: url('../assets/ui/Invocador.png');
+  background-image: url('/assets/ui/Invocador.png');
 }
 
 .portrait-lamento {
-  background-image: url('../assets/ui/Lamento.png');
+  background-image: url('/assets/ui/Lamento.png');
 }
 </style>
