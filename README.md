@@ -1,50 +1,76 @@
 # HorrorZ
 
-This template should help get you started developing with Vue 3 in Vite.
+**HorrorZ** es un juego de supervivencia y acción en 2D con vista top-down. El jugador asume el rol de un zombie en un entorno urbano, cuyo objetivo es propagar la infección convirtiendo civiles y resistiendo el contraataque de las fuerzas del orden el mayor tiempo posible.
 
-## Recommended IDE Setup
+## Tecnologías principales
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Frontend:** Vue 3 y Phaser
+- **Estado:** Pinia
+- **Bundler/Dev Server:** Vite
+- **Gestor de paquetes:** pnpm (lockfile: `pnpm-lock.yaml`)
+- **Linter:** ESLint & Prettier
 
-## Recommended Browser Setup
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Ejecutar la aplicación localmente
 
-## Customize configuration
+1. Clona el repositorio:
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+```bash
+git clone <https://github.com/bwnjawn/HorrorZ.git>
+cd horrorz
+````
 
-## Project Setup
+2. Instalar pnpm si no está activo:
 
-```sh
+```bash
+npm install -g pnpm
+```
+
+3. Instala dependencias y ejecuta en modo desarrollo:
+
+```bash
 pnpm install
+pnpm run dev
 ```
 
-### Compile and Hot-Reload for Development
+4. Abre `http://localhost:5173` 
 
-```sh
-pnpm dev
+---
+
+## Construir para producción
+
+```bash
+pnpm run build
+pnpm run preview
 ```
 
-### Compile and Minify for Production
 
-```sh
-pnpm build
+---
+
+## Ejecutar con Docker
+
+### Construir la imagen
+
+Asegúrate de tener abierto Docker y estar en la raíz del proyecto, luego ejecuta:
+
+```bash
+docker build -t benjam1wn/horrorz:latest .
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### Ejecutar el contenedor (puerto 8080)
 
-```sh
-pnpm test:unit
+```bash
+docker run -d --rm -p 8080:80 benjam1wn/horrorz:latest
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+Se abrirá la aplicación en `http://localhost:8080`.
 
-```sh
-pnpm lint
+
+---
+
+## Imagen en DockerHub
+
+https://hub.docker.com/r/benjam1wn/horrorz
+
+```
 ```
