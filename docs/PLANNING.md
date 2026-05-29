@@ -96,12 +96,12 @@
 ## **Tareas Planificadas:**
 
 - [x] Crear las pantallas finales del juego.
-- [ ] Optimizar rendimiento general del juego.
+- [x] Optimizar rendimiento general del juego.
 - [x] Corregir errores visuales y de jugabilidad.
 - [x] Implementar pruebas unitarias con Vitest y GitHub Actions.
 - [x] Configurar Docker para el proyecto.
-- [ ] Redactar el README con instrucciones de ejecución.
-- [ ] Verificar funcionamiento en distintos navegadores.
+- [x] Redactar el README con instrucciones de ejecución.
+- [x] Verificar funcionamiento en distintos navegadores.
 
 ## **Seguimiento de la Semana**
 

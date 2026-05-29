@@ -1,6 +1,7 @@
 # HorrorZ
 
-**HorrorZ** es un juego de supervivencia y acción en 2D con vista top-down. El jugador asume el rol de un zombie en un entorno urbano, cuyo objetivo es propagar la infección convirtiendo civiles y resistiendo el contraataque de las fuerzas del orden el mayor tiempo posible.
+**HorrorZ** es un juego de supervivencia y acción en 2D con vista top-down. El jugador asume el rol de un zombie en un entorno urbano, cuyo objetivo
+es propagar la infección convirtiendo civiles y resistiendo el contraataque de las fuerzas del orden el mayor tiempo posible.
 
 ## Tecnologías principales
 
@@ -10,7 +11,6 @@
 - **Gestor de paquetes:** pnpm (lockfile: `pnpm-lock.yaml`)
 - **Linter:** ESLint & Prettier
 
-
 ## Ejecutar la aplicación localmente
 
 1. Clona el repositorio:
@@ -18,7 +18,7 @@
 ```bash
 git clone <https://github.com/bwnjawn/HorrorZ.git>
 cd horrorz
-````
+```
 
 2. Instalar pnpm si no está activo:
 
@@ -33,7 +33,7 @@ pnpm install
 pnpm run dev
 ```
 
-4. Abre `http://localhost:5173` 
+4. Abre `http://localhost:5173`
 
 ---
 
@@ -43,7 +43,6 @@ pnpm run dev
 pnpm run build
 pnpm run preview
 ```
-
 
 ---
 
@@ -65,7 +64,6 @@ docker run -d --rm -p 8080:80 benjam1wn/horrorz:latest
 
 Se abrirá la aplicación en `http://localhost:8080`.
 
-
 ---
 
 ## Imagen en DockerHub
@@ -73,4 +71,5 @@ Se abrirá la aplicación en `http://localhost:8080`.
 https://hub.docker.com/r/benjam1wn/horrorz
 
 ```
+
 ```
