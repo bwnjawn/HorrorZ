@@ -112,3 +112,18 @@
 ### **Lo que no se logró y motivo**
 
 -
+
+# **Mejoras:**
+
+- [] Mejorar mapa
+- [] Crear bucle de mapa
+- [] Mejorar sistema de spawn de entidades
+- [] Mejorar diferenciacion de entidades
+- [] Creacion de eventos
+- [] Mejorar balance de entidades
+- [] Implementacion de sonidos
+- [] Creacion de fisicas de balas
+- [] Creacion interacciones con entorno
+- [] Mejorar tiempo de evolucion del juego (tiempo de transformacion)
+- [] Mejorar sprite de las entidades
+- [] Mejorar margen de la pantalla
