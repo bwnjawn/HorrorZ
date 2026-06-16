@@ -1,4 +1,6 @@
-# **Semana 0: Diseño, Configuración y Cimientos**
+# Planificación Solemne 2
+
+## **Semana 0: Diseño, Configuración y Cimientos**
 
 **Objetivo:** Establecer la arquitectura del proyecto y los documentos de diseño iniciales.
 
@@ -10,7 +12,7 @@
 
 ---
 
-# **Semana 1: Mecánicas de Movimiento e Infección**
+## **Semana 1: Mecánicas de Movimiento e Infección**
 
 **Objetivo:** Implementar el bucle de juego principal y la lógica de la horda.
 
@@ -27,10 +29,6 @@
 
 ## **Seguimiento de la Semana**
 
-### **Lo que se logró completar**
-
--
-
 ### **Lo que no se logró y motivo**
 
 - No se creó el mapa inicial con colisiones y obstáculos por inexperiencia y no poder importar el TileSet de forma correcta.
@@ -38,7 +36,7 @@
 
 ---
 
-# **Semana 2: Horda, entidades y texturas**
+## **Semana 2: Horda, entidades y texturas**
 
 **Objetivo:** Desarrollar los comportamientos avanzados de la horda y el arte de todos los personajes.
 
@@ -55,15 +53,11 @@
 
 ## **Seguimiento de la Semana**
 
-### **Lo que se logró completar**
-
--
-
 ### **Lo que no se logró y motivo**
 
-- ***
+---
 
-# **Semana 3: Sistemas de combate y progresión**
+## **Semana 3: Sistemas de combate y progresión**
 
 **Objetivo:** Implementar mecánicas avanzadas de combate, comportamiento y progresión del juego.
 
@@ -81,15 +75,11 @@
 
 ## **Seguimiento de la Semana**
 
-### **Lo que se logró completar**
-
--
-
 ### **Lo que no se logró y motivo**
 
-- ***
+---
 
-# **Semana 4: Pulido, DevOps y Entrega Final**
+## **Semana 4: Pulido, DevOps y Entrega Final**
 
 **Objetivo:** Asegurar la calidad técnica, automatización y presentación final del proyecto.
 
@@ -105,25 +95,76 @@
 
 ## **Seguimiento de la Semana**
 
-### **Lo que se logró completar**
-
--
-
 ### **Lo que no se logró y motivo**
 
--
+---
 
-# **Mejoras:**
+# Planificación Solemne 3
 
-- [] Mejorar mapa
-- [] Crear bucle de mapa
-- [] Mejorar sistema de spawn de entidades
-- [] Mejorar diferenciacion de entidades
-- [] Creacion de eventos
-- [] Mejorar balance de entidades
-- [] Implementacion de sonidos
-- [] Creacion de fisicas de balas
-- [] Creacion interacciones con entorno
-- [] Mejorar tiempo de evolucion del juego (tiempo de transformacion)
-- [] Mejorar sprite de las entidades
-- [] Mejorar margen de la pantalla
+## Semana 1: Replanificación, correcciones visuales y refactorización del motor (Phaser).
+
+### Lunes 15 de junio (Revisión: Martes 16)
+
+- [x] Actualizar archivo `DESIGN.md` con la nueva arquitectura fullstack y servicio externo.
+- [x] Crear archivo `PLANNING.md` con los objetivos por clase hasta la entrega final.
+
+### Martes 16 de junio
+
+- [ ] Configurar la estructura del proyecto.
+- [ ] Ajustar el tiempo de evolución creando una transición progresiva para la transformación de civiles a zombies.
+- [ ] Refactorizar el sistema de spawn para que las entidades aparezcan fuera del área visible de la cámara.
+- [ ] Mejorar la diferenciación y balance de entidades mejorando clases independientes.
+- [ ] Implementar físicas de balas en Phaser utilizando grupos de físicas y detectando colisiones con la civiles y edificios.
+
+### Jueves 18 de junio
+
+- [ ] Mejorar los sprites de las entidades y agregar los sonidos básicos (gemidos, disparos).
+- [ ] Agrandar el mapa del juego implementando un Tilemap en Phaser (exportado desde Tiled).
+- [ ] Configurar los márgenes de la pantalla y el seguimiento de la cámara sobre el líder zombie.
+- [ ] Implementar bucle de mapa (efecto de mundo infinito) utilizando los límites del mundo en Phaser.
+
+---
+
+## Semana 2: Construcción del backend, base de datos y autenticación.
+
+### Lunes 22 de junio
+
+- [ ] Inicializar el proyecto backend con Node.js y Express.
+- [ ] Configurar la conexión a la base de datos MongoDB utilizando Mongoose.
+
+### Martes 23 de junio
+
+- [ ] Crear los modelos de datos para Usuarios y Partidas en Mongoose.
+- [ ] Implementar endpoints REST para registro e inicio de sesión (`/api/auth/register`, `/api/auth/login`).
+- [ ] Integrar encriptación de contraseñas.
+
+### Jueves 25 de junio
+
+- [ ] Implementar endpoints REST para guardar puntajes y obtener el leaderboard (`/api/scores`).
+- [ ] Crear las vistas de Login y Registro en el frontend (Vue.js) y conectarlas con la API.
+- [ ] Crear la vista de Ranking/Leaderboard en Vue.js para mostrar los mejores puntajes.
+- [ ] Integrar el frontend y backend para guardar automáticamente la partida (tiempo y horda) al llegar a la pantalla de muerte.
+
+---
+
+## Semana 3: Integración de API externa, pruebas, Docker y CI/CD.
+
+### Lunes 29 de junio
+
+- [ ] Mejorar vistas del frontend.
+- [ ] Corrección de errores
+- [ ] Crear pruebas unitarias para los componentes críticos del frontend y los endpoints del backend.
+
+### Martes 30 de junio
+
+- [ ] Crear archivo `Dockerfile` para el frontend y `Dockerfile` para el backend.
+- [ ] Crear archivo `compose.yml` para levantar el frontend, backend y MongoDB simultáneamente.
+- [ ] Configurar flujo de trabajo de GitHub Actions (`.github/workflows/main.yml`) para ejecutar linter, pruebas y construir/publicar imágenes en
+      DockerHub.
+- [ ] Actualizar archivo `README.md` con la descripción del proyecto, instrucciones de ejecución local, ejecución con Docker Compose y enlaces a
+      DockerHub.
+
+### Jueves 2 de julio (Entrega Final)
+
+- [ ] Realizar revisión final del repositorio para asegurar el cumplimiento de todos los puntos de la pauta.
+- [ ] Cierre final dele proyecto.
