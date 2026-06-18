@@ -111,9 +111,9 @@
 ### Martes 16 de junio
 
 - [ ] Configurar la estructura del proyecto.
-- [ ] Ajustar el tiempo de evolución creando una transición progresiva para la transformación de civiles a zombies.
-- [ ] Refactorizar el sistema de spawn para que las entidades aparezcan fuera del área visible de la cámara.
-- [ ] Mejorar la diferenciación y balance de entidades mejorando clases independientes.
+- [x] Ajustar el tiempo de evolución creando una transición progresiva para la transformación de civiles a zombies.
+- [x] Refactorizar el sistema de spawn para que las entidades aparezcan fuera del área visible de la cámara.
+- [x] Mejorar la diferenciación y balance de entidades mejorando clases independientes.
 - [ ] Implementar físicas de balas en Phaser utilizando grupos de físicas y detectando colisiones con la civiles y edificios.
 
 ### Jueves 18 de junio

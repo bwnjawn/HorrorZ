@@ -100,6 +100,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.isAttacking = false;
       this.currentDamage = this.baseDamage;
     });
+
+    this.uiRing = scene.add.graphics();
+    this.uiRing.setDepth(10);
+    this.visionLight = scene.lights.addLight(x, y, 500, 0xfffdeb, 0.35);
   }
 
   ajustarHitbox(radio, offsetX, offsetY) {
@@ -270,6 +274,33 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   update(time, delta) {
     if (this.isDead) return;
+
+    this.uiRing.clear();
+    this.uiRing.fillStyle(0x610706, 0.9); // Color verde/celeste neón llamativo
+
+    // Definimos los puntos del triángulo relativos a la posición de la cabeza
+    const alturaSobreCabeza = 20;
+    const anchoTriangulo = 6;
+    const altoTriangulo = 8;
+
+    const p1X = this.x - anchoTriangulo;
+    const p1Y = this.y - alturaSobreCabeza - altoTriangulo;
+    const p2X = this.x + anchoTriangulo;
+    const p2Y = this.y - alturaSobreCabeza - altoTriangulo;
+    const p3X = this.x;
+    const p3Y = this.y - alturaSobreCabeza; // El vértice inferior apunta a la cabeza
+
+    this.uiRing.fillTriangle(p1X, p1Y, p2X, p2Y, p3X, p3Y);
+
+    // Actualizar la Luz de Visión Amplia
+    if (this.visionLight) {
+      // Reducimos la distancia del offset (de 100 a 60) para que el haz de luz
+      // nazca prácticamente desde el cuerpo del zombie y no se vea desconectado
+      const distanciaOffset = 60;
+
+      this.visionLight.x = this.x + Math.cos(this.rotation) * distanciaOffset;
+      this.visionLight.y = this.y + Math.sin(this.rotation) * distanciaOffset;
+    }
 
     if (this.body && this.body.isCircle) {
       const centroX = this.width / 2;

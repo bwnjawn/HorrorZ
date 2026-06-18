@@ -349,7 +349,7 @@ export class MainScene extends Phaser.Scene {
   crearEntorno() {
     this.input.mouse.disableContextMenu();
     this.lights.enable();
-    this.lights.setAmbientColor(0x333333);
+    this.lights.setAmbientColor(0x212020);
 
     this.map = this.make.tilemap({ key: 'Map_HorrorZ' });
 
@@ -520,7 +520,6 @@ export class MainScene extends Phaser.Scene {
         this.player = new Lamento(this, spawnX, spawnY, PLAYER_TYPES.LAMENTO);
       }
 
-      this.playerLight = this.lights.addLight(spawnX, spawnY, 500, 0xffffff, 0.5);
       this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
       this.physics.add.collider(this.player, this.obstaculos);
@@ -583,58 +582,72 @@ export class MainScene extends Phaser.Scene {
     const cam = this.cameras.main;
     const anchoVisible = cam.width / cam.zoom;
     const altoVisible = cam.height / cam.zoom;
+    const mitadAncho = anchoVisible / 2;
+    const mitadAlto = altoVisible / 2;
 
-    const radioMinimo = Math.max(anchoVisible, altoVisible) / 2 + 50;
-    const radioMaximo = radioMinimo + 300;
+    const diagonalPantalla = Math.sqrt(mitadAncho * mitadAncho + mitadAlto * mitadAlto);
+
+    const radioMinimo = diagonalPantalla + 50;
+    const radioMaximo = radioMinimo + 200;
 
     let posicionValida = false;
     let spawnX = 0;
     let spawnY = 0;
     let intentos = 0;
+    const MAX_INTENTOS = 50;
 
-    while (!posicionValida && intentos < 15) {
+    while (!posicionValida && intentos < MAX_INTENTOS) {
       const angulo = Phaser.Math.FloatBetween(0, Math.PI * 2);
       const radio = Phaser.Math.FloatBetween(radioMinimo, radioMaximo);
 
-      spawnX = cam.midPoint.x + Math.cos(angulo) * radio;
-      spawnY = cam.midPoint.y + Math.sin(angulo) * radio;
+      spawnX = this.player.x + Math.cos(angulo) * radio;
+      spawnY = this.player.y + Math.sin(angulo) * radio;
 
-      if (spawnX > 50 && spawnX < this.anchoMapa - 50 && spawnY > 50 && spawnY < this.altoMapa - 50) {
+      // Validación A: Que NO se salga del mapa físico
+      const dentroDelMapa = spawnX > 50 && spawnX < this.anchoMapa - 50 && spawnY > 50 && spawnY < this.altoMapa - 50;
+
+      // Validación B: Que el punto NO esté dentro de la vista actual de la cámara
+      const fueraDeCamara = !cam.worldView.contains(spawnX, spawnY);
+
+      if (dentroDelMapa && fueraDeCamara) {
         posicionValida = true;
       }
       intentos++;
     }
 
     if (!posicionValida) {
-      spawnX = Phaser.Math.Clamp(spawnX, 50, this.anchoMapa - 50);
-      spawnY = Phaser.Math.Clamp(spawnY, 50, this.altoMapa - 50);
+      return null;
     }
 
     return { x: spawnX, y: spawnY };
   }
 
   programarProximoSpawn() {
-    const minutosJugados = this.time.now;
-    let delayDinamico = 2000;
+    const minutosJugados = this.store.timeAlive / 60;
 
-    if (minutosJugados > 1) delayDinamico = 2000;
-    if (minutosJugados > 3) delayDinamico = 1500;
-    if (minutosJugados > 5) delayDinamico = 800;
-    if (minutosJugados > 8) delayDinamico = 400;
+    let delayDinamico = 3500;
+
+    if (minutosJugados > 1) delayDinamico = 3000;
+    if (minutosJugados > 3) delayDinamico = 2500;
+    if (minutosJugados > 5) delayDinamico = 2000;
+    if (minutosJugados > 8) delayDinamico = 1500;
 
     const porcentajeVida = this.store.playerHealth / this.store.playerMaxHealth;
     const hordaActiva = this.hordeGroup.getChildren().length;
 
-    if (hordaActiva > 30) {
-      delayDinamico *= 0.5;
-    } else if (hordaActiva > 20) {
-      delayDinamico *= 0.75;
+    if (hordaActiva > 40) {
+      delayDinamico *= 1.5;
+    } else if (hordaActiva < 10) {
+      delayDinamico *= 0.8;
     }
 
+    // El respiro si estás a punto de morir se mantiene, pero un poco más suave
     if (porcentajeVida < 0.3) {
-      delayDinamico *= 1.6;
+      delayDinamico *= 1.3;
     }
-    delayDinamico = Math.max(delayDinamico, 350);
+
+    // Evitamos que bajo ninguna circunstancia matemática el delay baje de 1 segundo
+    delayDinamico = Math.max(delayDinamico, 1000);
 
     this.time.addEvent({
       delay: delayDinamico,
@@ -650,7 +663,20 @@ export class MainScene extends Phaser.Scene {
   }
 
   ejecutarSpawnDinamico() {
+    const civilesVivos = this.civiliansGroup.countActive(true);
+    const enemigosVivos = this.enemiesGroup.countActive(true);
+    const hordaViva = this.hordeGroup.countActive(true);
+
+    const totalEntidades = civilesVivos + enemigosVivos + hordaViva;
+    const MAX_ENTIDADES_EN_PANTALLA = 60;
+
+    if (totalEntidades >= MAX_ENTIDADES_EN_PANTALLA) {
+      return;
+    }
+
     const posicion = this.obtenerPosicionAnillo();
+
+    if (!posicion) return;
     const director = this.obtenerPesosDelDirector();
     const dado = Phaser.Math.Between(1, 100);
 
