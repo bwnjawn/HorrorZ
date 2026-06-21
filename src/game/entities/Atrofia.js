@@ -99,24 +99,27 @@ export class Atrofia extends Player {
     this.body.checkCollision.none = true;
 
     // 5. Animación de salto con un "Tween"
-    this.scene.tweens.add({
-      targets: this,
-      x: finalX,
-      y: finalY,
-      duration: 350,
-      ease: 'Sine.easeOut',
-      onComplete: () => {
-        // Al aterrizar
-        this.body.checkCollision.none = false;
-        this.isJumping = false;
-        this.isAttacking = false; // Le devuelve el control a Player.js
-        this.setTexture('zombie_walk_0'); // Regresa a la pose de pie
+    const tiempoSalto = 350; // milisegundos
+    const distanciaX = finalX - this.x;
+    const distanciaY = finalY - this.y;
 
-        if (this.baseSpeed === this.originalBaseSpeed && !this.isDead) this.setTint(0xaaaaff);
+    const velX = (distanciaX / tiempoSalto) * 1000;
+    const velY = (distanciaY / tiempoSalto) * 1000;
 
-        // Llamamos a la función de impacto
-        this.impactoAlCaer();
-      },
+    this.setVelocity(velX, velY);
+
+    // Finalizar el salto cuando pase el tiempo
+    this.scene.time.delayedCall(tiempoSalto, () => {
+      if (this.isDead) return;
+      this.setVelocity(0, 0);
+      this.body.checkCollision.none = false;
+      this.isJumping = false;
+      this.isAttacking = false;
+      this.setTexture('zombie_walk_0');
+
+      if (this.baseSpeed === this.originalBaseSpeed && !this.isDead) this.setTint(0xaaaaff);
+
+      this.impactoAlCaer();
     });
   }
 

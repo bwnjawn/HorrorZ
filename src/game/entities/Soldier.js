@@ -55,7 +55,7 @@ export class Soldier extends Enemy {
     let distanciaMinima = this.rangoVision;
 
     if (this.role === 'KAMIKAZE') {
-      const distJugador = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
+      const distJugador = this.scene.calcularDistanciaToroidal(this.x, this.y, player.x, player.y);
 
       if (player.active && !player.isDead && distJugador < distanciaMinima) {
         this.objetivoActual = player;
@@ -65,7 +65,7 @@ export class Soldier extends Enemy {
     }
 
     // Revisar distancia con el jugador
-    const distJugador = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
+    const distJugador = this.scene.calcularDistanciaToroidal(this.x, this.y, player.x, player.y);
 
     if (player.active && !player.isDead && distJugador < distanciaMinima) {
       distanciaMinima = distJugador;
@@ -76,7 +76,7 @@ export class Soldier extends Enemy {
     if (horda) {
       horda.forEach((zombie) => {
         if (!zombie.active || zombie.isDead) return;
-        const distZombie = Phaser.Math.Distance.Between(this.x, this.y, zombie.x, zombie.y);
+        const distZombie = this.scene.calcularDistanciaToroidal(this.x, this.y, zombie.x, zombie.y);
 
         if (distZombie < distanciaMinima) {
           distanciaMinima = distZombie;
@@ -164,8 +164,8 @@ export class Soldier extends Enemy {
     }
 
     if (this.objetivoActual) {
-      const distancia = Phaser.Math.Distance.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
-      const anguloHaciaObjetivo = Phaser.Math.Angle.Between(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
+      const distancia = this.scene.calcularDistanciaToroidal(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
+      const anguloHaciaObjetivo = this.scene.calcularAnguloToroidal(this.x, this.y, this.objetivoActual.x, this.objetivoActual.y);
 
       // CORRECCIÓN DE ROTACIÓN: Sin + Math.PI/2 para que miren de frente
       this.setRotation(anguloHaciaObjetivo);

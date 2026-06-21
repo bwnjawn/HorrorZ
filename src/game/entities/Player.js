@@ -11,7 +11,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setScale(0.3);
     this.body.setOffset(this.width * 0.35, this.height * 0.35);
-    this.setCollideWorldBounds(true);
     this.setLighting(true);
 
     this._hitboxRadio = config?.hitboxRadio ?? 20;
@@ -229,10 +228,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (this.scene.enemiesGroup) {
         this.scene.enemiesGroup.getChildren().forEach((enemigo) => {
           if (!enemigo.isDead) {
-            const dist = Phaser.Math.Distance.Between(this.x, this.y, enemigo.x, enemigo.y);
+            const dist = this.scene.calcularDistanciaToroidal(this.x, this.y, enemigo.x, enemigo.y);
 
             if (dist <= rangoAtaque) {
-              const anguloAlEnemigo = Phaser.Math.Angle.Between(this.x, this.y, enemigo.x, enemigo.y);
+              const anguloAlEnemigo = this.scene.calcularAnguloToroidal(this.x, this.y, enemigo.x, enemigo.y);
               const diferenciaAngulo = Phaser.Math.Angle.ShortestBetween(Phaser.Math.RadToDeg(this.rotation), Phaser.Math.RadToDeg(anguloAlEnemigo));
 
               if (Math.abs(diferenciaAngulo) <= conoDeVision) {
@@ -247,10 +246,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (this.scene.civiliansGroup) {
         this.scene.civiliansGroup.getChildren().forEach((civilObj) => {
           if (!civilObj.isInfected && !civilObj.isDying) {
-            const dist = Phaser.Math.Distance.Between(this.x, this.y, civilObj.x, civilObj.y);
+            const dist = this.scene.calcularDistanciaToroidal(this.x, this.y, civilObj.x, civilObj.y);
 
             if (dist <= rangoAtaque) {
-              const anguloAlCivil = Phaser.Math.Angle.Between(this.x, this.y, civilObj.x, civilObj.y);
+              const anguloAlCivil = this.scene.calcularAnguloToroidal(this.x, this.y, civilObj.x, civilObj.y);
               const diferenciaAngulo = Phaser.Math.Angle.ShortestBetween(Phaser.Math.RadToDeg(this.rotation), Phaser.Math.RadToDeg(anguloAlCivil));
 
               if (Math.abs(diferenciaAngulo) <= conoDeVision) {

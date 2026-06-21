@@ -10,7 +10,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.colorOriginal = statsConfig.colorTint;
     this.setTint(statsConfig.colorTint); //Esto se saca cuando cambiemos lo sprites
 
-    this.setCollideWorldBounds(true); //Hay q desactivar esto cuando agrandemos el mapa
     this.setLighting(true);
 
     // Propiedades de estado
@@ -251,7 +250,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
   applySeek(target) {
-    const desired = new Phaser.Math.Vector2(target.x, target.y).subtract(new Phaser.Math.Vector2(this.x, this.y));
+    const desired = this.scene.calcularVectorToroidal(this.x, this.y, target.x, target.y);
     // Si estamos cerca, bajamos la velocidad para no orbitar locamente
     const distance = desired.length();
 
@@ -273,7 +272,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     return steer;
   }
   applyFlee(target) {
-    const desired = new Phaser.Math.Vector2(this.x, this.y).subtract(new Phaser.Math.Vector2(target.x, target.y));
+    const desired = this.scene.calcularVectorToroidal(this.x, this.y, target.x, target.y);
 
     desired.normalize().scale(this.maxSpeed);
 
@@ -375,7 +374,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     } else {
       this.tiempoAtascado = 0;
     }
-    const distAlObjetivo = Phaser.Math.Distance.Between(this.x, this.y, this.puntoObjetivo.x, this.puntoObjetivo.y);
+    const distAlObjetivo = this.scene.calcularDistanciaToroidal(this.x, this.y, this.puntoObjetivo.x, this.puntoObjetivo.y);
 
     if (distAlObjetivo < 50) {
       this.calcularNuevoPuntoPatrulla(player);

@@ -15,7 +15,6 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.body.setSize(hitboxAncho, hitboxAlto);
     this.body.setOffset((this.width - hitboxAncho) / 2, (this.height - hitboxAlto) / 2);
 
-    this.setCollideWorldBounds(true);
     this.setBounce(1, 1);
 
     this.play('civil-walk-anim');
@@ -183,7 +182,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
     civiles.forEach((civil) => {
       if (!civil.isInfected && civil.active && !civil.isDead) {
-        const dist = Phaser.Math.Distance.Between(this.x, this.y, civil.x, civil.y);
+        const dist = this.scene.calcularDistanciaToroidal(this.x, this.y, civil.x, civil.y);
 
         if (dist < minDistance) {
           minDistance = dist;
@@ -197,7 +196,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
   applySeek(target) {
     if (!target || !target.active || target.isDead) return new Phaser.Math.Vector2(0, 0);
-    const desired = new Phaser.Math.Vector2(target.x, target.y).subtract(new Phaser.Math.Vector2(this.x, this.y));
+    const desired = this.scene.calcularVectorToroidal(this.x, this.y, target.x, target.y);
 
     const distance = desired.length();
 
@@ -224,13 +223,10 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
 
     horda.forEach((neighbor) => {
       if (!neighbor.active || neighbor.isDead || neighbor === this) return;
-      const d = Phaser.Math.Distance.Between(this.x, this.y, neighbor.x, neighbor.y);
+      const d = this.scene.calcularDistanciaToroidal(this.x, this.y, neighbor.x, neighbor.y);
 
       if (d > 0 && d < radius) {
-        const diff = new Phaser.Math.Vector2(this.x, this.y)
-          .subtract(new Phaser.Math.Vector2(neighbor.x, neighbor.y))
-          .normalize()
-          .divide({ x: d, y: d });
+        const diff = this.scene.calcularVectorToroidal(neighbor.x, neighbor.y, this.x, this.y).normalize().divide({ x: d, y: d });
 
         steer.add(diff);
         count++;
@@ -358,12 +354,12 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
       }
     } else {
       let amenazaCercana = player;
-      let distAmenaza = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
+      let distAmenaza = this.scene.calcularDistanciaToroidal(this.x, this.y, player.x, player.y);
 
       if (horda) {
         horda.forEach((zombie) => {
           if (!zombie.active || zombie.isDead) return;
-          const dist = Phaser.Math.Distance.Between(this.x, this.y, zombie.x, zombie.y);
+          const dist = this.scene.calcularDistanciaToroidal(this.x, this.y, zombie.x, zombie.y);
 
           if (dist < distAmenaza) {
             distAmenaza = dist;
@@ -373,8 +369,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
       }
 
       if (distAmenaza < this.panicDistance) {
-        this.setCollideWorldBounds(true);
-        let angle = Phaser.Math.Angle.Between(amenazaCercana.x, amenazaCercana.y, this.x, this.y);
+        let angle = this.scene.calcularAnguloToroidal(amenazaCercana.x, amenazaCercana.y, this.x, this.y);
 
         const avoidForce = this.applyObstacleAvoidance();
 

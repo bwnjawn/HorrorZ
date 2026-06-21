@@ -351,30 +351,66 @@ export class MainScene extends Phaser.Scene {
     this.lights.enable();
     this.lights.setAmbientColor(0x212020);
 
+    // Creamos el mapa PRINCIPAL.
     this.map = this.make.tilemap({ key: 'Map_HorrorZ' });
-
-    const tsFondo = this.map.addTilesetImage('Background_Dark-Green_TileSet', 'Tileset_Fondo');
-    const tsBlanco = this.map.addTilesetImage('Buildings_white_TileSet', 'Tileset_Fondo_Casa_Blanca');
-    const tsOscuro = this.map.addTilesetImage('Buildings_dark_TileSet', 'Tileset_Casa_Negra');
-    const tsGris = this.map.addTilesetImage('Buildings_gray_TileSet', 'Tileset_Casa_Gris');
-
-    const todosLosTilesets = [tsFondo, tsBlanco, tsOscuro, tsGris];
-
-    const capaSuelo = this.map.createLayer('Capa de patrones 1', todosLosTilesets, 0, 0);
-    const _capaDetalles = this.map.createLayer('Capa de patrones 4', todosLosTilesets, 0, 0);
-    const _capaCasas = this.map.createLayer('Casas', todosLosTilesets, 0, 0);
-
-    capaSuelo.setLighting(true);
-    _capaDetalles.setLighting(true);
-    _capaCasas.setLighting(true);
-    capaSuelo.setPosition(0, 0);
 
     this.anchoMapa = this.map.widthInPixels;
     this.altoMapa = this.map.heightInPixels;
 
-    this.cameras.main.setBounds(0, 0, this.anchoMapa, this.altoMapa);
+    // 2. Definimos la matriz de 3x3
+    const desplazamientos = [
+      { x: 0, y: 0 }, // Centro
+      { x: -this.anchoMapa, y: 0 }, // Izquierda
+      { x: this.anchoMapa, y: 0 }, // Derecha
+      { x: 0, y: -this.altoMapa }, // Arriba
+      { x: 0, y: this.altoMapa }, // Abajo
+      { x: -this.anchoMapa, y: -this.altoMapa }, // Esquina Superior Izquierda
+      { x: this.anchoMapa, y: -this.altoMapa }, // Esquina Superior Derecha
+      { x: -this.anchoMapa, y: this.altoMapa }, // Esquina Inferior Izquierda
+      { x: this.anchoMapa, y: this.altoMapa }, // Esquina Inferior Derecha
+    ];
+
+    this.capasEntorno = [];
+    desplazamientos.forEach((offset) => {
+      const mapClon = this.make.tilemap({ key: 'Map_HorrorZ' });
+
+      const tsFondo = mapClon.addTilesetImage('Background_Dark-Green_TileSet', 'Tileset_Fondo');
+      const tsBlanco = mapClon.addTilesetImage('Buildings_white_TileSet', 'Tileset_Fondo_Casa_Blanca');
+      const tsOscuro = mapClon.addTilesetImage('Buildings_dark_TileSet', 'Tileset_Casa_Negra');
+      const tsGris = mapClon.addTilesetImage('Buildings_gray_TileSet', 'Tileset_Casa_Gris');
+
+      const todosLosTilesets = [tsFondo, tsBlanco, tsOscuro, tsGris];
+
+      const capaSuelo = mapClon.createLayer('Capa de patrones 1', todosLosTilesets, offset.x, offset.y);
+      const capaDetalles = mapClon.createLayer('Capa de patrones 4', todosLosTilesets, offset.x, offset.y);
+      const capaCasas = mapClon.createLayer('Casas', todosLosTilesets, offset.x, offset.y);
+
+      if (capaSuelo) {
+        capaSuelo.setLighting(true);
+        this.capasEntorno.push(capaSuelo);
+      }
+
+      if (capaDetalles) {
+        capaDetalles.setLighting(true);
+        this.capasEntorno.push(capaDetalles);
+      }
+
+      if (capaCasas) {
+        capaCasas.setLighting(true);
+        this.capasEntorno.push(capaCasas);
+      }
+    });
     this.physics.world.setBounds(0, 0, this.anchoMapa, this.altoMapa);
     this.cameras.main.setZoom(2);
+
+    this.poolLucesFantasma = [];
+
+    // Creamos 100 luces invisibles listas para ser usadas
+    for (let i = 0; i < 100; i++) {
+      let luz = this.lights.addLight(-9999, -9999, 0, 0xffffff, 0);
+
+      this.poolLucesFantasma.push(luz);
+    }
   }
 
   crearGrupos() {
@@ -504,6 +540,100 @@ export class MainScene extends Phaser.Scene {
       });
     });
   }
+  crearCamarasFantasmasEntidades() {
+    const desplazamientos = [
+      { x: -this.anchoMapa, y: 0 },
+      { x: this.anchoMapa, y: 0 },
+      { x: 0, y: -this.altoMapa },
+      { x: 0, y: this.altoMapa },
+      { x: -this.anchoMapa, y: -this.altoMapa },
+      { x: this.anchoMapa, y: -this.altoMapa },
+      { x: -this.anchoMapa, y: this.altoMapa },
+      { x: this.anchoMapa, y: this.altoMapa },
+    ];
+
+    desplazamientos.forEach((offset) => {
+      const camFantasma = this.cameras.add(0, 0, this.scale.width, this.scale.height);
+
+      camFantasma.setZoom(2); // Mismo zoom que la principal
+      camFantasma.startFollow(this.player, true, 0.1, 0.1);
+      camFantasma.setFollowOffset(offset.x, offset.y);
+      camFantasma.ignore(this.capasEntorno);
+    });
+
+    // Aseguramos que la cámara principal se dibuje debajo de las luces y UI si las tienes
+    const indiceMain = this.cameras.cameras.indexOf(this.cameras.main);
+
+    this.cameras.cameras.splice(indiceMain, 1);
+    this.cameras.cameras.unshift(this.cameras.main);
+  }
+
+  sincronizarLucesToroidales() {
+    let poolIndex = 0;
+    const cam = this.cameras.main;
+
+    const vistaX = cam.width / cam.zoom / 2;
+    const vistaY = cam.height / cam.zoom / 2;
+
+    const procesarLuz = (luzOriginal) => {
+      if (!luzOriginal || luzOriginal.intensity === 0) return;
+
+      const x = luzOriginal.x;
+      const y = luzOriginal.y;
+      const r = luzOriginal.radius;
+
+      const umbralX = vistaX + r;
+      const umbralY = vistaY + r;
+
+      let offsetsX = [0];
+      let offsetsY = [0];
+
+      if (x < umbralX) offsetsX.push(this.anchoMapa);
+      if (x > this.anchoMapa - umbralX) offsetsX.push(-this.anchoMapa);
+
+      if (y < umbralY) offsetsY.push(this.altoMapa);
+      if (y > this.altoMapa - umbralY) offsetsY.push(-this.altoMapa);
+
+      offsetsX.forEach((dx) => {
+        offsetsY.forEach((dy) => {
+          if (dx === 0 && dy === 0) return;
+
+          if (poolIndex < this.poolLucesFantasma.length) {
+            const clon = this.poolLucesFantasma[poolIndex];
+
+            clon.x = x + dx;
+            clon.y = y + dy;
+            clon.radius = r;
+            clon.color.r = luzOriginal.color.r;
+            clon.color.g = luzOriginal.color.g;
+            clon.color.b = luzOriginal.color.b;
+            clon.intensity = luzOriginal.intensity;
+            poolIndex++;
+          }
+        });
+      });
+    };
+
+    // Procesar la luz del jugador
+    if (this.player && !this.player.isDead) {
+      procesarLuz(this.player.visionLight);
+    }
+
+    if (this.enemiesGroup) {
+      this.enemiesGroup.getChildren().forEach((enemigo) => {
+        if (enemigo.active && !enemigo.isDead) procesarLuz(enemigo.luzPersonal);
+      });
+    }
+
+    for (let i = poolIndex; i < this.poolLucesFantasma.length; i++) {
+      const luzApagada = this.poolLucesFantasma[i];
+
+      luzApagada.intensity = 0;
+      luzApagada.radius = 0; // El motor ignora luces con radio 0
+      luzApagada.x = -9999;
+      luzApagada.y = -9999;
+    }
+  }
 
   configurarJugador() {
     let spawnX = Phaser.Math.Between(10, this.anchoMapa - 10);
@@ -521,7 +651,7 @@ export class MainScene extends Phaser.Scene {
       }
 
       this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
-
+      this.crearCamarasFantasmasEntidades();
       this.physics.add.collider(this.player, this.obstaculos);
 
       this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
@@ -555,6 +685,44 @@ export class MainScene extends Phaser.Scene {
       });
     }
   }
+  calcularDistanciaToroidal(x1, y1, x2, y2) {
+    let dx = Math.abs(x1 - x2);
+    let dy = Math.abs(y1 - y2);
+
+    // Si la distancia es mayor a la mitad del mapa, el camino más corto es por el otro lado
+    if (dx > this.anchoMapa / 2) dx = this.anchoMapa - dx;
+    if (dy > this.altoMapa / 2) dy = this.altoMapa - dy;
+
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  calcularAnguloToroidal(x1, y1, x2, y2) {
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+
+    // Invertir el vector si es más corto cruzar el borde
+    if (dx > this.anchoMapa / 2) dx -= this.anchoMapa;
+    else if (dx < -this.anchoMapa / 2) dx += this.anchoMapa;
+
+    if (dy > this.altoMapa / 2) dy -= this.altoMapa;
+    else if (dy < -this.altoMapa / 2) dy += this.altoMapa;
+
+    return Math.atan2(dy, dx);
+  }
+
+  calcularVectorToroidal(x1, y1, x2, y2) {
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+
+    if (dx > this.anchoMapa / 2) dx -= this.anchoMapa;
+    else if (dx < -this.anchoMapa / 2) dx += this.anchoMapa;
+
+    if (dy > this.altoMapa / 2) dy -= this.altoMapa;
+    else if (dy < -this.altoMapa / 2) dy += this.altoMapa;
+
+    // Retorna un Vector2 de Phaser con la dirección corregida
+    return new Phaser.Math.Vector2(dx, dy);
+  }
 
   update(time, delta) {
     if (this.playerLight && this.player) {
@@ -576,6 +744,32 @@ export class MainScene extends Phaser.Scene {
     this.enemiesGroup.getChildren().forEach((enemy) => {
       if (enemy.active) enemy.update(time, delta, this.player, hordaActual);
     });
+
+    if (this.player && !this.player.isDead) {
+      const prevX = this.player.x;
+      const prevY = this.player.y;
+
+      // 1. Envuelve físicamente
+      this.physics.world.wrap(this.player, 0);
+
+      // 2. Comprobar si hubo teletransporte
+      const diffX = this.player.x - prevX;
+      const diffY = this.player.y - prevY;
+
+      if (Math.abs(diffX) > this.anchoMapa / 2 || Math.abs(diffY) > this.altoMapa / 2) {
+        //yA no hay barrido de camara
+        this.cameras.cameras.forEach((cam) => {
+          cam.scrollX += diffX;
+          cam.scrollY += diffY;
+        });
+      }
+    }
+
+    // Efecto Pac-Man continuo para el resto de elementos de juego
+    if (this.hordeGroup) this.physics.world.wrap(this.hordeGroup, 0);
+    if (this.civiliansGroup) this.physics.world.wrap(this.civiliansGroup, 0);
+    if (this.enemiesGroup) this.physics.world.wrap(this.enemiesGroup, 0);
+    this.sincronizarLucesToroidales();
   }
 
   obtenerPosicionAnillo() {
