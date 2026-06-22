@@ -108,11 +108,92 @@ export class MainScene extends Phaser.Scene {
     for (let i = 0; i <= 14; i++) {
       this.load.image(`attack_knife_${i}`, `assets/sprites/melee/meleeattack/survivor-meleeattack_knife_${i}.png`);
     }
+
+    //Sonidos
+    this.load.audio('snd_shoot', 'assets/audio/shoot_snd.mp3');
+    this.load.audio('snd_atack_zombie', 'assets/audio/zombie_atack_snd.mp3');
+    this.load.audio('snd_zombie_scream', 'assets/audio/zombie_scream.mp3');
+    this.load.audio('snd_zombie_moan', 'assets/audio/zombie_snd.mp3');
+    this.load.on('filecomplete', (key) => {
+      console.log('✅ Archivo cargado:', key);
+    });
+
+    this.load.on('loaderror', (file) => {
+      console.error('❌ Error cargando:', file.key);
+    });
   }
 
   create() {
     this.player = null;
     this.iniciarStore();
+
+    //Para verificar si el audio esta funcionando
+    console.log('===== AUDIO DEBUG =====');
+
+    console.log('snd_shoot:', this.cache.audio.exists('snd_shoot'));
+
+    console.log('snd_atack_zombie:', this.cache.audio.exists('snd_atack_zombie'));
+
+    console.log('snd_zombie_scream:', this.cache.audio.exists('snd_zombie_scream'));
+
+    console.log('snd_zombie_moan:', this.cache.audio.exists('snd_zombie_moan'));
+
+    console.log('Sound Manager:', this.sound);
+
+    console.log('Mute:', this.sound.mute);
+    console.log('Volume:', this.sound.volume);
+
+    if (this.sound.context) {
+      console.log('Audio Context:', this.sound.context.state);
+    }
+
+    // ==========================================
+    // CREACIÓN DE SONIDOS
+    // ==========================================
+
+    this.soundDisparo = this.sound.add('snd_shoot', {
+      volume: 0.5,
+    });
+
+    this.soundZombieAtaque = this.sound.add('snd_atack_zombie', {
+      volume: 0.6,
+    });
+
+    this.soundZombieGrito = this.sound.add('snd_zombie_scream', {
+      volume: 0.5,
+    });
+
+    this.soundZombieGemido = this.sound.add('snd_zombie_moan', {
+      volume: 0.3,
+    });
+
+    this.sound.volume = 1;
+    this.sound.mute = false;
+
+    // ==========================================
+    // DESBLOQUEO DEL AUDIO
+    // ==========================================
+
+    this.input.once('pointerdown', () => {
+      console.log('CLICK DETECTADO');
+
+      if (this.sound.context) {
+        console.log('Estado antes:', this.sound.context.state);
+
+        this.sound.context.resume();
+
+        console.log('Estado después:', this.sound.context.state);
+      }
+
+      console.log('Reproduciendo sonido de prueba');
+
+      this.sound.play('snd_shoot');
+    });
+
+    // ==========================================
+    // RESTO DEL JUEGO
+    // ==========================================
+
     this.crearAnimaciones();
     this.crearEntorno();
     this.crearGrupos();
@@ -120,6 +201,20 @@ export class MainScene extends Phaser.Scene {
     this.configurarColisionesGrupales();
     this.configurarEventos();
     this.configurarJugador();
+
+    const reproducirGemidoAleatorio = () => {
+      if (this.hordeGroup && this.hordeGroup.getTotalUsed() > 0 && !this.store.isGameOver) {
+        if (this.soundZombieGemido && !this.soundZombieGemido.isPlaying) {
+          console.log('🔊 La horda emitió un gemido ambiental');
+
+          this.soundZombieGemido.play();
+        }
+      }
+
+      this.time.delayedCall(Phaser.Math.Between(4000, 8000), reproducirGemidoAleatorio);
+    };
+
+    this.time.delayedCall(3000, reproducirGemidoAleatorio);
   }
 
   iniciarStore() {
@@ -450,11 +545,18 @@ export class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.hordeGroup, this.hordeGroup);
     this.physics.add.collider(this.enemiesGroup, this.enemiesGroup);
 
+    // Colisión: Zombies atacando civiles
     this.physics.add.overlap(this.hordeGroup, this.civiliansGroup, (zombieObj, civilObj) => {
       const dist = Phaser.Math.Distance.Between(zombieObj.x, zombieObj.y, civilObj.x, civilObj.y);
 
       if (dist < 50 && !civilObj.isInfected && !civilObj.isDying && !zombieObj.isAttacking) {
         zombieObj.ejecutarAtaque();
+
+        if (this.soundZombieAtaque && !this.soundZombieAtaque.isPlaying) {
+          console.log('💥 ¡Sonido de ataque zombie ejecutado!');
+          this.soundZombieAtaque.play();
+        }
+
         civilObj.isDying = true;
         civilObj.setVelocity(0, 0);
 
@@ -492,8 +594,8 @@ export class MainScene extends Phaser.Scene {
       this.hordeGroup.add(nuevoZombie);
       this.allCivilians.push(nuevoZombie);
 
-      if (data.healReward) {
-        if (this.player && this.player.curar) this.player.curar(data.healReward);
+      if (data.healReward && this.player && this.player.curar) {
+        this.player.curar(data.healReward);
       }
     });
 
@@ -503,6 +605,11 @@ export class MainScene extends Phaser.Scene {
       this.physics.add.existing(bala);
       this.bulletsGroup.add(bala);
       this.physics.velocityFromRotation(data.angulo, 600, bala.body.velocity);
+
+      if (this.soundDisparo) {
+        console.log('🔫 ¡Sonido de disparo ejecutado!');
+        this.soundDisparo.play();
+      }
 
       this.time.delayedCall(1500, () => {
         if (bala.active) bala.destroy();
@@ -532,7 +639,6 @@ export class MainScene extends Phaser.Scene {
       efectoExplosion.setScale(data.scale || 1.5);
       efectoExplosion.setTint(data.colorTint || 0xffffff);
       efectoExplosion.setAlpha(data.alpha !== undefined ? data.alpha : 1);
-
       efectoExplosion.play('kamikaze-explosion-anim');
 
       efectoExplosion.once('animationcomplete', () => {
@@ -540,6 +646,7 @@ export class MainScene extends Phaser.Scene {
       });
     });
   }
+
   crearCamarasFantasmasEntidades() {
     const desplazamientos = [
       { x: -this.anchoMapa, y: 0 },

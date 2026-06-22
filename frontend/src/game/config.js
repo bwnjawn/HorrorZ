@@ -19,7 +19,7 @@ export const gameConfig = {
     },
   },
   audio: {
-    noAudio: true,
+    noAudio: false,
   },
 
   scene: [MainScene], // Aquí registramos la escena principal
