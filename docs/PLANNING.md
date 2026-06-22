@@ -110,17 +110,17 @@
 
 ### Martes 16 de junio
 
-- [ ] Configurar la estructura del proyecto.
+- [x] Configurar la estructura del proyecto.
 - [x] Ajustar el tiempo de evolución creando una transición progresiva para la transformación de civiles a zombies.
 - [x] Refactorizar el sistema de spawn para que las entidades aparezcan fuera del área visible de la cámara.
 - [x] Mejorar la diferenciación y balance de entidades mejorando clases independientes.
-- [ ] Implementar físicas de balas en Phaser utilizando grupos de físicas y detectando colisiones con la civiles y edificios.
+- [x] Implementar físicas de balas en Phaser utilizando grupos de físicas y detectando colisiones con la civiles y edificios.
 
 ### Jueves 18 de junio
 
-- [ ] Mejorar los sprites de las entidades y agregar los sonidos básicos (gemidos, disparos).
+- [x] Mejorar los sprites de las entidades y agregar los sonidos básicos (gemidos, disparos).
 - [ ] Agrandar el mapa del juego implementando un Tilemap en Phaser (exportado desde Tiled).
-- [ ] Configurar los márgenes de la pantalla y el seguimiento de la cámara sobre el líder zombie.
+- [x] Configurar los márgenes de la pantalla y el seguimiento de la cámara sobre el líder zombie.
 - [x] Implementar bucle de mapa (efecto de mundo infinito) utilizando los límites del mundo en Phaser.
 
 ---

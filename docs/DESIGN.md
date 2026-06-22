@@ -5,77 +5,120 @@
 - **Selector de personaje:** Interfaz para elegir el tipo de líder antes de comenzar. ![Selector](<MOCKUPS/Seleccion de personaje.png>)
 - **Imagen referencial del juego:** Representación visual del entorno urbano y la horda. ![Gameplay](MOCKUPS/gameplay.png)
 - **Leaderboard / Ranking (NUEVO):** Pantalla que muestra los mejores puntajes globales de todos los jugadores conectados.
-- **Pantalla de Game Over:** Resumen de estadísticas finales del jugador. ![Game Over](<MOCKUPS/Pantalla de muerte.png>)
+- **Pantalla de Game Over:** Resumen de estadísticas finales del jugador y tributo post-créditos de las víctimas.
+  ![Game Over](<MOCKUPS/Pantalla de muerte.png>)
 
-# 2. Especificaciones de Tecnología y Arquitectura Fullstack
+# 2. Descripción del juego y Nuevas Mecánicas
 
-## Framework y Justificación
+**HorrorZ** es un juego de supervivencia y acción en 2D con vista top-down. El jugador asume el rol de un zombie en un entorno urbano, cuyo objetivo
+es propagar la infección convirtiendo civiles y resistiendo el contraataque de las fuerzas del orden el mayor tiempo posible.
 
-### Frontend
+### **Mecánicas Principales**
 
-- **Base: Vue.js** El equipo técnico cuenta con experiencia previa en el ecosistema de Vue. Esto reduce el riesgo de retrasos en el aprendizaje y
-  permite centrar los esfuerzos en las mecánicas del juego. Este framework se utilizará para manejar las estadísticas del juego (salud, tamaño de
-  horda, bonificadores) mediante un estado reactivo.
-- **Motor de Juego: Phaser** Se elige Phaser por ser el más conocido en la creación de juegos HTML. Su amplia base de usuarios y documentación extensa
-  garantizan que el equipo pueda resolver bloqueos técnicos mediante soluciones ya probadas y optimizadas por la comunidad. Se utilizará para realizar
-  el motor del juego, es decir, movimientos, gestión de hordas, acciones de las entidades, sonido, etc.
+- **Movimiento Perpetuo**: El zombi líder está en constante movimiento. El jugador no puede quedarse quieto.
+- **Salud del personaje**: Tienes una salud limitada según el personaje que aumenta a medida que crece la horda de zombies.
+- **Conversión de Horda**: Al entrar en contacto con civiles, estos se transforman y se unen a la horda que sigue al líder.
+- **Escalado de Estadísticas**: A medida que la horda crece, aumentan el rango de conversión, la vida y la resistencia del zombi principal.
+- **Interacción con el Entorno**: Los civiles pueden huir para evitar ser infectados. Mientras que los policías y militares tratan de detenerte.
 
-### Backend (Node.js + Express)
+### Nuevas Mecánicas o Pantallas (Solemne 3)
 
-Framework para el desarrollo del servidor backend. Se implementará una API REST para gestionar la lógica persistente, la autenticación de usuarios y
-la validación de puntajes.
+- **Sistema de Progresión y Ranking:** Ahora los jugadores deben registrarse. Al morir, su tiempo de supervivencia y tamaño de horda se envían a la
+  base de datos para competir en un ranking global (Leaderboard).
+- **Tributo de Víctimas (API Externa):** Al perder, se genera un listado con los nombres e imágenes de los civiles infectados (simulando identidades
+  reales), que descienden en pantalla como créditos de película.
 
-### Base de Datos (MongoDB)
+### Reglas
 
-Base de datos NoSQL de tipo orientada a documentos. Almacenará los perfiles de los usuarios y el historial de partidas (tiempos de supervivencia,
-tamaño máximo de horda) de forma escalable utilizando Mongoose.
+- **Condición de Victoria**: El objetivo es sobrevivir la mayor cantidad de tiempo posible frente a dificultades progresivas.
+- **Umbrales de Ataque**: Para eliminar unidades enemigas, se requiere una cantidad mínima de zombis en la horda.
+- **Derrota**: Pierdes una vez que tu barra de salud se acaba.
 
-## Estructura de la Base de Datos (Modelos)
+### Flujo del Juego
 
-### Usuario (User)
+- **Menú Principal**: Acceso a inicio, estadísticas, como se juega y configuración.
+- **Gameplay**: Fase activa de infección y supervivencia en el mapa urbano.
+- **Game Over**: Pantalla de estadísticas finales basada en el tiempo sobrevivido y tamaño de la horda.
 
-- `username` (String, único)
-- `password` (String encriptado)
-- `createdAt` (Date)
+# 3. Especificaciones de Tecnología y Arquitectura Fullstack
 
-### Partida (Score / Match)
-
-- `userId` (Referencia al Usuario)
-- `survivalTime` (Number, en segundos)
-- `maxHordeSize` (Number)
-- `datePlayed` (Date)
-
-## Endpoints Principales de la API REST
-
-| Método | Endpoint                  | Descripción                                                                        |
-| ------ | ------------------------- | ---------------------------------------------------------------------------------- |
-| POST   | `/api/auth/register`      | Crea un nuevo usuario                                                              |
-| POST   | `/api/auth/login`         | Autentica al usuario y devuelve un token JWT                                       |
-| POST   | `/api/scores`             | Guarda los resultados de una partida al llegar a Game Over (requiere JWT)          |
-| GET    | `/api/scores/leaderboard` | Retorna el top 10 de jugadores con mayor tiempo de supervivencia o tamaño de horda |
-
-## Dependencias Principales
-
-### Frontend
-
-- pnpm
-- Vue
-- Phaser
-- Vitest (pruebas unitarias)
-
-### Backend
-
-- Express
-- Mongoose
-- JsonWebToken (JWT)
-- bcrypt
+| Capa           | Tecnología / Framework | Versión | Justificación                                                         |
+| -------------- | ---------------------- | ------- | --------------------------------------------------------------------- |
+| Frontend UI    | Vue.js + Pinia         | ^3.5.32 | UI para menús, HUD y gestión del estado (salud, tamaño de horda).     |
+| Motor de Juego | Phaser                 | ^4.1.0  | Manejo de físicas, sprites, tilemaps y mecánicas 2D.                  |
+| Backend        | Node.js + Express      | v20.x   | API REST para integrar con JavaScript.                                |
+| Base de Datos  | MongoDB + Mongoose     | v7.x    | Base de datos NoSQL conocida por el equipo de trabajo.                |
+| Testing        | Vitest                 | ^4.1.4  | Entorno de pruebas unitarias rápido y compatible con Vue/Vite y Node. |
 
 ### Infraestructura
 
 - Docker
 - Docker Compose para levantar frontend, backend y base de datos simultáneamente.
 
-## Estructura de carpetas actualizada
+### Diagrama de Arquitectura
+
+```
+ ┌──────────────────────────────────────────────────────────┐
+ │                  JUGADOR (Navegador Web)                 │
+ └────────────────────────────┬─────────────────────────────┘
+                              │
+                    Interacción del Usuario
+                              ▼
+ ┌──────────────────────────────────────────────────────────┐
+ │                FRONTEND (Vue.js 3 + Phaser)              │
+ │  - Controla la interfaz reactiva (HUD, menús, registro)  │
+ │  - Ejecuta el motor gráfico 2D del mapa urbano           │
+ └────────────────────────────┬─────────────────────────────┘
+                              │
+             Peticiones HTTP  │  ▲  Envío automático de
+             (JSON de datos)  │  │  Cookie HTTPOnly (JWT)
+                              ▼  │
+ ┌──────────────────────────────────────────────────────────┐
+ │                BACKEND (Node.js + Express)               │
+ │  - Autentica usuarios y valida tokens de sesión          │
+ │  - Controla las reglas de negocio y procesa puntajes     │
+ └──────────────────────┬─────────────────────┬─────────────┘
+                        │                     │
+          Consultas Mongoose                  │ Peticiones REST
+          (Guardar / Leer)                    │ (Lote de identidades)
+                        ▼                     ▼
+ ┌──────────────────────────────┐     ┌─────────────────────┐
+ │    BASE DE DATOS (MongoDB)   │     │     API EXTERNA     │
+ │  - Colección 'users'         │     │   (RandomUser.me)   │
+ │  - Colección 'scores'        │     │  Genera datos de    │
+ │    (Hordas y tiempos)        │     │  víctimas reales    │
+ └──────────────────────────────┘     └─────────────────────┘
+```
+
+# 4. Integración con Servicio REST Externo
+
+Se integrará la API gratuita **RandomUser.me** para darle profundidad narrativa a la pantalla de Game Over.
+
+### Funcionalidad en el Juego
+
+En la pantalla de derrota, el juego mostrará los créditos de las víctimas ("Civiles Infectados") con:
+
+- Nombre
+- Apellido
+- Año de nacimiento
+- Fotografía
+
+### Endpoint Consumido
+
+```http
+GET https://randomuser.me/api/?results=200&inc=name,picture,dob
+```
+
+### Estrategia de Consumo
+
+1. El frontend solicita las víctimas al backend.
+2. El backend consume la API externa.
+3. Procesa el JSON recibido.
+4. Envía un arreglo limpio al cliente.
+
+---
+
+# 5. Estructura de carpetas actualizada
 
 ```plaintext
 /
@@ -98,39 +141,52 @@ tamaño máximo de horda) de forma escalable utilizando Mongoose.
 └── README.md
 ```
 
-# 3. Descripción del juego y Nuevas Mecánicas
+---
 
-**HorrorZ** es un juego de supervivencia y acción en 2D con vista top-down. El jugador asume el rol de un zombie en un entorno urbano, cuyo objetivo
-es propagar la infección convirtiendo civiles y resistiendo el contraataque de las fuerzas del orden el mayor tiempo posible.
+# 6. Modelo de Datos (MongoDB)
 
-### **Mecánicas Principales**
+### Colección `users`
 
-- **Movimiento Perpetuo**: El zombi líder está en constante movimiento. El jugador no puede quedarse quieto, lo que obliga a una navegación activa por
-  las calles de la ciudad.
-- **Salud del personaje**: Tienes una salud limitada según el personaje que aumenta a medida que crece la horda de zombies.
-- **Conversión de Horda**: Al entrar en contacto con civiles, estos se transforman y se unen a la horda que sigue al líder.
-- **Escalado de Estadísticas**: A medida que la horda crece, aumentan el rango de conversión, la vida y la resistencia del zombi principal.
-- **Interacción con el Entorno**: Los civiles pueden huir y esconderse dentro de las casas para evitar ser infectados. Mientras que los policías y
-  militares tratan de detenerte.
+Almacena las credenciales de acceso. La autenticación utiliza cookies HTTPOnly con JWT.
 
-### Nuevas Mecánicas o Pantallas (Solemne 3)
+| Campo     | Tipo     | Requerido | Descripción                              |
+| --------- | -------- | --------- | ---------------------------------------- |
+| \_id      | ObjectId | Sí        | Identificador único generado por MongoDB |
+| username  | String   | Sí        | Nombre de usuario único                  |
+| password  | String   | Sí        | Contraseña encriptada con Bcrypt         |
+| createdAt | Date     | Sí        | Fecha de registro                        |
 
-- **Sistema de Progresión y Ranking:** Ahora los jugadores deben registrarse. Al morir, su tiempo de supervivencia y tamaño de horda se envían a la
-  base de datos para competir en un ranking global (Leaderboard).
+### Colección `scores`
 
-### Reglas
+Almacena el historial de partidas para el ranking global.
 
-- **Condición de Victoria**: El objetivo es sobrevivir la mayor cantidad de tiempo posible frente a dificultades progresivas.
-- **Umbrales de Ataque**: Para eliminar unidades enemigas, se requiere una cantidad mínima de zombis en la horda.
-- **Derrota**: Pierdes una vez que tu barra de salud se acaba.
+| Campo        | Tipo     | Requerido | Descripción                          |
+| ------------ | -------- | --------- | ------------------------------------ |
+| \_id         | ObjectId | Sí        | Identificador de la partida          |
+| userId       | ObjectId | Sí        | Referencia al usuario                |
+| survivalTime | Number   | Sí        | Tiempo de supervivencia en segundos  |
+| maxHordeSize | Number   | Sí        | Tamaño máximo de la horda            |
+| victimsCount | Number   | Sí        | Cantidad total de civiles infectados |
+| datePlayed   | Date     | Sí        | Fecha de la partida                  |
 
-### Flujo del Juego
+---
 
-- **Menú Principal**: Acceso a inicio, estadísticas, como se juega y configuración.
-- **Gameplay**: Fase activa de infección y supervivencia en el mapa urbano.
-- **Game Over**: Pantalla de estadísticas finales basada en el tiempo sobrevivido y tamaño de la horda.
+# 7. Endpoints de la API REST Principal
 
-# 4. Mejoras y correcciones tomadas de la evaluación de la Solemne 2
+La comunicación Frontend-Backend está protegida mediante JWT almacenados en cookies HTTPOnly.
+
+| Método | Endpoint                  | Auth Requerida | Body (JSON)                               | Descripción                                            |
+| ------ | ------------------------- | -------------- | ----------------------------------------- | ------------------------------------------------------ |
+| POST   | `/api/auth/register`      | No             | `{ username, password }`                  | Crea usuario y devuelve `{ user }` + Cookie JWT        |
+| POST   | `/api/auth/login`         | No             | `{ username, password }`                  | Valida credenciales y devuelve `{ user }` + Cookie JWT |
+| POST   | `/api/auth/logout`        | No             | —                                         | Elimina la cookie de sesión                            |
+| GET    | `/api/scores/leaderboard` | No             | —                                         | Retorna el Top 10 global                               |
+| POST   | `/api/scores`             | Sí             | `{ survivalTime, maxHordeSize, victims }` | Guarda resultado de partida                            |
+| GET    | `/api/victims`            | Sí             | —                                         | Devuelve víctimas procesadas desde RandomUser          |
+
+---
+
+# 8. Mejoras y correcciones tomadas de la evaluación de la Solemne 2
 
 ### Mejorar y agrandar el mapa
 
