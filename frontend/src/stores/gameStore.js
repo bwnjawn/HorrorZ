@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { PLAYER_TYPES } from '../game/config/PlayerStatsConfig';
 
+let menuAudio = null;
+
 export const useGameStore = defineStore('game', {
   state: () => ({
     // ── FLUJO DE PANTALLAS ─────────────────────────────────────────────
@@ -54,11 +56,39 @@ export const useGameStore = defineStore('game', {
     goToTitle() {
       this.currentView = 'title';
     },
+    playMenuMusic() {
+      if (!menuAudio) {
+        menuAudio = new Audio('assets/audio/music-mainmenu.mp3');
+        menuAudio.loop = true;
+        menuAudio.volume = 0.4; // Ajusta el volumen inicial aquí
+      }
+
+      if (menuAudio.paused) {
+        menuAudio.play().catch(() => {
+          console.log('Autoplay bloqueado temporalmente. Esperando clic del usuario.');
+        });
+      }
+    },
+
+    stopMenuMusic() {
+      if (menuAudio) {
+        let fadeInterval = setInterval(() => {
+          if (menuAudio.volume > 0.05) {
+            menuAudio.volume -= 0.05;
+          } else {
+            clearInterval(fadeInterval);
+            menuAudio.pause();
+            menuAudio.currentTime = 0;
+            menuAudio.volume = 0.4;
+          }
+        }, 40);
+      }
+    },
 
     // ── INICIO / FIN DE PARTIDA ─────────────────────────────────────────
     startGame(zombieId) {
       this.selectedZombie = zombieId;
-
+      this.stopMenuMusic();
       // Sincronizar vida máxima con el personaje elegido
       const config = Object.values(PLAYER_TYPES).find((p) => p.id === zombieId);
 
@@ -93,6 +123,7 @@ export const useGameStore = defineStore('game', {
 
     resetGame() {
       // Resetear todo el estado de partida pero quedarse en title
+      this.stopMenuMusic();
       this.isGameStarted = false;
       this.isGameOver = false;
       this.selectedZombie = null;

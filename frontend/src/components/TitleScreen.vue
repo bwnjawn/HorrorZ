@@ -35,15 +35,28 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue'; // NUEVO: Importar ganchos
 import { useGameStore } from '../stores/gameStore';
 import TerrorLayout from './TerrorLayout.vue';
 import ControlsScreen from './ControlsScreen.vue';
 
 const store = useGameStore();
-
-// Gestiona si vemos el título o los controles dentro del mismo fondo
 const currentView = ref('title');
+
+const activarMusicaAmbiental = () => {
+  store.playMenuMusic();
+};
+
+onMounted(() => {
+  store.playMenuMusic();
+  window.addEventListener('click', activarMusicaAmbiental, { once: true });
+  window.addEventListener('keydown', activarMusicaAmbiental, { once: true });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('click', activarMusicaAmbiental);
+  window.removeEventListener('keydown', activarMusicaAmbiental);
+});
 </script>
 
 <style scoped>

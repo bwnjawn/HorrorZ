@@ -114,6 +114,15 @@ export class MainScene extends Phaser.Scene {
     this.load.audio('snd_atack_zombie', 'assets/audio/zombie_atack_snd.mp3');
     this.load.audio('snd_zombie_scream', 'assets/audio/zombie_scream.mp3');
     this.load.audio('snd_zombie_moan', 'assets/audio/zombie_snd.mp3');
+    this.load.audio('snd_screaming_1', 'assets/audio/screaming.mp3');
+    this.load.audio('snd_screaming_2', 'assets/audio/scream 3.mp3');
+    this.load.audio('snd_screaming_3', 'assets/audio/man-scream.mp3');
+    this.load.audio('snd_kamikaze_explosion', 'assets/audio/massive-explosion.mp3');
+    this.load.audio('snd_horda', 'assets/audio/hordasound.mp3');
+    this.load.audio('snd_terror', 'assets/audio/terrorambient.mp3');
+    this.load.audio('snd_alarm', 'assets/audio/alarm.mp3');
+    this.load.audio('snd_alarm2', 'assets/audio/alarm2.mp3');
+    this.load.audio('snd_atmospheric', 'assets/audio/atmospheric-music.mp3');
     this.load.on('filecomplete', (key) => {
       console.log('✅ Archivo cargado:', key);
     });
@@ -166,9 +175,30 @@ export class MainScene extends Phaser.Scene {
     this.soundZombieGemido = this.sound.add('snd_zombie_moan', {
       volume: 0.3,
     });
+    this.soundExplosionKamikaze = this.sound.add('snd_kamikaze_explosion', {
+      volume: 0.85,
+    });
+    this.soundAtmospheric = this.sound.add('snd_atmospheric', {
+      volume: 0.25,
+      loop: true,
+    });
+    this.soundAtmospheric.play();
 
     this.sound.volume = 1;
     this.sound.mute = false;
+
+    this.soundScreams = [
+      this.sound.add('snd_screaming_1', { volume: 0.7 }),
+      this.sound.add('snd_screaming_2', { volume: 0.7 }),
+      this.sound.add('snd_screaming_3', { volume: 0.7 }),
+    ];
+    this.soundHorda = this.sound.add('snd_horda', { volume: 0, loop: true });
+    this.soundTerror = this.sound.add('snd_terror', { volume: 0.5 });
+    this.soundAlarm = this.sound.add('snd_alarm', { volume: 0.25 });
+    this.soundAlarm2 = this.sound.add('snd_alarm2', { volume: 0.6 });
+    this.primeraAlarmaActivada = false;
+    this.isHordaSoundActive = false;
+    this.iniciarAmbienteTerror();
 
     // ==========================================
     // DESBLOQUEO DEL AUDIO
@@ -215,6 +245,30 @@ export class MainScene extends Phaser.Scene {
     };
 
     this.time.delayedCall(3000, reproducirGemidoAleatorio);
+  }
+
+  iniciarAmbienteTerror() {
+    const delay = Phaser.Math.Between(15000, 35000);
+
+    this.time.delayedCall(delay, () => {
+      if (!this.store.isGameOver) {
+        this.soundTerror.play();
+      }
+      this.iniciarAmbienteTerror();
+    });
+  }
+
+  iniciarAmbienteAlarmas() {
+    const delay = Phaser.Math.Between(45000, 60000);
+
+    this.time.delayedCall(delay, () => {
+      if (!this.store.isGameOver && Phaser.Math.Between(1, 100) <= 20) {
+        const alarmaElegida = Phaser.Math.Between(1, 2) === 1 ? this.soundAlarm : this.soundAlarm2;
+
+        alarmaElegida.play({ volume: 0.15 });
+      }
+      this.iniciarAmbienteAlarmas();
+    });
   }
 
   iniciarStore() {
@@ -627,6 +681,9 @@ export class MainScene extends Phaser.Scene {
     });
 
     this.events.on('explosion-kamikaze', (data) => {
+      if (this.soundExplosionKamikaze) {
+        this.soundExplosionKamikaze.play();
+      }
       let radioExplosion = data.rango || 120;
       let distAlPlayer = Phaser.Math.Distance.Between(data.x, data.y, this.player.x, this.player.y);
 
@@ -895,6 +952,34 @@ export class MainScene extends Phaser.Scene {
     if (this.civiliansGroup) this.physics.world.wrap(this.civiliansGroup, 0);
     if (this.enemiesGroup) this.physics.world.wrap(this.enemiesGroup, 0);
     this.sincronizarLucesToroidales();
+
+    // Control de sonido de la horda
+    if (this.hordeGroup && !this.store.isGameOver) {
+      const hordaViva = this.hordeGroup.countActive(true);
+
+      // 1. Sonido continuo de la horda
+      if (hordaViva >= 6 && !this.isHordaSoundActive) {
+        this.isHordaSoundActive = true;
+        this.soundHorda.play();
+        // Sube el volumen suavemente hasta 0.5 durante 2 segundos
+        this.tweens.add({ targets: this.soundHorda, volume: 0.5, duration: 2000 });
+      } else if (hordaViva < 6 && this.isHordaSoundActive) {
+        this.isHordaSoundActive = false;
+        this.tweens.add({
+          targets: this.soundHorda,
+          volume: 0,
+          duration: 2000,
+          onComplete: () => this.soundHorda.stop(),
+        });
+      }
+
+      // 2. Alarma de gravedad
+      if (hordaViva >= 20 && !this.primeraAlarmaActivada) {
+        this.primeraAlarmaActivada = true;
+        this.soundAlarm2.play();
+        this.iniciarAmbienteAlarmas();
+      }
+    }
   }
 
   obtenerPosicionAnillo() {

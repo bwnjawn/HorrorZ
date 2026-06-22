@@ -17,7 +17,8 @@
         :key="zombie.id"
         class="zombie-card"
         :class="{ selected: selectedId === zombie.id }"
-        @click="selectedId = zombie.id"
+        @click="seleccionarCarta(zombie.id)"
+        @mouseenter="reproducirSonidoUI"
       >
         <!-- Indicador de selección -->
 
@@ -105,6 +106,10 @@ const store = useGameStore();
 const zombies = Object.values(PLAYER_TYPES);
 const selectedId = ref(null);
 
+const uiClickSound = new Audio('assets/audio/click-button.mp3');
+
+uiClickSound.volume = 0.5;
+
 const selectedName = computed(() => {
   const z = zombies.find((z) => z.id === selectedId.value);
 
@@ -119,6 +124,16 @@ function pct(value, max) {
 function seleccionarPersonaje() {
   if (!selectedId.value) return;
   store.startGame(selectedId.value);
+}
+
+function reproducirSonidoUI() {
+  uiClickSound.currentTime = 0;
+  uiClickSound.play().catch(() => {});
+}
+
+function seleccionarCarta(id) {
+  selectedId.value = id;
+  reproducirSonidoUI();
 }
 </script>
 

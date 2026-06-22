@@ -121,6 +121,12 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.isResurrecting = true;
     this.health = 50;
 
+    if (this.scene.soundScreams && this.scene.soundScreams.length > 0) {
+      const randomScream = Phaser.Utils.Array.GetRandom(this.scene.soundScreams);
+
+      randomScream.play({ detune: Phaser.Math.Between(-200, 200) });
+    }
+
     // Frenamos por completo el cuerpo físico inmediatamente
     this.setVelocity(0, 0);
 
