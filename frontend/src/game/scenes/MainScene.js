@@ -581,6 +581,16 @@ export class MainScene extends Phaser.Scene {
         enemigo.recibirDaño(20);
       }
     });
+
+    this.physics.add.overlap(this.bulletsGroup, this.civiliansGroup, (bala, civil) => {
+      bala.destroy();
+
+      if (!civil.isDead && !civil.isInfected && !civil.isDying) {
+        if (civil.recibirDaño) {
+          civil.recibirDaño(15, 'bala');
+        }
+      }
+    });
   }
 
   configurarEventos() {
@@ -764,6 +774,14 @@ export class MainScene extends Phaser.Scene {
       this.physics.add.overlap(this.player, this.civiliansGroup, (playerObj, civilObj) => {
         if (this.player.isDashing && !civilObj.isInfected) {
           civilObj.recibirDaño(400);
+        }
+      });
+
+      this.physics.add.overlap(this.player, this.enemiesGroup, (playerObj, enemyObj) => {
+        if (this.player.isDashing && !enemyObj.isDead) {
+          if (enemyObj.recibirDaño) {
+            enemyObj.recibirDaño(100);
+          }
         }
       });
 

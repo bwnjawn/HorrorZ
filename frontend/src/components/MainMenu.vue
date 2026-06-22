@@ -138,7 +138,7 @@ function seleccionarPersonaje() {
   flex-direction: column;
   align-items: center;
   gap: 0;
-  overflow-y: auto;
+  overflow: hidden;
   z-index: 9999;
   font-family: 'Share Tech Mono', monospace;
 }
@@ -192,12 +192,14 @@ function seleccionarPersonaje() {
 /* ── GRID ───────────────────────────────────────────────────── */
 .zombie-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  padding: 28px 32px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 15px 20px;
   width: 100%;
   max-width: 1200px;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto; /* Si la pantalla es exageradamente pequeña, solo las cartas harán scroll, no toda la pantalla */
 }
 
 /* ── CARD ───────────────────────────────────────────────────── */
@@ -205,12 +207,13 @@ function seleccionarPersonaje() {
   position: relative;
   background: #0e0e0e;
   border: 1px solid #1e1e1e;
-  padding: 20px 18px;
+  padding: 12px 14px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  min-height: 0;
 }
 .zombie-card:hover {
   border-color: #550000;
@@ -422,25 +425,14 @@ function seleccionarPersonaje() {
 
 .portrait-container {
   width: 100%;
-  height: 180px; /* Ajusta según prefieras */
+  flex: 1; /* Absorbe el espacio disponible en lugar de forzar un tamaño */
+  min-height: 80px;
+  max-height: 35vh;
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 10px;
-  background: radial-gradient(circle, rgba(60, 0, 0, 0.3) 0%, transparent 70%);
-  border-radius: 4px;
-}
-
-.portrait-container {
-  width: 100%;
-  flex-grow: 1;
-  min-height: 260px;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   background: radial-gradient(circle, rgba(139, 0, 0, 0.15) 0%, transparent 70%);
   border-radius: 4px;
   border: 1px solid #1a0000;
