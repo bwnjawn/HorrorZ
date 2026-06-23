@@ -129,8 +129,9 @@
 
 ### Lunes 22 de junio
 
-- [ ] Inicializar el proyecto backend con Node.js y Express.
-- [ ] Configurar la conexión a la base de datos MongoDB utilizando Mongoose.
+- [x] Inicializar el proyecto backend con Node.js y Express.
+- [x] Configurar la conexión a la base de datos MongoDB utilizando Mongoose.
+- [x] Agregar Prettier y Lint al backend
 
 ### Martes 23 de junio
 

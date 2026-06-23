@@ -1,0 +1,17 @@
+{
+  "name": "HorrorZ",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "pnpm -r run lint",
+    "format": "pnpm -r run format",
+    "format:check": "pnpm -r run format:check",
+    "dev:frontend": "pnpm --filter frontend run dev",
+    "dev:backend": "pnpm --filter backend run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.3"
+}
