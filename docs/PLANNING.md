@@ -119,7 +119,7 @@
 ### Jueves 18 de junio
 
 - [x] Mejorar los sprites de las entidades y agregar los sonidos básicos (gemidos, disparos).
-- [ ] Agrandar el mapa del juego implementando un Tilemap en Phaser (exportado desde Tiled).
+- [x] Agrandar el mapa del juego implementando un Tilemap en Phaser (exportado desde Tiled).
 - [x] Configurar los márgenes de la pantalla y el seguimiento de la cámara sobre el líder zombie.
 - [x] Implementar bucle de mapa (efecto de mundo infinito) utilizando los límites del mundo en Phaser.
 

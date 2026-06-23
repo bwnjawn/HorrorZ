@@ -17,11 +17,20 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.tilemapTiledJSON('Map_HorrorZ', 'assets/maps/Map_HorrorZ.json');
-    this.load.image('Tileset_Fondo', 'assets/tilesets/Background_Dark-Green_TileSet.png');
-    this.load.image('Tileset_Casa_Negra', 'assets/tilesets/Buildings_dark_TileSet.png');
-    this.load.image('Tileset_Casa_Gris', 'assets/tilesets/Buildings_gray_TileSet.png');
-    this.load.image('Tileset_Fondo_Casa_Blanca', 'assets/tilesets/Buildings_white_TileSet.png');
+    // Cargamos el JSON limpio y empotrado
+    this.load.tilemapTiledJSON('Map_HorrorZ_Grid', 'assets/maps/Mapa_HorrorZ_v2.json');
+
+    // Cargamos las imágenes de texturas correspondientes
+    this.load.image('Tileset_Suelo', 'assets/tilesets/Background_Dark-Green_TileSet.png');
+    this.load.image('Tileset_Casas_Blancas', 'assets/tilesets/Buildings_white_TileSet.png');
+    this.load.image('Tileset_Casas_Beige', 'assets/tilesets/Buildings_beige_TileSet.png');
+    this.load.image('Tileset_Casas_Grises', 'assets/tilesets/Buildings_gray_TileSet.png');
+    this.load.image('Valla_Horizontal', 'assets/tilesets/Wooden-wall_Horizontal.png');
+    this.load.image('Valla_Horizontal_2', 'assets/tilesets/Wooden-wall_Left-side_Right&Down-connect.png');
+    this.load.image('Valla_Horizontal_3', 'assets/tilesets/Wooden-wall_Middle_Right&Left&Down-connect.png');
+    this.load.image('Valla_Horizontal_4', 'assets/tilesets/Wooden-wall_Right-side_Left&Up-connect.png');
+    this.load.image('Valla_Vertical', 'assets/tilesets/Wooden-wall_Vertical.png');
+    this.load.image('Arbol_1', 'assets/tilesets/Tree_7_Birch_Dark-Green.png');
 
     this.load.image('kamikaze_standing', 'assets/sprites/kamikaze/Hacker_Standing.png');
     this.load.image('kamikaze_walk_1', 'assets/sprites/kamikaze/Hacker_Walking1.png');
@@ -225,7 +234,7 @@ export class MainScene extends Phaser.Scene {
     // ==========================================
 
     this.crearAnimaciones();
-    this.crearEntorno();
+    this.crearEntorno(); // Aquí se crea this.map
     this.crearGrupos();
     this.crearObstaculos();
     this.configurarColisionesGrupales();
@@ -501,7 +510,7 @@ export class MainScene extends Phaser.Scene {
     this.lights.setAmbientColor(0x212020);
 
     // Creamos el mapa PRINCIPAL.
-    this.map = this.make.tilemap({ key: 'Map_HorrorZ' });
+    this.map = this.make.tilemap({ key: 'Map_HorrorZ_Grid' });
 
     this.anchoMapa = this.map.widthInPixels;
     this.altoMapa = this.map.heightInPixels;
@@ -521,17 +530,26 @@ export class MainScene extends Phaser.Scene {
 
     this.capasEntorno = [];
     desplazamientos.forEach((offset) => {
-      const mapClon = this.make.tilemap({ key: 'Map_HorrorZ' });
+      const mapClon = this.make.tilemap({ key: 'Map_HorrorZ_Grid' });
 
-      const tsFondo = mapClon.addTilesetImage('Background_Dark-Green_TileSet', 'Tileset_Fondo');
-      const tsBlanco = mapClon.addTilesetImage('Buildings_white_TileSet', 'Tileset_Fondo_Casa_Blanca');
-      const tsOscuro = mapClon.addTilesetImage('Buildings_dark_TileSet', 'Tileset_Casa_Negra');
-      const tsGris = mapClon.addTilesetImage('Buildings_gray_TileSet', 'Tileset_Casa_Gris');
+      const tsFondo = mapClon.addTilesetImage('Background_Dark-Green_TileSet', 'Tileset_Suelo');
+      const tsBlanco = mapClon.addTilesetImage('Buildings_white_TileSet', 'Tileset_Casas_Blancas');
+      const tsBeige = mapClon.addTilesetImage('Buildings_beige_TileSet', 'Tileset_Casas_Beige');
+      const tsGris = mapClon.addTilesetImage('Buildings_gray_TileSet', 'Tileset_Casas_Grises');
+      const tsValla1 = mapClon.addTilesetImage('Wooden-wall_Horizontal', 'Valla_Horizontal');
+      const tsValla2 = mapClon.addTilesetImage('Wooden-wall_Left-side_Right&Down-connect', 'Valla_Horizontal_2');
+      const tsValla3 = mapClon.addTilesetImage('Wooden-wall_Middle_Right&Left&Down-connect', 'Valla_Horizontal_3');
+      const tsValla4 = mapClon.addTilesetImage('Wooden-wall_Right-side_Left&Up-connect', 'Valla_Horizontal_4');
+      const tsVallaV = mapClon.addTilesetImage('Wooden-wall_Vertical', 'Valla_Vertical');
+      const tsArbol = mapClon.addTilesetImage('Tree_7_Birch_Dark-Green', 'Arbol_1');
 
-      const todosLosTilesets = [tsFondo, tsBlanco, tsOscuro, tsGris];
+      // Incluimos absolutamente todas las variables en la matriz de renderizado
+      const todosLosTilesets = [tsFondo, tsBlanco, tsBeige, tsGris, tsValla1, tsValla2, tsValla3, tsValla4, tsArbol, tsVallaV];
 
       const capaSuelo = mapClon.createLayer('Capa de patrones 1', todosLosTilesets, offset.x, offset.y);
-      const capaDetalles = mapClon.createLayer('Capa de patrones 4', todosLosTilesets, offset.x, offset.y);
+      const capaArboles = mapClon.createLayer('Arboles', todosLosTilesets, offset.x, offset.y);
+      const capaCercas = mapClon.createLayer('Cercas', todosLosTilesets, offset.x, offset.y);
+
       const capaCasas = mapClon.createLayer('Casas', todosLosTilesets, offset.x, offset.y);
 
       if (capaSuelo) {
@@ -539,9 +557,14 @@ export class MainScene extends Phaser.Scene {
         this.capasEntorno.push(capaSuelo);
       }
 
-      if (capaDetalles) {
-        capaDetalles.setLighting(true);
-        this.capasEntorno.push(capaDetalles);
+      if (capaArboles) {
+        capaArboles.setLighting(true);
+        this.capasEntorno.push(capaArboles);
+      }
+
+      if (capaCercas) {
+        capaCercas.setLighting(true);
+        this.capasEntorno.push(capaCercas);
       }
 
       if (capaCasas) {
@@ -549,6 +572,7 @@ export class MainScene extends Phaser.Scene {
         this.capasEntorno.push(capaCasas);
       }
     });
+
     this.physics.world.setBounds(0, 0, this.anchoMapa, this.altoMapa);
     this.cameras.main.setZoom(2);
 
@@ -575,7 +599,7 @@ export class MainScene extends Phaser.Scene {
   crearObstaculos() {
     this.obstaculos = this.physics.add.staticGroup();
 
-    const capaObjetos = this.map.getObjectLayer('Capa de Objetos 1');
+    const capaObjetos = this.map.getObjectLayer('Colisiones');
 
     if (capaObjetos) {
       capaObjetos.objects.forEach((obj) => {
