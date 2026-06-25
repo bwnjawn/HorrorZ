@@ -135,9 +135,9 @@
 
 ### Martes 23 de junio
 
-- [ ] Crear los modelos de datos para Usuarios y Partidas en Mongoose.
-- [ ] Implementar endpoints REST para registro e inicio de sesión (`/api/auth/register`, `/api/auth/login`).
-- [ ] Integrar encriptación de contraseñas.
+- [x] Crear los modelos de datos para Usuarios y Partidas en Mongoose.
+- [x] Implementar endpoints REST para registro e inicio de sesión (`/api/auth/register`, `/api/auth/login`).
+- [x] Integrar encriptación de contraseñas.
 
 ### Jueves 25 de junio
 
