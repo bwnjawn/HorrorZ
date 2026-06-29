@@ -3,7 +3,8 @@ import api from '../api/axios';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null,
+    // Intentamos leer el usuario guardado, si no existe, es null
+    user: JSON.parse(localStorage.getItem('horrorz_user')) || null,
     error: null,
   }),
 
@@ -15,17 +16,17 @@ export const useAuthStore = defineStore('auth', {
     async login(username, password) {
       try {
         this.error = null;
-        // Hacemos la petición a la ruta que creaste en authRoutes.js
         const response = await api.post('/auth/login', { username, password });
 
-        // Guardamos el usuario en el estado global
         this.user = response.data.user;
+        // Guardar sesión en el navegador
+        localStorage.setItem('horrorz_user', JSON.stringify(this.user));
 
-        return true; // Login exitoso
+        return true;
       } catch (err) {
         this.error = err.response?.data?.message || 'Error al iniciar sesión';
 
-        return false; // Login fallido
+        return false;
       }
     },
 
@@ -35,6 +36,8 @@ export const useAuthStore = defineStore('auth', {
         const response = await api.post('/auth/register', { username, password });
 
         this.user = response.data.user;
+        // Guardar sesión en el navegador
+        localStorage.setItem('horrorz_user', JSON.stringify(this.user));
 
         return true;
       } catch (err) {
@@ -47,7 +50,7 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       this.user = null;
       this.error = null;
-      // Opcional: Aquí podrías hacer una petición al backend para destruir la cookie
+      localStorage.removeItem('horrorz_user');
     },
   },
 });

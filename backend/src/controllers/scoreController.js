@@ -4,14 +4,26 @@ export const saveScore = async (req, res) => {
   try {
     const { survivalTime, maxHordeSize, victimsCount } = req.body;
 
+    // 1. Guardamos el nuevo puntaje
     const newScore = await Score.create({
-      userId: req.user.id, // Viene inyectado por el authMiddleware
+      userId: req.user.id,
       survivalTime,
       maxHordeSize,
       victimsCount,
     });
 
-    res.status(201).json({ message: 'Puntaje guardado exitosamente', score: newScore });
+    // 2. Calculamos la posición exacta (Ranking) de ESTA partida
+    const higherScoresCount = await Score.countDocuments({
+      $or: [{ survivalTime: { $gt: survivalTime } }, { survivalTime: survivalTime, maxHordeSize: { $gt: maxHordeSize } }],
+    });
+
+    const currentRank = higherScoresCount + 1;
+
+    res.status(201).json({
+      message: 'Puntaje guardado exitosamente',
+      score: newScore,
+      rank: currentRank,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error al guardar el puntaje', error: error.message });
   }
@@ -20,20 +32,38 @@ export const saveScore = async (req, res) => {
 // Obtener el Leaderboard (Top 10)
 export const getLeaderboard = async (req, res) => {
   try {
-    const leaderboard = await Score.find().sort({ survivalTime: -1, maxHordeSize: -1 }).limit(10).populate('userId', 'username');
+    const leaderboard = await Score.aggregate([
+      // 1. Agrupar por userId y encontrar el mejor puntaje (priorizando tiempo y luego horda)
+      {
+        $group: {
+          _id: '$userId',
+          bestScore: { $max: '$survivalTime' },
+          maxHorde: { $max: '$maxHordeSize' },
+          doc: { $first: '$$ROOT' },
+        },
+      },
+      // 2. Ordenar
+      { $sort: { bestScore: -1, maxHorde: -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'userDetails',
+        },
+      },
+    ]);
 
-    // Mapeamos los datos para entregar un JSON más limpio al frontend
+    // Formatear para el frontend
     const formattedLeaderboard = leaderboard.map((entry) => ({
-      id: entry._id,
-      username: entry.userId ? entry.userId.username : 'Jugador Desconocido',
-      survivalTime: entry.survivalTime,
-      maxHordeSize: entry.maxHordeSize,
-      victimsCount: entry.victimsCount,
-      datePlayed: entry.datePlayed,
+      username: entry.userDetails[0]?.username || 'Jugador Desconocido',
+      survivalTime: entry.bestScore,
+      maxHordeSize: entry.maxHorde,
     }));
 
-    res.status(200).json(formattedLeaderboard);
+    res.json(formattedLeaderboard);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el leaderboard', error: error.message });
+    res.status(500).json({ message: 'Error al obtener el ranking', error: error.message });
   }
 };

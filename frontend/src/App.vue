@@ -57,35 +57,48 @@ onUnmounted(() => {
 });
 
 watch(
-  // Si el usuario sale al menú principal desde la pausa, destruimos/reiniciamos la escena
   () => store.currentView,
   (newView, oldView) => {
-    if (gameInstance) {
-      if (oldView === 'paused' && newView === 'title') {
-        gameInstance.scene.stop('MainScene');
+    if (!gameInstance) return;
+
+    // 1. Control del Teclado y Foco de Phaser
+    const isMenu = ['title', 'auth', 'leaderboard', 'charSelect', 'gameOver'].includes(newView);
+
+    gameInstance.input.keyboard.enabled = !isMenu;
+
+    if (newView === 'playing') {
+      // Quitamos el foco de los botones HTML
+      if (document.activeElement) {
+        document.activeElement.blur();
       }
 
-      if (oldView === 'gameOver' && (newView === 'title' || newView === 'charSelect')) {
-        gameInstance.scene.stop('MainScene');
-        gameInstance.scene.start('MainScene');
+      // Devolvemos el foco a la ventana y al Canvas del juego
+      window.focus();
+
+      if (gameInstance.canvas) {
+        gameInstance.canvas.focus();
+      }
+
+      // Destrabamos las teclas directamente desde la escena (CORREGIDO)
+      const mainScene = gameInstance.scene.getScene('MainScene');
+
+      if (mainScene && mainScene.input && mainScene.input.keyboard) {
+        mainScene.input.keyboard.resetKeys();
       }
     }
-  }
-);
 
-watch(
-  () => store.currentView,
-  (newView) => {
-    if (gameInstance) {
-      // Si estamos en menús, deshabilitamos el teclado de Phaser
-      const isMenu = ['title', 'auth', 'leaderboard', 'charSelect', 'gameOver'].includes(newView);
+    // 2. Control del ciclo de vida de las escenas de Phaser
+    if (oldView === 'paused' && newView === 'title') {
+      gameInstance.scene.stop('MainScene');
+    }
 
-      gameInstance.input.keyboard.enabled = !isMenu;
+    if (oldView === 'gameOver' && (newView === 'title' || newView === 'charSelect')) {
+      gameInstance.scene.stop('MainScene');
+      gameInstance.scene.start('MainScene');
+    }
 
-      // Lógica de control de escenas que ya tenías...
-      if (newView === 'title' && gameInstance.scene.isActive('MainScene')) {
-        gameInstance.scene.stop('MainScene');
-      }
+    if (newView === 'title' && gameInstance.scene.isActive('MainScene') && oldView !== 'gameOver') {
+      gameInstance.scene.stop('MainScene');
     }
   }
 );

@@ -145,7 +145,7 @@
 - [x] Crear las vistas de Login y Registro en el frontend (Vue.js) y conectarlas con la API.
 - [x] Crear la vista de Ranking/Leaderboard en Vue.js para mostrar los mejores puntajes.
 - [x] Integrar el frontend y backend para guardar automáticamente la partida (tiempo y horda) al llegar a la pantalla de muerte.
-- [ ] Crear llamada a RandomUser API y crear la visual final.
+- [x] Crear llamada a RandomUser API y crear la visual final.
 ---
 
 ## Semana 3: Integración de API externa, pruebas, Docker y CI/CD.

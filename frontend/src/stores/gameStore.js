@@ -6,7 +6,7 @@ let menuAudio = null;
 export const useGameStore = defineStore('game', {
   state: () => ({
     // ── FLUJO DE PANTALLAS ─────────────────────────────────────────────
-    currentView: 'auth',
+    currentView: localStorage.getItem('horrorz_user') ? 'title' : 'auth',
     isGameStarted: false,
     isPaused: false,
 
@@ -68,7 +68,7 @@ export const useGameStore = defineStore('game', {
       if (!menuAudio) {
         menuAudio = new Audio('assets/audio/music-mainmenu.mp3');
         menuAudio.loop = true;
-        menuAudio.volume = 0.4; // Ajusta el volumen inicial aquí
+        menuAudio.volume = 0.4;
       }
 
       if (menuAudio.paused) {

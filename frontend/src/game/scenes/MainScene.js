@@ -132,128 +132,19 @@ export class MainScene extends Phaser.Scene {
     this.load.audio('snd_alarm', 'assets/audio/alarm.mp3');
     this.load.audio('snd_alarm2', 'assets/audio/alarm2.mp3');
     this.load.audio('snd_atmospheric', 'assets/audio/atmospheric-music.mp3');
-    this.load.on('filecomplete', (key) => {
-      console.log('✅ Archivo cargado:', key);
-    });
-
-    this.load.on('loaderror', (file) => {
-      console.error('❌ Error cargando:', file.key);
-    });
   }
 
   create() {
     this.player = null;
     this.iniciarStore();
-
-    //Para verificar si el audio esta funcionando
-    console.log('===== AUDIO DEBUG =====');
-
-    console.log('snd_shoot:', this.cache.audio.exists('snd_shoot'));
-
-    console.log('snd_atack_zombie:', this.cache.audio.exists('snd_atack_zombie'));
-
-    console.log('snd_zombie_scream:', this.cache.audio.exists('snd_zombie_scream'));
-
-    console.log('snd_zombie_moan:', this.cache.audio.exists('snd_zombie_moan'));
-
-    console.log('Sound Manager:', this.sound);
-
-    console.log('Mute:', this.sound.mute);
-    console.log('Volume:', this.sound.volume);
-
-    if (this.sound.context) {
-      console.log('Audio Context:', this.sound.context.state);
-    }
-
-    // ==========================================
-    // CREACIÓN DE SONIDOS
-    // ==========================================
-
-    this.soundDisparo = this.sound.add('snd_shoot', {
-      volume: 0.5,
-    });
-
-    this.soundZombieAtaque = this.sound.add('snd_atack_zombie', {
-      volume: 0.6,
-    });
-
-    this.soundZombieGrito = this.sound.add('snd_zombie_scream', {
-      volume: 0.5,
-    });
-
-    this.soundZombieGemido = this.sound.add('snd_zombie_moan', {
-      volume: 0.3,
-    });
-    this.soundExplosionKamikaze = this.sound.add('snd_kamikaze_explosion', {
-      volume: 0.85,
-    });
-    this.soundAtmospheric = this.sound.add('snd_atmospheric', {
-      volume: 0.25,
-      loop: true,
-    });
-    this.soundAtmospheric.play();
-
-    this.sound.volume = 1;
-    this.sound.mute = false;
-
-    this.soundScreams = [
-      this.sound.add('snd_screaming_1', { volume: 0.7 }),
-      this.sound.add('snd_screaming_2', { volume: 0.7 }),
-      this.sound.add('snd_screaming_3', { volume: 0.7 }),
-    ];
-    this.soundHorda = this.sound.add('snd_horda', { volume: 0, loop: true });
-    this.soundTerror = this.sound.add('snd_terror', { volume: 0.5 });
-    this.soundAlarm = this.sound.add('snd_alarm', { volume: 0.25 });
-    this.soundAlarm2 = this.sound.add('snd_alarm2', { volume: 0.6 });
-    this.primeraAlarmaActivada = false;
-    this.isHordaSoundActive = false;
-    this.iniciarAmbienteTerror();
-
-    // ==========================================
-    // DESBLOQUEO DEL AUDIO
-    // ==========================================
-
-    this.input.once('pointerdown', () => {
-      console.log('CLICK DETECTADO');
-
-      if (this.sound.context) {
-        console.log('Estado antes:', this.sound.context.state);
-
-        this.sound.context.resume();
-
-        console.log('Estado después:', this.sound.context.state);
-      }
-
-      console.log('Reproduciendo sonido de prueba');
-
-      this.sound.play('snd_shoot');
-    });
-
-    // ==========================================
-    // RESTO DEL JUEGO
-    // ==========================================
-
+    this.crearSonidos();
     this.crearAnimaciones();
-    this.crearEntorno(); // Aquí se crea this.map
+    this.crearEntorno();
     this.crearGrupos();
     this.crearObstaculos();
     this.configurarColisionesGrupales();
     this.configurarEventos();
     this.configurarJugador();
-
-    const reproducirGemidoAleatorio = () => {
-      if (this.hordeGroup && this.hordeGroup.getTotalUsed() > 0 && !this.store.isGameOver) {
-        if (this.soundZombieGemido && !this.soundZombieGemido.isPlaying) {
-          console.log('🔊 La horda emitió un gemido ambiental');
-
-          this.soundZombieGemido.play();
-        }
-      }
-
-      this.time.delayedCall(Phaser.Math.Between(4000, 8000), reproducirGemidoAleatorio);
-    };
-
-    this.time.delayedCall(3000, reproducirGemidoAleatorio);
   }
 
   iniciarAmbienteTerror() {
@@ -295,8 +186,6 @@ export class MainScene extends Phaser.Scene {
       // CASO 1: Reinicio desde la pantalla de Game Over (El jugador estaba muerto)
       if (!state.isGameOver && this.player && this.player.isDead) {
         unsubscribe();
-        this.scene.resume();
-        this.scene.restart();
       }
 
       // CASO 2: Reinicio desde el menú de Pausa (El jugador está vivo y salimos al menú principal)
@@ -306,8 +195,70 @@ export class MainScene extends Phaser.Scene {
         this.scene.restart(); // Reiniciamos el mapa para que quede limpio
       }
     });
+
+    this.events.once('shutdown', () => {
+      unsubscribe();
+    });
   }
 
+  crearSonidos() {
+    this.soundDisparo = this.sound.add('snd_shoot', {
+      volume: 0.5,
+    });
+
+    this.soundZombieAtaque = this.sound.add('snd_atack_zombie', {
+      volume: 0.6,
+    });
+
+    this.soundZombieGrito = this.sound.add('snd_zombie_scream', {
+      volume: 0.5,
+    });
+
+    this.soundZombieGemido = this.sound.add('snd_zombie_moan', {
+      volume: 0.3,
+    });
+    this.soundExplosionKamikaze = this.sound.add('snd_kamikaze_explosion', {
+      volume: 0.85,
+    });
+    this.soundAtmospheric = this.sound.add('snd_atmospheric', {
+      volume: 0.25,
+      loop: true,
+    });
+    this.soundAtmospheric.play();
+
+    this.sound.volume = 1;
+    this.sound.mute = false;
+
+    this.soundScreams = [
+      this.sound.add('snd_screaming_1', { volume: 0.7 }),
+      this.sound.add('snd_screaming_2', { volume: 0.7 }),
+      this.sound.add('snd_screaming_3', { volume: 0.7 }),
+    ];
+    this.soundHorda = this.sound.add('snd_horda', { volume: 0, loop: true });
+    this.soundTerror = this.sound.add('snd_terror', { volume: 0.5 });
+    this.soundAlarm = this.sound.add('snd_alarm', { volume: 0.25 });
+    this.soundAlarm2 = this.sound.add('snd_alarm2', { volume: 0.6 });
+    this.primeraAlarmaActivada = false;
+    this.isHordaSoundActive = false;
+    this.iniciarAmbienteTerror();
+
+    this.input.once('pointerdown', () => {
+      if (this.sound.context) {
+        this.sound.context.resume();
+      }
+    });
+
+    const reproducirGemidoAleatorio = () => {
+      if (this.hordeGroup && this.hordeGroup.getTotalUsed() > 0 && !this.store.isGameOver) {
+        if (this.soundZombieGemido && !this.soundZombieGemido.isPlaying) {
+          this.soundZombieGemido.play();
+        }
+      }
+      this.time.delayedCall(Phaser.Math.Between(4000, 8000), reproducirGemidoAleatorio);
+    };
+
+    this.time.delayedCall(3000, reproducirGemidoAleatorio);
+  }
   crearAnimaciones() {
     if (this.anims.exists('melee-move')) return;
     const framesMoveKnife = [];
@@ -631,7 +582,6 @@ export class MainScene extends Phaser.Scene {
         zombieObj.ejecutarAtaque();
 
         if (this.soundZombieAtaque && !this.soundZombieAtaque.isPlaying) {
-          console.log('💥 ¡Sonido de ataque zombie ejecutado!');
           this.soundZombieAtaque.play();
         }
 
@@ -695,7 +645,6 @@ export class MainScene extends Phaser.Scene {
       this.physics.velocityFromRotation(data.angulo, 600, bala.body.velocity);
 
       if (this.soundDisparo) {
-        console.log('🔫 ¡Sonido de disparo ejecutado!');
         this.soundDisparo.play();
       }
 
@@ -878,16 +827,21 @@ export class MainScene extends Phaser.Scene {
     };
 
     if (this.store.isGameStarted) {
-      instanciarJugador(this.store.selectedZombie);
       this.scene.resume();
+      instanciarJugador(this.store.selectedZombie);
     } else {
       this.scene.pause();
+
       const unsubscribe = this.store.$subscribe((mutation, state) => {
         if (state.isGameStarted && !this.player) {
-          instanciarJugador(state.selectedZombie);
           this.scene.resume();
+          instanciarJugador(state.selectedZombie);
           unsubscribe();
         }
+      });
+
+      this.events.once('shutdown', () => {
+        if (unsubscribe) unsubscribe();
       });
     }
   }
@@ -931,6 +885,14 @@ export class MainScene extends Phaser.Scene {
   }
 
   update(time, delta) {
+    if (!this.physics || !this.physics.world || this.sys.isProcessingDestroy) {
+      return;
+    }
+
+    if (!this.hordeGroup || !this.enemiesGroup) {
+      return;
+    }
+
     if (this.playerLight && this.player) {
       this.playerLight.x = this.player.x;
       this.playerLight.y = this.player.y;

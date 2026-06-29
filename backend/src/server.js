@@ -5,6 +5,7 @@ import connectDB from './config/db.js';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import scoreRoutes from './routes/scoreRoutes.js';
+import victimRoutes from './routes/victimRoutes.js';
 
 dotenv.config();
 
@@ -26,7 +27,7 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
   res.json({ message: 'API de HorrorZ operativa' });
 });
-
+app.use('/api/victims', victimRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/scores', scoreRoutes);
 

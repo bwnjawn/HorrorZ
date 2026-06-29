@@ -53,6 +53,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     store.setPlayerMaxStamina(this.maxStamina);
     store.setPlayerStamina(this.stamina);
 
+    scene.input.keyboard.removeAllKeys(true);
+    scene.input.off('pointerdown');
+    scene.input.off('pointerup');
+    scene.input.keyboard.off('keydown-Q');
+
     // CONTROLES
     this.keys = scene.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -272,8 +277,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   update(time, delta) {
-    if (this.isDead) return;
-
+    if (this.isDead || !this.body) return;
     this.uiRing.clear();
     this.uiRing.fillStyle(0x610706, 0.9); // Color verde/celeste neón llamativo
 
