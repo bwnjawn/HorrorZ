@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
+import scoreRoutes from './routes/scoreRoutes.js';
 
 dotenv.config();
 
@@ -27,6 +28,8 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/scores', scoreRoutes);
+
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {

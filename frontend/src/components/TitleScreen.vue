@@ -1,25 +1,35 @@
 <template>
   <TerrorLayout>
-    <!-- PANTALLA PRINCIPAL -->
+    <div class="auth-corner">
+      <div v-if="!authStore.isAuthenticated">
+        <button class="auth-btn" @click="store.goToAuth()"><span class="auth-icon"></span> INICIAR SESIÓN</button>
+      </div>
+      <div v-else class="user-profile">
+        <span class="username">{{ authStore.user?.username }}</span>
+        <button class="logout-btn" @click="authStore.logout()" title="Cerrar Sesión">SALIR</button>
+      </div>
+    </div>
+
     <div v-if="currentView === 'title'" class="content">
-      <!-- Logo -->
       <div class="logo-wrapper">
         <p class="pre-title">— SOBREVIVE O CONTAGIA —</p>
         <h1 class="game-title"><span class="horror">HORROR</span><span class="z">Z</span></h1>
         <div class="title-underline"></div>
       </div>
 
-      <!-- Tagline -->
       <p class="tagline">
         Lidera la horda. Infecta la ciudad.<br />
         <span class="tagline-accent">No dejes que te detengan.</span>
       </p>
 
-      <!-- Grupo de Botones -->
       <div class="button-group">
         <button class="btn-start" @click="store.goToCharSelect()">
           <span class="btn-text">COMENZAR</span>
           <span class="btn-arrow">▶</span>
+        </button>
+
+        <button class="btn-controls" @click="store.goToLeaderboard()">
+          <span class="btn-text">RANKING GLOBAL</span>
         </button>
 
         <button class="btn-controls" @click="currentView = 'controls'">
@@ -29,18 +39,19 @@
       </div>
     </div>
 
-    <!-- PANTALLA DE CONTROLES -->
     <ControlsScreen v-else-if="currentView === 'controls'" @back="currentView = 'title'" />
   </TerrorLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'; // NUEVO: Importar ganchos
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useGameStore } from '../stores/gameStore';
+import { useAuthStore } from '../stores/authStore';
 import TerrorLayout from './TerrorLayout.vue';
 import ControlsScreen from './ControlsScreen.vue';
 
 const store = useGameStore();
+const authStore = useAuthStore();
 const currentView = ref('title');
 
 const activarMusicaAmbiental = () => {
@@ -61,6 +72,69 @@ onUnmounted(() => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap');
+
+/* ── ESQUINA DE USUARIO ──────────────────────────────────────── */
+.auth-corner {
+  position: absolute;
+  top: 25px;
+  right: 35px;
+  z-index: 100;
+  animation: fadeIn 1s ease-out;
+}
+
+.auth-btn {
+  background: rgba(20, 0, 0, 0.8);
+  border: 1px solid #8b0000;
+  color: #ff4444;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+}
+
+.auth-btn:hover {
+  background: #8b0000;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(200, 0, 0, 0.6);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(10, 0, 0, 0.8);
+  border: 1px solid #440000;
+  padding: 6px 12px;
+}
+
+.username {
+  color: #ff4444;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1rem;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  font-family: 'Bebas Neue', sans-serif;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #ff4444;
+  color: #000;
+  box-shadow: 0 0 10px #ff4444;
+}
 
 /* ── CONTENIDO CENTRAL ──────────────────────────────────────── */
 .content {
@@ -162,21 +236,21 @@ onUnmounted(() => {
   font-size: 1rem;
 }
 
-/* ── BOTONES ────────────────────────────────────────────────── */
+/* ── BOTONES PRINCIPALES ────────────────────────────────────── */
 .button-group {
   display: flex;
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  max-width: 250px;
+  max-width: 280px;
 }
 
 .btn-start,
 .btn-controls {
   position: relative;
-  background: transparent;
+  background: rgba(10, 0, 0, 0.6);
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   letter-spacing: 0.2em;
   padding: 14px 0;
   cursor: pointer;

@@ -6,8 +6,7 @@ let menuAudio = null;
 export const useGameStore = defineStore('game', {
   state: () => ({
     // ── FLUJO DE PANTALLAS ─────────────────────────────────────────────
-    // 'title' → 'charSelect' → 'playing' → 'gameOver'
-    currentView: 'title',
+    currentView: 'auth',
     isGameStarted: false,
     isPaused: false,
 
@@ -53,9 +52,18 @@ export const useGameStore = defineStore('game', {
       this.currentView = 'charSelect';
     },
 
+    goToAuth() {
+      this.currentView = 'auth';
+    },
+
+    goToLeaderboard() {
+      this.currentView = 'leaderboard';
+    },
+
     goToTitle() {
       this.currentView = 'title';
     },
+
     playMenuMusic() {
       if (!menuAudio) {
         menuAudio = new Audio('assets/audio/music-mainmenu.mp3');

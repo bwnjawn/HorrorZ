@@ -4,7 +4,9 @@ import TitleScreen from './components/TitleScreen.vue';
 import MainMenu from './components/MainMenu.vue';
 import ScoreScreen from './components/ScoreScreen.vue';
 import HudOverlay from './components/HudOverlay.vue';
-import PauseMenu from './components/PauseMenu.vue'; // <-- 1. Importar el menú nuevo
+import PauseMenu from './components/PauseMenu.vue';
+import AuthScreen from './components/AuthScreen.vue';
+import LeaderboardScreen from './components/LeaderboardScreen.vue';
 import { onMounted, onUnmounted, watch } from 'vue';
 import Phaser from 'phaser';
 import { gameConfig } from './game/config';
@@ -70,12 +72,34 @@ watch(
     }
   }
 );
+
+watch(
+  () => store.currentView,
+  (newView) => {
+    if (gameInstance) {
+      // Si estamos en menús, deshabilitamos el teclado de Phaser
+      const isMenu = ['title', 'auth', 'leaderboard', 'charSelect', 'gameOver'].includes(newView);
+
+      gameInstance.input.keyboard.enabled = !isMenu;
+
+      // Lógica de control de escenas que ya tenías...
+      if (newView === 'title' && gameInstance.scene.isActive('MainScene')) {
+        gameInstance.scene.stop('MainScene');
+      }
+    }
+  }
+);
 </script>
 
 <template>
   <div id="app">
     <TitleScreen v-if="store.currentView === 'title'" />
+
     <MainMenu v-if="store.currentView === 'charSelect'" />
+
+    <AuthScreen v-if="store.currentView === 'auth'" />
+
+    <LeaderboardScreen v-if="store.currentView === 'leaderboard'" />
 
     <div id="game-container"></div>
 

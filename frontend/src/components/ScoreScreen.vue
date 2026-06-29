@@ -79,13 +79,32 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useGameStore } from '../stores/gameStore';
+import { useAuthStore } from '../stores/authStore';
+import api from '../api/axios';
 
 const store = useGameStore();
+const authStore = useAuthStore();
 
 const finalScore = computed(() => {
   return store.totalInfected * 100 + store.timeAlive * 10 + store.maxHordeSize * 50;
+});
+
+onMounted(async () => {
+  // Solo intentamos guardar si el jugador inició sesión
+  if (authStore.isAuthenticated) {
+    try {
+      await api.post('/scores', {
+        survivalTime: store.timeAlive,
+        maxHordeSize: store.maxHordeSize,
+        victimsCount: store.totalInfected,
+      });
+      console.log('¡Puntaje guardado exitosamente en el Leaderboard!');
+    } catch (error) {
+      console.error('No se pudo guardar el puntaje:', error);
+    }
+  }
 });
 
 function retryGame() {
