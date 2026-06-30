@@ -1,10 +1,21 @@
 import { setActivePinia, createPinia } from 'pinia';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGameStore } from '../stores/gameStore';
 
 describe('Game Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    const storeMock = {};
+
+    global.localStorage = {
+      getItem: vi.fn((key) => storeMock[key] || null),
+      setItem: vi.fn((key, value) => {
+        storeMock[key] = value.toString();
+      }),
+      clear: vi.fn(() => {
+        for (const k in storeMock) delete storeMock[k];
+      }),
+    };
   });
 
   it('debería restar vida correctamente sin bajar de 0', () => {

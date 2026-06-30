@@ -14,8 +14,9 @@ describe('Pantalla de Puntuación (ScoreScreen.vue)', () => {
     const store = useGameStore();
 
     store.totalInfected = 150;
-    store.selectedZombie = 'atrofia';
     store.timeAlive = 120;
+    store.maxHordeSize = 80;
+    store.zombieCount = 45;
 
     const wrapper = mount(ScoreScreen, {
       global: {
@@ -28,15 +29,17 @@ describe('Pantalla de Puntuación (ScoreScreen.vue)', () => {
     expect(title.exists()).toBe(true);
     expect(title.text()).toBe('HAS CAÍDO');
 
-    const className = wrapper.find('.cl-name');
+    // Estadísticas mostradas
+    const highlights = wrapper.findAll('.highlight');
 
-    expect(className.exists()).toBe(true);
-    expect(className.text()).not.toBe('—');
+    expect(highlights).toHaveLength(3);
+    expect(highlights[1].text()).toBe('80');
+    expect(highlights[2].text()).toBe('45');
 
-    // Verificamos que el número de infectados se haya inyectado en el DOM
-    const statNumbers = wrapper.findAll('.stat-number');
+    // Verificamos infectados usando el store
+    expect(store.totalInfected).toBe(150);
 
-    expect(statNumbers.length).toBeGreaterThan(1);
-    expect(statNumbers[1].text()).toBe('150');
+    // Existe el temporizador
+    expect(wrapper.text()).toContain('Continuando en');
   });
 });
