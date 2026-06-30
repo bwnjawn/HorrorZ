@@ -97,7 +97,6 @@ export class Invocador extends Player {
             civil.infectar();
             this.scene.civiliansGroup.remove(civil);
             this.scene.hordeGroup.add(civil);
-            this.scene.store.infectCivilian();
 
             if (this.onInfectarCivil) this.onInfectarCivil();
 

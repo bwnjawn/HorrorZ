@@ -14,9 +14,6 @@
           Tiempo Sobrevivido: <span class="highlight">{{ store.formattedTime }}</span>
         </p>
         <p>
-          Civiles Infectados: <span class="highlight">{{ store.totalInfected }}</span>
-        </p>
-        <p>
           Pico Máximo de la Horda: <span class="highlight">{{ store.maxHordeSize }}</span>
         </p>
         <p>
@@ -183,10 +180,7 @@ const volverAlInicio = () => {
 
   const gameStore = useGameStore();
 
-  gameStore.isGameOver = false;
-  gameStore.isGameStarted = false;
-
-  gameStore.goToTitle();
+  gameStore.resetGame();
 };
 
 onMounted(() => {

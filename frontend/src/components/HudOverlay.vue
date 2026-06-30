@@ -13,14 +13,21 @@
       </div>
     </div>
 
+    <!-- PANEL TÁCTICO REDISEÑADO -->
     <div class="hud-top-right tactical-panel">
-      <div class="info-row">
-        <img src="/assets/ui/clock.png" alt="Reloj" class="icon icon-inverted" />
+      <!-- Fila del Reloj -->
+      <div class="info-row time-row">
+        <img src="/assets/ui/clock.png" alt="Reloj" class="icon" />
         <span class="modern-text">{{ formattedTime }}</span>
       </div>
-      <div class="info-row">
-        <img src="/assets/ui/craneo.png" alt="Calavera" class="icon icon-inverted" />
-        <span class="modern-text">{{ store.zombieCount }} / {{ store.civilianCount }}</span>
+
+      <!-- Fila de la Horda (Actual y Máxima) -->
+      <div class="horde-stats-grid">
+        <img src="/assets/ui/craneo.png" alt="Calavera" class="icon-skull" />
+        <div class="horde-numbers">
+          <span class="modern-text current-horde">{{ store.zombieCount }}</span>
+          <span class="max-label">MÁX: {{ store.maxHordeSize }}</span>
+        </div>
       </div>
     </div>
 
@@ -188,7 +195,7 @@ const skillStatusText = computed(() => {
 
 /* --- PANEL MODERNO (DERECHA Y ABAJO) --- */
 .tactical-panel {
-  background-color: rgba(10, 10, 10, 0.6); /* Fondo semitransparente más limpio */
+  background-color: rgba(148, 146, 146, 0.288); /* Fondo semitransparente más limpio */
   backdrop-filter: blur(5px); /* Efecto de vidrio moderno */
   border-radius: 8px;
   padding: 12px 18px;
@@ -197,8 +204,7 @@ const skillStatusText = computed(() => {
   gap: 12px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
-
-.info-row {
+dw .info-row {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -219,6 +225,47 @@ const skillStatusText = computed(() => {
   font-weight: 600;
   letter-spacing: 1px;
   margin-left: 10px;
+}
+/* --- NUEVO ESTILO DE LA HORDA --- */
+.horde-stats-grid {
+  display: grid;
+  grid-template-columns: 40px 1fr; /* Columna fija para el ícono, el resto para los números */
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 10px;
+  margin-top: 5px;
+}
+
+.icon-skull {
+  width: 32px;
+  height: 32px;
+  filter: invert(1);
+}
+
+.horde-numbers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinea los números a la izquierda de su columna */
+}
+
+.current-horde {
+  color: #ff3333;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.max-label {
+  font-size: 0.7rem;
+  color: #888;
+  letter-spacing: 1px;
+}
+
+/* Ajuste para el reloj */
+.time-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
 }
 
 /* Indicador de habilidad inferior */

@@ -142,7 +142,6 @@ export class Atrofia extends Player {
         civil.infectar();
         this.scene.civiliansGroup.remove(civil);
         this.scene.hordeGroup.add(civil);
-        this.scene.store.infectCivilian();
 
         this.onInfectarCivil();
 

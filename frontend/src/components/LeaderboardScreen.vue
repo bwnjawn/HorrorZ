@@ -65,7 +65,7 @@ onMounted(async () => {
     const response = await api.get('/scores');
 
     scores.value = response.data;
-  } catch (err) {
+  } catch {
     error.value = 'Error al conectar con la base de datos de infectados.';
   } finally {
     isLoading.value = false;

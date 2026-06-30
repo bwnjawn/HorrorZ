@@ -568,7 +568,7 @@ export class MainScene extends Phaser.Scene {
     this.physics.add.collider(this.civiliansGroup, this.obstaculos);
     this.physics.add.collider(this.hordeGroup, this.obstaculos);
     this.physics.add.collider(this.enemiesGroup, this.obstaculos);
-    this.physics.add.collider(this.bulletsGroup, this.obstaculos, (bala, _obstaculo) => bala.destroy());
+    this.physics.add.collider(this.bulletsGroup, this.obstaculos, (bala) => bala.destroy());
 
     this.physics.add.collider(this.civiliansGroup, this.civiliansGroup);
     this.physics.add.collider(this.hordeGroup, this.hordeGroup);
@@ -590,9 +590,6 @@ export class MainScene extends Phaser.Scene {
 
         this.time.delayedCall(600, () => {
           civilObj.infectar();
-          this.civiliansGroup.remove(civilObj);
-          this.hordeGroup.add(civilObj);
-          this.store.infectCivilian();
           if (this.player && this.player.curar) this.player.curar(15);
         });
       }
@@ -629,7 +626,6 @@ export class MainScene extends Phaser.Scene {
       let nuevoZombie = new Civilian(this, data.x, data.y);
 
       nuevoZombie.infectar();
-      this.hordeGroup.add(nuevoZombie);
       this.allCivilians.push(nuevoZombie);
 
       if (data.healReward && this.player && this.player.curar) {

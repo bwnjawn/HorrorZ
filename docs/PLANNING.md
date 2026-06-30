@@ -152,8 +152,8 @@
 
 ### Lunes 29 de junio
 
-- [ ] Mejorar vistas del frontend.
-- [ ] Corrección de errores
+- [x] Mejorar vistas del frontend.
+- [x] Corrección de errores
 - [ ] Crear pruebas unitarias para los componentes críticos del frontend y los endpoints del backend.
 
 ### Martes 30 de junio

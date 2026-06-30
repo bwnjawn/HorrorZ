@@ -97,6 +97,14 @@ export const useGameStore = defineStore('game', {
     startGame(zombieId) {
       this.selectedZombie = zombieId;
       this.stopMenuMusic();
+      this.isGameOver = false;
+      this.zombieCount = 0;
+      this.civilianCount = 0;
+      this.timeAlive = 0;
+      this.totalInfected = 0;
+      this.maxHordeSize = 0;
+      this.isRegrouping = false;
+      this.regroupCooldown = 0;
       // Sincronizar vida máxima con el personaje elegido
       const config = Object.values(PLAYER_TYPES).find((p) => p.id === zombieId);
 
@@ -121,6 +129,15 @@ export const useGameStore = defineStore('game', {
     quitToMenu() {
       this.isPaused = false;
       this.isGameStarted = false;
+      this.isGameOver = false;
+      this.selectedZombie = null;
+      this.zombieCount = 0;
+      this.civilianCount = 0;
+      this.timeAlive = 0;
+      this.totalInfected = 0;
+      this.maxHordeSize = 0;
+      this.playerHealth = 200;
+
       this.currentView = 'title'; // Te manda de vuelta a la pantalla de título
     },
 
@@ -177,6 +194,11 @@ export const useGameStore = defineStore('game', {
 
       if (this.zombieCount > this.maxHordeSize) {
         this.maxHordeSize = this.zombieCount;
+      }
+    },
+    removeZombie() {
+      if (this.zombieCount > 0) {
+        this.zombieCount--;
       }
     },
 

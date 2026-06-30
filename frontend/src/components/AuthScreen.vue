@@ -60,7 +60,7 @@ const toggleMode = () => {
 
 const handleSubmit = async () => {
   isLoading.value = true;
-  let success = false;
+  let success;
 
   if (isLogin.value) {
     success = await authStore.login(username.value, password.value);

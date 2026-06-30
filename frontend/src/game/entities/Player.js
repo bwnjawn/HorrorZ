@@ -259,9 +259,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
               if (Math.abs(diferenciaAngulo) <= conoDeVision) {
                 civilObj.infectar();
-                this.scene.civiliansGroup.remove(civilObj);
-                this.scene.hordeGroup.add(civilObj);
-                useGameStore().infectCivilian();
                 if (this.onInfectarCivil) this.onInfectarCivil();
                 if (this.curar) this.curar(15);
               }

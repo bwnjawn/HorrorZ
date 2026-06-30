@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { useGameStore } from '../../stores/gameStore';
 
 export class Civilian extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y) {
@@ -42,6 +43,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     scene.events.on('comandante-libre', () => {
       if (this.isInfected && !this.isDead) this.estadoHorda = 'LIBRE';
     });
+    this.store = useGameStore();
   }
 
   desactivar() {
@@ -78,9 +80,6 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     if (this.health <= 0) {
       if (!this.isInfected) {
         this.infectar();
-        this.scene.civiliansGroup.remove(this);
-        this.scene.hordeGroup.add(this);
-        if (this.scene.store) this.scene.store.infectCivilian();
       } else {
         this.morirDefinitivamente();
       }
@@ -112,6 +111,7 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     // 5. ESCUCHADOR: Cuando la animación termine por completo, removemos el objeto del juego
     this.once('animationcomplete-zombie-death-anim', () => {
       this.destroy();
+      this.store.removeZombie();
     });
   }
 
@@ -120,6 +120,10 @@ export class Civilian extends Phaser.Physics.Arcade.Sprite {
     this.isInfected = true;
     this.isResurrecting = true;
     this.health = 50;
+
+    this.scene.civiliansGroup.remove(this);
+    this.scene.hordeGroup.add(this);
+    this.store.infectCivilian();
 
     if (this.scene.soundScreams && this.scene.soundScreams.length > 0) {
       const randomScream = Phaser.Utils.Array.GetRandom(this.scene.soundScreams);
