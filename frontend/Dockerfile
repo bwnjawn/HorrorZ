@@ -1,5 +1,5 @@
 
-FROM node:20.19.0-alpine AS build-stage
+FROM node:24-alpine AS build-stage
 
 RUN npm install -g pnpm@10.33.3
 
@@ -18,7 +18,7 @@ WORKDIR /app/frontend
 RUN pnpm run build
 
 
-FROM nginx:1.25.4-alpine AS production-stage
+FROM nginx:1.30-alpine AS production-stage
 
 COPY --from=build-stage /app/frontend/dist /usr/share/nginx/html
 
