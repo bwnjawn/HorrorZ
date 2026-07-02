@@ -1,12 +1,12 @@
 # 1. Mockups
 
-- **Pantalla de inicio:** Posee las opciones iniciales que aparecen al abrir el juego. ![Inicio](<MOCKUPS/pantalla de inicio.png>)
+- **Pantalla de inicio:** Posee las opciones iniciales que aparecen al abrir el juego. ![Inicio](<./mockups/pantalla de inicio.png>)
 - **Pantalla de Autenticación (NUEVO):** Interfaz para Login y Registro de usuarios para guardar el progreso.
-- **Selector de personaje:** Interfaz para elegir el tipo de líder antes de comenzar. ![Selector](<MOCKUPS/Seleccion de personaje.png>)
-- **Imagen referencial del juego:** Representación visual del entorno urbano y la horda. ![Gameplay](MOCKUPS/gameplay.png)
+- **Selector de personaje:** Interfaz para elegir el tipo de líder antes de comenzar. ![Selector](<./mockups/Seleccion de personaje.png>)
+- **Imagen referencial del juego:** Representación visual del entorno urbano y la horda. ![Gameplay](./mockups/gameplay.png)
 - **Leaderboard / Ranking (NUEVO):** Pantalla que muestra los mejores puntajes globales de todos los jugadores conectados.
 - **Pantalla de Game Over:** Resumen de estadísticas finales del jugador y tributo post-créditos de las víctimas.
-  ![Game Over](<MOCKUPS/Pantalla de muerte.png>)
+  ![Game Over](<./mockups/Pantalla de muerte.png>)
 
 # 2. Descripción del juego y Nuevas Mecánicas
 
