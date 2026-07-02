@@ -107,7 +107,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.uiRing = scene.add.graphics();
     this.uiRing.setDepth(10);
-    this.visionLight = scene.lights.addLight(x, y, 500, 0xfffdeb, 0.35);
+    this.visionLight = scene.lights.addLight(x, y, 500, 0x8ba6c1, 0.5);
   }
 
   ajustarHitbox(radio, offsetX, offsetY) {
@@ -180,7 +180,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
       return true;
     }
-    console.log(`Habilidad en enfriamiento. Faltan ${((this.abilityCooldown - (currentTime - this.lastAbilityTime)) / 1000).toFixed(1)}s`);
 
     return false;
   }
@@ -269,9 +268,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  usarHabilidadEspecial() {
-    console.log('Este zombi no tiene habilidad especial definida o es el zombi base.');
-  }
+  usarHabilidadEspecial() {}
 
   update(time, delta) {
     if (this.isDead || !this.body) return;

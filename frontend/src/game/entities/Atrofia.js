@@ -17,8 +17,6 @@ export class Atrofia extends Player {
   }
 
   onInfectarCivil() {
-    console.log('¡Adrenalina Zombi activada!');
-
     this.stamina += this.maxStamina * 0.2;
 
     if (this.stamina > this.maxStamina) {
@@ -42,7 +40,6 @@ export class Atrofia extends Player {
   usarHabilidadEspecial() {
     if (this.isDead || this.isJumping || !this.puedeUsarHabilidad()) return;
 
-    console.log('¡La Atrofia usa SALTO DEPREDADOR!');
     this.isJumping = true;
     this.isAttacking = true; // Bloquea la caminata en Player.js
 

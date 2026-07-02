@@ -68,7 +68,7 @@ export const useGameStore = defineStore('game', {
       if (!menuAudio) {
         menuAudio = new Audio('assets/audio/music-mainmenu.mp3');
         menuAudio.loop = true;
-        menuAudio.volume = 0.4;
+        menuAudio.volume = 0.2;
       }
 
       if (menuAudio.paused) {

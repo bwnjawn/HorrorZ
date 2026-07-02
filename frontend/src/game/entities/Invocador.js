@@ -15,8 +15,6 @@ export class Invocador extends Player {
     // Verificamos isAttacking para que no grite mientras da un golpe básico
     if (this.isDead || this.isAttacking || !this.puedeUsarHabilidad()) return;
 
-    console.log('¡El Invocador usa GRITO FRENÉTICO!');
-
     // ==========================================
     // REPRODUCIR ANIMACIÓN DE GRITO
     // ==========================================

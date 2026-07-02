@@ -12,7 +12,6 @@ export class Coloso extends Player {
   recibirDaño(cantidad, tipoDaño = 'normal') {
     if (tipoDaño === 'bala') {
       cantidad = cantidad * 0.7; // Reducimos el daño un 30%
-      console.log(`¡Piel blindada absorbe daño! Recibe solo: ${cantidad}`);
     }
     super.recibirDaño(cantidad, tipoDaño);
   }
@@ -20,7 +19,6 @@ export class Coloso extends Player {
   usarHabilidadEspecial() {
     if (this.isDead || this.isDashing || !this.puedeUsarHabilidad()) return;
 
-    console.log('¡El Coloso usa EMBESTIDA!');
     this.isDashing = true;
 
     // 1. REPRODUCIR LA ANIMACIÓN DE EMBESTIDA

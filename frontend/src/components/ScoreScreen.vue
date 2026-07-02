@@ -138,7 +138,8 @@ const saltarFase1 = async () => {
   // Reproducir música lúgubre
   bgmAudio = new Audio('/assets/audio/end-credits.mp3');
   bgmAudio.loop = true;
-  bgmAudio.play().catch((e) => console.log('Autoplay bloqueado por el navegador', e));
+  bgmAudio.volume = 0.2;
+  bgmAudio.play();
 
   // Cargar las víctimas limitando a 30 máximo
   const victimCount = Math.min(store.totalInfected || 0, 30);

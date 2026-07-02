@@ -203,7 +203,7 @@ export class MainScene extends Phaser.Scene {
 
   crearSonidos() {
     this.soundDisparo = this.sound.add('snd_shoot', {
-      volume: 0.5,
+      volume: 0.3,
     });
 
     this.soundZombieAtaque = this.sound.add('snd_atack_zombie', {
@@ -230,9 +230,9 @@ export class MainScene extends Phaser.Scene {
     this.sound.mute = false;
 
     this.soundScreams = [
-      this.sound.add('snd_screaming_1', { volume: 0.7 }),
-      this.sound.add('snd_screaming_2', { volume: 0.7 }),
-      this.sound.add('snd_screaming_3', { volume: 0.7 }),
+      this.sound.add('snd_screaming_1', { volume: 0.2 }),
+      this.sound.add('snd_screaming_2', { volume: 0.2 }),
+      this.sound.add('snd_screaming_3', { volume: 0.2 }),
     ];
     this.soundHorda = this.sound.add('snd_horda', { volume: 0, loop: true });
     this.soundTerror = this.sound.add('snd_terror', { volume: 0.5 });
@@ -458,7 +458,7 @@ export class MainScene extends Phaser.Scene {
   crearEntorno() {
     this.input.mouse.disableContextMenu();
     this.lights.enable();
-    this.lights.setAmbientColor(0x212020);
+    this.lights.setAmbientColor(0x3a4b60);
 
     // Creamos el mapa PRINCIPAL.
     this.map = this.make.tilemap({ key: 'Map_HorrorZ_Grid' });
@@ -602,6 +602,7 @@ export class MainScene extends Phaser.Scene {
 
     this.physics.add.overlap(this.hordeGroup, this.enemiesGroup, (zombie, enemigo) => {
       if (!zombie.isDead && !enemigo.isDead && !zombie.isAttacking) {
+        this.soundZombieAtaque.play();
         zombie.ejecutarAtaque();
         enemigo.recibirDaño(20);
       }
@@ -933,6 +934,30 @@ export class MainScene extends Phaser.Scene {
     if (this.hordeGroup) this.physics.world.wrap(this.hordeGroup, 0);
     if (this.civiliansGroup) this.physics.world.wrap(this.civiliansGroup, 0);
     if (this.enemiesGroup) this.physics.world.wrap(this.enemiesGroup, 0);
+
+    if (this.player && this.player.visionLight) {
+      const distanciaOffset = 60;
+
+      this.player.visionLight.x = this.player.x + Math.cos(this.player.rotation) * distanciaOffset;
+      this.player.visionLight.y = this.player.y + Math.sin(this.player.rotation) * distanciaOffset;
+    }
+
+    if (this.enemiesGroup) {
+      this.enemiesGroup.getChildren().forEach((enemy) => {
+        if (enemy.active && !enemy.isDead && enemy.luzPersonal) {
+          if (enemy.role === 'KAMIKAZE') {
+            enemy.luzPersonal.x = enemy.x;
+            enemy.luzPersonal.y = enemy.y;
+          } else {
+            const offsetLinterna = 50;
+
+            enemy.luzPersonal.x = enemy.x + Math.cos(enemy.rotation) * offsetLinterna;
+            enemy.luzPersonal.y = enemy.y + Math.sin(enemy.rotation) * offsetLinterna;
+          }
+        }
+      });
+    }
+
     this.sincronizarLucesToroidales();
 
     // Control de sonido de la horda
@@ -944,7 +969,7 @@ export class MainScene extends Phaser.Scene {
         this.isHordaSoundActive = true;
         this.soundHorda.play();
         // Sube el volumen suavemente hasta 0.5 durante 2 segundos
-        this.tweens.add({ targets: this.soundHorda, volume: 0.5, duration: 2000 });
+        this.tweens.add({ targets: this.soundHorda, volume: 0.3, duration: 2000 });
       } else if (hordaViva < 6 && this.isHordaSoundActive) {
         this.isHordaSoundActive = false;
         this.tweens.add({

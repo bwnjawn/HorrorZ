@@ -207,11 +207,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Le volvemos a crear su luz correspondiente al reaparecer
     if (this.tipoEnemigo === 'KAMIKAZE') {
-      this.luzPersonal = this.scene.lights.addLight(x, y, 120, 0xff0000, 0.8);
+      this.luzPersonal = this.scene.lights.addLight(x, y, 120, 0xff0000, 0.5);
     } else if (this.tipoEnemigo === 'CIVIL') {
       this.luzPersonal = null;
     } else {
-      this.luzPersonal = this.scene.lights.addLight(x, y, 220, 0xfffdeb, 0.6);
+      this.luzPersonal = this.scene.lights.addLight(x, y, 220, 0xfffdeb, 0.5);
     }
   }
 
@@ -343,22 +343,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     } else if (this.healthBar) {
       this.healthBar.clear();
     }
-
-    if (this.luzPersonal) {
-      if (this.tipoEnemigo === 'KAMIKAZE') {
-        // Efecto de baliza de bomba: Parpadeo constante
-        this.luzPersonal.x = this.x;
-        this.luzPersonal.y = this.y;
-        // Usamos Math.sin para hacer que la intensidad suba y baje con el tiempo
-        this.luzPersonal.intensity = 0.3 + Math.abs(Math.sin(time * 0.005)) * 0.7;
-      } else {
-        // Efecto Linterna: Desplazado hacia donde el soldado está mirando
-        const offsetLinterna = 50; // Qué tan adelante se proyecta la linterna
-
-        this.luzPersonal.x = this.x + Math.cos(this.rotation) * offsetLinterna;
-        this.luzPersonal.y = this.y + Math.sin(this.rotation) * offsetLinterna;
-      }
-    }
   }
   updateBase(time, delta, player) {
     if (this.isDead) return;
@@ -391,5 +375,21 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
     this.setVelocity(this.velocity.x, this.velocity.y);
     this.setRotation(this.velocity.angle());
+
+    if (this.luzPersonal) {
+      if (this.tipoEnemigo === 'KAMIKAZE') {
+        // Efecto de baliza de bomba: Parpadeo constante
+        this.luzPersonal.x = this.x;
+        this.luzPersonal.y = this.y;
+        // Usamos Math.sin para hacer que la intensidad suba y baje con el tiempo
+        this.luzPersonal.intensity = 0.3 + Math.abs(Math.sin(time * 0.005)) * 0.7;
+      } else {
+        // Efecto Linterna: Desplazado hacia donde el soldado está mirando
+        const offsetLinterna = 50; // Qué tan adelante se proyecta la linterna
+
+        this.luzPersonal.x = this.x + Math.cos(this.rotation) * offsetLinterna;
+        this.luzPersonal.y = this.y + Math.sin(this.rotation) * offsetLinterna;
+      }
+    }
   }
 }

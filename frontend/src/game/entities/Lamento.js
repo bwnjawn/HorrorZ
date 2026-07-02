@@ -58,8 +58,6 @@ export class Lamento extends Player {
     // Añadimos this.isAttacking a la validación para que no interrumpa otro ataque
     if (this.isDead || this.isAttacking || !this.puedeUsarHabilidad()) return;
 
-    console.log('¡El Lamento escupe CHARCO DE ÁCIDO!');
-
     // ==========================================
     // INICIAR ANIMACIÓN DE ESCUPIR
     // ==========================================

@@ -108,7 +108,7 @@ const selectedId = ref(null);
 
 const uiClickSound = new Audio('assets/audio/click-button.mp3');
 
-uiClickSound.volume = 0.5;
+uiClickSound.volume = 0.1;
 
 const selectedName = computed(() => {
   const z = zombies.find((z) => z.id === selectedId.value);
