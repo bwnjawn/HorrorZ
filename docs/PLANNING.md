@@ -158,9 +158,9 @@
 
 ### Martes 30 de junio
 
-- [ ] Crear archivo `Dockerfile` para el frontend y `Dockerfile` para el backend.
-- [ ] Crear archivo `compose.yml` para levantar el frontend, backend y MongoDB simultáneamente.
-- [ ] Configurar flujo de trabajo de GitHub Actions (`.github/workflows/main.yml`) para ejecutar linter, pruebas y construir/publicar imágenes en
+- [x] Crear archivo `Dockerfile` para el frontend y `Dockerfile` para el backend.
+- [x] Crear archivo `compose.yml` para levantar el frontend, backend y MongoDB simultáneamente.
+- [x] Configurar flujo de trabajo de GitHub Actions (`.github/workflows/main.yml`) para ejecutar linter, pruebas y construir/publicar imágenes en
       DockerHub.
 - [ ] Actualizar archivo `README.md` con la descripción del proyecto, instrucciones de ejecución local, ejecución con Docker Compose y enlaces a
       DockerHub.
