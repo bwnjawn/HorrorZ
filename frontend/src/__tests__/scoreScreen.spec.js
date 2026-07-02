@@ -1,9 +1,19 @@
 // @vitest-environment jsdom
 import { mount } from '@vue/test-utils';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useGameStore } from '../stores/gameStore';
 import ScoreScreen from '../components/ScoreScreen.vue';
+
+// mock de localStorage
+const localStorageMock = {
+  getItem: vi.fn(() => null),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+};
+
+vi.stubGlobal('localStorage', localStorageMock);
 
 describe('Pantalla de Puntuación (ScoreScreen.vue)', () => {
   it('debería renderizar correctamente las estadísticas finales y el título', async () => {
@@ -17,6 +27,7 @@ describe('Pantalla de Puntuación (ScoreScreen.vue)', () => {
     store.timeAlive = 120;
     store.maxHordeSize = 80;
     store.zombieCount = 45;
+    store.formattedTime = '02:00';
 
     const wrapper = mount(ScoreScreen, {
       global: {
@@ -33,13 +44,11 @@ describe('Pantalla de Puntuación (ScoreScreen.vue)', () => {
     const highlights = wrapper.findAll('.highlight');
 
     expect(highlights).toHaveLength(3);
+
     expect(highlights[1].text()).toBe('80');
     expect(highlights[2].text()).toBe('45');
-
-    // Verificamos infectados usando el store
     expect(store.totalInfected).toBe(150);
 
-    // Existe el temporizador
     expect(wrapper.text()).toContain('Continuando en');
   });
 });

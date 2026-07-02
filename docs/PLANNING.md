@@ -154,7 +154,7 @@
 
 - [x] Mejorar vistas del frontend.
 - [x] Corrección de errores
-- [ ] Crear pruebas unitarias para los componentes críticos del frontend y los endpoints del backend.
+- [x] Crear pruebas unitarias para los componentes críticos del frontend y los endpoints del backend.
 
 ### Martes 30 de junio
 
